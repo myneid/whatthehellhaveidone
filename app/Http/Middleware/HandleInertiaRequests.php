@@ -97,6 +97,7 @@ class HandleInertiaRequests extends Middleware
                 'id' => $project->id,
                 'name' => $project->name,
                 'href' => route('projects.show', $project),
+                'documentsHref' => route('projects.documents.index', $project),
                 'boards' => $project->boards
                     ->map(fn (Board $board): array => [
                         'id' => $board->id,

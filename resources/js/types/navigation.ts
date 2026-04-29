@@ -23,6 +23,7 @@ export type SidebarProjectNavItem = {
     id: number;
     name: string;
     href: NonNullable<InertiaLinkProps['href']>;
+    documentsHref: NonNullable<InertiaLinkProps['href']>;
     boards: SidebarBoardNavItem[];
 };
 

@@ -39,7 +39,7 @@ class ProjectDocumentController extends Controller
 
     public function store(Request $request, Project $project): RedirectResponse
     {
-        $this->authorize('update', $project);
+        $this->authorize('view', $project);
 
         $request->validate([
             'title' => ['required', 'string', 'max:255'],
@@ -50,7 +50,7 @@ class ProjectDocumentController extends Controller
         $document = $project->documents()->create([
             ...$request->only(['title', 'document_folder_id', 'markdown_body']),
             'creator_id' => $request->user()->id,
-            'slug' => Str::slug($request->title) . '-' . Str::random(6),
+            'slug' => Str::slug($request->title).'-'.Str::random(6),
         ]);
 
         return redirect()->route('documents.edit', $document);
@@ -70,7 +70,7 @@ class ProjectDocumentController extends Controller
 
     public function edit(ProjectDocument $projectDocument): Response
     {
-        $this->authorize('update', $projectDocument->project);
+        $this->authorize('view', $projectDocument->project);
 
         $projectDocument->load(['folder', 'project.documentFolders']);
 
@@ -82,7 +82,7 @@ class ProjectDocumentController extends Controller
 
     public function update(Request $request, ProjectDocument $projectDocument): RedirectResponse
     {
-        $this->authorize('update', $projectDocument->project);
+        $this->authorize('view', $projectDocument->project);
 
         $request->validate([
             'title' => ['sometimes', 'required', 'string', 'max:255'],

@@ -1,5 +1,5 @@
 import { Link } from '@inertiajs/react';
-import { ChevronRight, FolderOpen, KanbanSquare } from 'lucide-react';
+import { ChevronRight, FileText, FolderOpen, KanbanSquare } from 'lucide-react';
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from '@/components/ui/collapsible';
 import {
     SidebarGroup,
@@ -18,7 +18,9 @@ import type { NavItem, SidebarNavigation, SidebarProjectNavItem } from '@/types'
 function ProjectMenuItem({ project }: { project: SidebarProjectNavItem }) {
     const { isCurrentUrl } = useCurrentUrl();
 
-    const isProjectActive = isCurrentUrl(project.href) || project.boards.some((board) => isCurrentUrl(board.href));
+    const isProjectActive = isCurrentUrl(project.href)
+        || isCurrentUrl(project.documentsHref)
+        || project.boards.some((board) => isCurrentUrl(board.href));
 
     return (
         <Collapsible asChild defaultOpen={isProjectActive}>
@@ -37,6 +39,15 @@ function ProjectMenuItem({ project }: { project: SidebarProjectNavItem }) {
                             <SidebarMenuSubButton asChild isActive={isCurrentUrl(project.href)}>
                                 <Link href={project.href} prefetch>
                                     <span>Overview</span>
+                                </Link>
+                            </SidebarMenuSubButton>
+                        </SidebarMenuSubItem>
+
+                        <SidebarMenuSubItem>
+                            <SidebarMenuSubButton asChild isActive={isCurrentUrl(project.documentsHref)}>
+                                <Link href={project.documentsHref} prefetch>
+                                    <FileText className="h-3.5 w-3.5" />
+                                    <span>Documents</span>
                                 </Link>
                             </SidebarMenuSubButton>
                         </SidebarMenuSubItem>
