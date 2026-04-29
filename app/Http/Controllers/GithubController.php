@@ -9,6 +9,7 @@ use App\Models\Board;
 use App\Models\BoardGithubRepository;
 use App\Models\Card;
 use App\Models\GithubAccount;
+use App\Services\GitHubService;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
@@ -25,11 +26,11 @@ class GithubController extends Controller
             ->redirect();
     }
 
-    public function callback(Request $request): RedirectResponse
+    public function callback(Request $request, GitHubService $github): RedirectResponse
     {
         $githubUser = Socialite::driver('github')->stateless()->user();
 
-        GithubAccount::updateOrCreate(
+        $account = GithubAccount::updateOrCreate(
             ['github_user_id' => (string) $githubUser->getId()],
             [
                 'user_id' => $request->user()->id,
@@ -41,7 +42,17 @@ class GithubController extends Controller
             ]
         );
 
+        $github->syncRepositories($account);
+
         return redirect()->route('dashboard')->with('success', 'GitHub account connected.');
+    }
+
+    public function syncRepos(Request $request, GithubAccount $githubAccount, GitHubService $github): RedirectResponse
+    {
+        abort_if($githubAccount->user_id !== $request->user()->id, 403);
+        $github->syncRepositories($githubAccount);
+
+        return back()->with('success', 'Repositories synced.');
     }
 
     public function destroy(Request $request, GithubAccount $githubAccount): RedirectResponse

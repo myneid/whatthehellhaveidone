@@ -65,6 +65,7 @@ Route::middleware(['auth', 'verified'])->group(function () {
     Route::get('github/connect', [GithubController::class, 'redirect'])->name('github.redirect');
     Route::get('github/callback', [GithubController::class, 'callback'])->name('github.callback');
     Route::delete('github/{githubAccount}', [GithubController::class, 'destroy'])->name('github.destroy');
+    Route::post('github/{githubAccount}/sync-repos', [GithubController::class, 'syncRepos'])->name('github.sync-repos');
     Route::get('boards/{board}/github/repositories', [GithubController::class, 'repositories'])->name('github.repositories');
     Route::post('boards/{board}/github/connect', [GithubController::class, 'connectRepository'])->name('github.connect-repository');
     Route::delete('boards/{board}/github/{boardGithubRepository}', [GithubController::class, 'disconnectRepository'])->name('github.disconnect-repository');

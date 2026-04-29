@@ -23,6 +23,35 @@ class GitHubService
             ->baseUrl(self::API_BASE);
     }
 
+    public function syncRepositories(GithubAccount $account): void
+    {
+        $repos = [];
+        $page = 1;
+
+        do {
+            $response = $this->clientFor($account)
+                ->get('/user/repos', ['per_page' => 100, 'page' => $page, 'type' => 'all', 'sort' => 'pushed']);
+
+            $this->assertOk($response, 'fetch repositories');
+            $batch = $response->json();
+            $repos = array_merge($repos, $batch);
+            $page++;
+        } while (count($batch) === 100);
+
+        foreach ($repos as $repo) {
+            GithubRepository::updateOrCreate(
+                ['github_account_id' => $account->id, 'github_repo_id' => (string) $repo['id']],
+                [
+                    'owner' => $repo['owner']['login'],
+                    'name' => $repo['name'],
+                    'full_name' => $repo['full_name'],
+                    'private' => $repo['private'],
+                    'html_url' => $repo['html_url'],
+                ],
+            );
+        }
+    }
+
     public function getIssues(GithubAccount $account, GithubRepository $repo, string $state = 'open'): array
     {
         $issues = [];

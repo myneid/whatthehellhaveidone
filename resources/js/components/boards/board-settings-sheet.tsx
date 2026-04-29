@@ -35,6 +35,11 @@ function GitHubSection({ board, githubAccounts }: { board: Board; githubAccounts
     const allRepos = selectedAccount?.repositories ?? [];
     const connectedRepoIds = new Set(connectedRepos.map((r) => r.id));
 
+    function syncRepos() {
+        if (!selectedAccount) return;
+        router.post(github.syncRepos({ githubAccount: selectedAccount.id }).url, {}, { preserveScroll: true });
+    }
+
     function connectRepo() {
         if (!selectedRepoId) return;
         setConnecting(true);
@@ -113,7 +118,13 @@ function GitHubSection({ board, githubAccounts }: { board: Board; githubAccounts
 
             {/* Connect new repo */}
             <div className="space-y-2">
-                <p className="text-xs font-medium uppercase text-muted-foreground">Connect a Repository</p>
+                <div className="flex items-center justify-between">
+                    <p className="text-xs font-medium uppercase text-muted-foreground">Connect a Repository</p>
+                    <Button size="sm" variant="ghost" className="h-6 px-2 text-xs" onClick={syncRepos} title="Sync repositories from GitHub">
+                        <RefreshCw className="mr-1 h-3 w-3" />
+                        Sync
+                    </Button>
+                </div>
                 {activeAccounts.length > 1 && (
                     <select
                         value={selectedAccountId ?? activeAccounts[0]?.id}
