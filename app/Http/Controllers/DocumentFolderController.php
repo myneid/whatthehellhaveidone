@@ -12,7 +12,7 @@ class DocumentFolderController extends Controller
 {
     public function store(Request $request, Project $project): RedirectResponse
     {
-        $this->authorize('update', $project);
+        $this->authorize('view', $project);
 
         $request->validate([
             'name' => ['required', 'string', 'max:255'],
@@ -35,7 +35,7 @@ class DocumentFolderController extends Controller
 
     public function update(Request $request, DocumentFolder $documentFolder): RedirectResponse
     {
-        $this->authorize('update', $documentFolder->project);
+        $this->authorize('view', $documentFolder->project);
 
         $request->validate(['name' => ['required', 'string', 'max:255']]);
         $documentFolder->update(['name' => $request->name]);
@@ -45,7 +45,7 @@ class DocumentFolderController extends Controller
 
     public function destroy(DocumentFolder $documentFolder): RedirectResponse
     {
-        $this->authorize('update', $documentFolder->project);
+        $this->authorize('view', $documentFolder->project);
         $documentFolder->update(['archived_at' => now()]);
 
         return back();
