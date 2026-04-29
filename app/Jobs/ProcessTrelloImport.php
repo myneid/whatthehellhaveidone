@@ -29,10 +29,19 @@ class ProcessTrelloImport implements ShouldQueue
 
         try {
             $json = Storage::get($this->storagePath);
+
+            if ($json === null) {
+                throw new \RuntimeException('Trello import file not found or could not be read.');
+            }
+
             $data = json_decode($json, true);
 
-            if (! $data) {
-                throw new \RuntimeException('Failed to decode Trello JSON.');
+            if (json_last_error() !== JSON_ERROR_NONE) {
+                throw new \RuntimeException('Failed to decode Trello JSON: '.json_last_error_msg());
+            }
+
+            if (! is_array($data)) {
+                throw new \RuntimeException('Failed to decode Trello JSON: unexpected data format.');
             }
 
             DB::transaction(function () use ($data) {
