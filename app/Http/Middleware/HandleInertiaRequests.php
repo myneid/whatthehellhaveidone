@@ -2,6 +2,8 @@
 
 namespace App\Http\Middleware;
 
+use App\Models\Board;
+use App\Models\Project;
 use Illuminate\Http\Request;
 use Inertia\Middleware;
 
@@ -42,6 +44,67 @@ class HandleInertiaRequests extends Middleware
                 'user' => $request->user(),
             ],
             'sidebarOpen' => ! $request->hasCookie('sidebar_state') || $request->cookie('sidebar_state') === 'true',
+            'navigation' => fn () => $this->sidebarNavigation($request),
+        ];
+    }
+
+    /**
+     * Build sidebar navigation data for boards and projects.
+     *
+     * @return array<string, mixed>
+     */
+    private function sidebarNavigation(Request $request): array
+    {
+        $user = $request->user();
+
+        if (! $user) {
+            return [
+                'standaloneBoards' => [],
+                'projects' => [],
+            ];
+        }
+
+        $standaloneBoards = $user->boards()
+            ->select('boards.id', 'boards.name', 'boards.slug')
+            ->whereNull('boards.project_id')
+            ->whereNull('boards.archived_at')
+            ->orderBy('boards.name')
+            ->get()
+            ->map(fn (Board $board): array => [
+                'id' => $board->id,
+                'name' => $board->name,
+                'href' => route('boards.show', $board),
+            ])
+            ->values();
+
+        $projects = $user->projects()
+            ->select('projects.id', 'projects.name', 'projects.slug')
+            ->whereNull('projects.archived_at')
+            ->with([
+                'boards' => fn ($query) => $query
+                    ->select('id', 'project_id', 'name', 'slug')
+                    ->whereNull('archived_at')
+                    ->orderBy('name'),
+            ])
+            ->orderBy('projects.name')
+            ->get()
+            ->map(fn (Project $project): array => [
+                'id' => $project->id,
+                'name' => $project->name,
+                'href' => route('projects.show', $project),
+                'boards' => $project->boards
+                    ->map(fn (Board $board): array => [
+                        'id' => $board->id,
+                        'name' => $board->name,
+                        'href' => route('boards.show', $board),
+                    ])
+                    ->values(),
+            ])
+            ->values();
+
+        return [
+            'standaloneBoards' => $standaloneBoards,
+            'projects' => $projects,
         ];
     }
 }

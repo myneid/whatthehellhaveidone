@@ -1,5 +1,5 @@
-import { Link } from '@inertiajs/react';
-import { BookOpen, ClipboardList, FolderOpen, Github, KanbanSquare, LayoutGrid, Settings } from 'lucide-react';
+import { Link, usePage } from '@inertiajs/react';
+import { ClipboardList, LayoutGrid, Settings } from 'lucide-react';
 import AppLogo from '@/components/app-logo';
 import { NavFooter } from '@/components/nav-footer';
 import { NavMain } from '@/components/nav-main';
@@ -14,7 +14,7 @@ import {
     SidebarMenuItem,
 } from '@/components/ui/sidebar';
 import { dashboard } from '@/routes';
-import type { NavItem } from '@/types';
+import type { NavItem, SidebarNavigation } from '@/types';
 
 const mainNavItems: NavItem[] = [
     {
@@ -38,6 +38,8 @@ const footerNavItems: NavItem[] = [
 ];
 
 export function AppSidebar() {
+    const { navigation } = usePage().props as { navigation: SidebarNavigation };
+
     return (
         <Sidebar collapsible="icon" variant="inset">
             <SidebarHeader>
@@ -53,7 +55,7 @@ export function AppSidebar() {
             </SidebarHeader>
 
             <SidebarContent>
-                <NavMain items={mainNavItems} />
+                <NavMain items={mainNavItems} navigation={navigation} />
             </SidebarContent>
 
             <SidebarFooter>

@@ -12,3 +12,21 @@ export type NavItem = {
     icon?: LucideIcon | null;
     isActive?: boolean;
 };
+
+export type SidebarBoardNavItem = {
+    id: number;
+    name: string;
+    href: NonNullable<InertiaLinkProps['href']>;
+};
+
+export type SidebarProjectNavItem = {
+    id: number;
+    name: string;
+    href: NonNullable<InertiaLinkProps['href']>;
+    boards: SidebarBoardNavItem[];
+};
+
+export type SidebarNavigation = {
+    standaloneBoards: SidebarBoardNavItem[];
+    projects: SidebarProjectNavItem[];
+};

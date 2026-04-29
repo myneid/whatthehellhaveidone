@@ -84,10 +84,28 @@ class ProcessTrelloImport implements ShouldQueue
 
         // Map Trello list ID -> local BoardList ID
         $listMap = [];
-        $position = 1;
+        $existingLists = $board->lists()->whereNull('archived_at')->get();
+        $existingListNameMap = [];
+        foreach ($existingLists as $existingList) {
+            $normalizedName = $this->normalizeListName($existingList->name);
+            if ($normalizedName === '') {
+                continue;
+            }
+
+            $existingListNameMap[$normalizedName] = $existingList;
+        }
+
+        $position = ($existingLists->max('position') ?? 0) + 1;
         $trelloLists = collect($data['lists'] ?? [])->sortBy('pos');
         foreach ($trelloLists as $trelloList) {
             if ($trelloList['closed'] ?? false) {
+                continue;
+            }
+
+            $normalizedName = $this->normalizeListName((string) ($trelloList['name'] ?? ''));
+            if ($normalizedName !== '' && isset($existingListNameMap[$normalizedName])) {
+                $listMap[$trelloList['id']] = $existingListNameMap[$normalizedName]->id;
+
                 continue;
             }
 
@@ -97,6 +115,10 @@ class ProcessTrelloImport implements ShouldQueue
                 'position' => $position++,
             ]);
             $listMap[$trelloList['id']] = $list->id;
+
+            if ($normalizedName !== '') {
+                $existingListNameMap[$normalizedName] = $list;
+            }
         }
 
         // Build checklist map: Trello checklist ID -> checklist data
@@ -203,5 +225,12 @@ class ProcessTrelloImport implements ShouldQueue
             'black' => '#374151',
             default => '#6b7280',
         };
+    }
+
+    private function normalizeListName(string $name): string
+    {
+        $normalized = preg_replace('/\s+/', ' ', trim($name));
+
+        return mb_strtolower($normalized ?? '');
     }
 }

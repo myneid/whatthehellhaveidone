@@ -7,6 +7,7 @@ use App\Models\BoardList;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\DB;
 
 class BoardListController extends Controller
 {
@@ -30,11 +31,43 @@ class BoardListController extends Controller
 
         $request->validate([
             'name' => ['sometimes', 'required', 'string', 'max:255'],
-            'position' => ['sometimes', 'integer', 'min:0'],
+            'position' => ['sometimes', 'integer', 'min:1'],
             'wip_limit' => ['nullable', 'integer', 'min:1'],
         ]);
 
-        $boardList->update($request->only(['name', 'position', 'wip_limit']));
+        $attributes = $request->only(['name', 'wip_limit']);
+
+        if ($request->has('position')) {
+            $board = $boardList->board;
+            $position = (int) $request->integer('position');
+            $maxPosition = $board->lists()->whereNull('archived_at')->count();
+            $targetPosition = max(1, min($position, $maxPosition));
+
+            DB::transaction(function () use ($board, $boardList, $targetPosition, $attributes): void {
+                $remainingLists = $board->lists()
+                    ->whereNull('archived_at')
+                    ->whereKeyNot($boardList->id)
+                    ->orderBy('position')
+                    ->get();
+
+                $nextPosition = 1;
+                foreach ($remainingLists as $list) {
+                    if ($nextPosition === $targetPosition) {
+                        $nextPosition++;
+                    }
+
+                    $list->update(['position' => $nextPosition]);
+                    $nextPosition++;
+                }
+
+                $boardList->update([
+                    ...$attributes,
+                    'position' => $targetPosition,
+                ]);
+            });
+        } else {
+            $boardList->update($attributes);
+        }
 
         if ($request->wantsJson()) {
             return response()->json(['list' => $boardList->fresh()]);
@@ -47,7 +80,15 @@ class BoardListController extends Controller
     {
         $this->authorize('update', $boardList->board);
 
-        $boardList->update(['archived_at' => now()]);
+        DB::transaction(function () use ($boardList): void {
+            $board = $boardList->board;
+            $boardList->update(['archived_at' => now()]);
+
+            $activeLists = $board->lists()->whereNull('archived_at')->orderBy('position')->get();
+            foreach ($activeLists as $index => $list) {
+                $list->update(['position' => $index + 1]);
+            }
+        });
 
         return back();
     }

@@ -9,10 +9,10 @@ import {
     useSensor,
     useSensors,
 } from '@dnd-kit/core';
-import { SortableContext, arrayMove, useSortable, verticalListSortingStrategy } from '@dnd-kit/sortable';
+import { SortableContext, arrayMove, horizontalListSortingStrategy, useSortable, verticalListSortingStrategy } from '@dnd-kit/sortable';
 import { CSS } from '@dnd-kit/utilities';
 import { Head, router, useForm } from '@inertiajs/react';
-import { GripVertical, Plus, Settings, X } from 'lucide-react';
+import { GripVertical, Plus, Settings, Trash2, X } from 'lucide-react';
 import { useCallback, useMemo, useState } from 'react';
 import { BoardSettingsSheet } from '@/components/boards/board-settings-sheet';
 import { CardModal } from '@/components/boards/card-modal';
@@ -21,7 +21,8 @@ import { Input } from '@/components/ui/input';
 import { dashboard } from '@/routes';
 import * as boardRoutes from '@/routes/boards';
 import * as cardRoutes from '@/routes/cards';
-import * as listRoutes from '@/routes/boards/lists';
+import * as boardListRoutes from '@/routes/boards/lists';
+import * as listRoutes from '@/routes/lists';
 import * as projectRoutes from '@/routes/projects';
 import type { BreadcrumbItem } from '@/types';
 import type { Board, BoardList, Card, GithubAccount } from '@/types/app';
@@ -61,6 +62,45 @@ function AddCardForm({ listId, onDone }: { listId: number; onDone: () => void })
             />
             <div className="flex gap-1">
                 <Button type="submit" size="sm" disabled={form.processing}>Add</Button>
+                <Button type="button" size="sm" variant="ghost" onClick={onDone}><X className="h-4 w-4" /></Button>
+            </div>
+        </form>
+    );
+}
+
+function AddListForm({ board, onDone }: { board: Board; onDone: () => void }) {
+    const form = useForm({ name: '' });
+
+    function submit(e: React.FormEvent) {
+        e.preventDefault();
+        if (!form.data.name.trim()) {
+            return;
+        }
+
+        form.post(boardListRoutes.store(board).url, {
+            preserveScroll: true,
+            onSuccess: () => {
+                form.reset();
+                onDone();
+            },
+        });
+    }
+
+    return (
+        <form onSubmit={submit} className="space-y-2">
+            <Input
+                value={form.data.name}
+                onChange={(e) => form.setData('name', e.target.value)}
+                placeholder="Row name..."
+                autoFocus
+                onKeyDown={(e) => {
+                    if (e.key === 'Escape') {
+                        onDone();
+                    }
+                }}
+            />
+            <div className="flex gap-1">
+                <Button type="submit" size="sm" disabled={form.processing}>Add row</Button>
                 <Button type="button" size="sm" variant="ghost" onClick={onDone}><X className="h-4 w-4" /></Button>
             </div>
         </form>
@@ -147,21 +187,54 @@ type ListColumnProps = {
     board: Board;
     allLists: BoardList[];
     onOpenCard: (card: Card) => void;
+    onDeleteList: (list: BoardList) => void;
 };
 
-function ListColumn({ list, board, allLists, onOpenCard }: ListColumnProps) {
+function ListColumn({ list, board, allLists, onOpenCard, onDeleteList }: ListColumnProps) {
     const [addingCard, setAddingCard] = useState(false);
     const cardIds = useMemo(() => (list.cards ?? []).map((c) => `card-${c.id}`), [list.cards]);
+    const { attributes, listeners, setNodeRef, transform, transition, isDragging } = useSortable({
+        id: `list-${list.id}`,
+        data: { type: 'list', list },
+    });
+
+    const style = {
+        transform: CSS.Transform.toString(transform),
+        transition,
+        opacity: isDragging ? 0.5 : 1,
+    };
 
     return (
-        <div className="flex w-72 shrink-0 flex-col rounded-lg bg-muted/50 border">
+        <div ref={setNodeRef} style={style} className="flex h-full max-h-full w-72 shrink-0 flex-col rounded-lg border bg-muted/50">
             <div className="flex items-center justify-between px-3 py-2.5">
-                <span className="font-medium text-sm">{list.name}</span>
-                <span className="text-xs text-muted-foreground">{list.cards?.length ?? 0}</span>
+                <div className="flex min-w-0 items-center gap-2">
+                    <button
+                        {...attributes}
+                        {...listeners}
+                        className="shrink-0 cursor-grab text-muted-foreground"
+                        type="button"
+                        aria-label={`Reorder ${list.name}`}
+                    >
+                        <GripVertical className="h-4 w-4" />
+                    </button>
+                    <span className="truncate text-sm font-medium">{list.name}</span>
+                </div>
+                <div className="flex items-center gap-1">
+                    <span className="text-xs text-muted-foreground">{list.cards?.length ?? 0}</span>
+                    <Button
+                        variant="ghost"
+                        size="icon"
+                        className="h-7 w-7 text-muted-foreground"
+                        onClick={() => onDeleteList(list)}
+                        aria-label={`Delete ${list.name}`}
+                    >
+                        <Trash2 className="h-4 w-4" />
+                    </Button>
+                </div>
             </div>
 
             <SortableContext items={cardIds} strategy={verticalListSortingStrategy}>
-                <div className="flex flex-1 flex-col gap-2 overflow-y-auto px-2 pb-2" style={{ minHeight: 40 }}>
+                <div className="flex min-h-0 flex-1 flex-col gap-2 overflow-y-auto px-2 pb-2" style={{ minHeight: 40 }}>
                     {(list.cards ?? []).map((card) => (
                         <SortableCard key={card.id} card={card} board={board} lists={allLists} onOpen={onOpenCard} />
                     ))}
@@ -198,6 +271,7 @@ function CardOverlay({ card }: { card: Card }) {
 export default function BoardShow({ board, githubAccounts }: Props) {
     const [lists, setLists] = useState<BoardList[]>(board.lists ?? []);
     const [activeCard, setActiveCard] = useState<Card | null>(null);
+    const [addingList, setAddingList] = useState(false);
     const [selectedCard, setSelectedCard] = useState<Card | null>(null);
     const [showSettings, setShowSettings] = useState(false);
 
@@ -215,11 +289,19 @@ export default function BoardShow({ board, githubAccounts }: Props) {
     }
 
     function onDragStart(event: DragStartEvent) {
+        if (event.active.data.current?.type === 'list') {
+            return;
+        }
+
         const found = findCard(String(event.active.id));
         if (found) setActiveCard(found.card);
     }
 
     function onDragOver(event: DragOverEvent) {
+        if (event.active.data.current?.type === 'list') {
+            return;
+        }
+
         const { active, over } = event;
         if (!over) return;
 
@@ -283,6 +365,42 @@ export default function BoardShow({ board, githubAccounts }: Props) {
 
     function onDragEnd(event: DragEndEvent) {
         setActiveCard(null);
+
+        if (event.active.data.current?.type === 'list') {
+            const overId = event.over?.id;
+            if (!overId) {
+                return;
+            }
+
+            const activeListId = Number(String(event.active.id).replace('list-', ''));
+            const overListId = Number(String(overId).replace('list-', ''));
+
+            if (activeListId === overListId) {
+                return;
+            }
+
+            const oldIndex = lists.findIndex((list) => list.id === activeListId);
+            const newIndex = lists.findIndex((list) => list.id === overListId);
+            if (oldIndex === -1 || newIndex === -1) {
+                return;
+            }
+
+            const reordered = arrayMove(lists, oldIndex, newIndex).map((list, index) => ({
+                ...list,
+                position: index + 1,
+            }));
+
+            setLists(reordered);
+
+            router.patch(
+                listRoutes.update(activeListId).url,
+                { position: newIndex + 1 },
+                { preserveScroll: true },
+            );
+
+            return;
+        }
+
         const { active, over } = event;
         if (!over) return;
 
@@ -301,6 +419,16 @@ export default function BoardShow({ board, githubAccounts }: Props) {
             { preserveScroll: true },
         );
     }
+
+    const deleteList = useCallback((list: BoardList) => {
+        if (!window.confirm(`Delete row \"${list.name}\"?`)) {
+            return;
+        }
+
+        router.delete(listRoutes.destroy(list).url, {
+            preserveScroll: true,
+        });
+    }, []);
 
     function openCard(card: Card) {
         // Find the latest version of the card from our state
@@ -334,7 +462,7 @@ export default function BoardShow({ board, githubAccounts }: Props) {
                 </div>
 
                 {/* Kanban */}
-                <div className="flex-1 overflow-x-auto">
+                <div className="flex-1 overflow-x-auto overflow-y-hidden">
                     <DndContext
                         sensors={sensors}
                         collisionDetection={closestCenter}
@@ -342,17 +470,39 @@ export default function BoardShow({ board, githubAccounts }: Props) {
                         onDragOver={onDragOver}
                         onDragEnd={onDragEnd}
                     >
-                        <div className="flex h-full gap-4 p-6">
-                            {lists.map((list) => (
-                                <ListColumn
-                                    key={list.id}
-                                    list={list}
-                                    board={board}
-                                    allLists={lists}
-                                    onOpenCard={openCard}
-                                />
-                            ))}
-                        </div>
+                        <SortableContext
+                            items={lists.map((list) => `list-${list.id}`)}
+                            strategy={horizontalListSortingStrategy}
+                        >
+                            <div className="flex h-[calc(100vh-12rem)] items-start gap-4 p-6">
+                                {lists.map((list) => (
+                                    <ListColumn
+                                        key={list.id}
+                                        list={list}
+                                        board={board}
+                                        allLists={lists}
+                                        onOpenCard={openCard}
+                                        onDeleteList={deleteList}
+                                    />
+                                ))}
+
+                                <div className="w-72 shrink-0 rounded-lg border bg-muted/30 p-2">
+                                    {addingList ? (
+                                        <AddListForm board={board} onDone={() => setAddingList(false)} />
+                                    ) : (
+                                        <Button
+                                            variant="ghost"
+                                            size="sm"
+                                            className="w-full justify-start"
+                                            onClick={() => setAddingList(true)}
+                                        >
+                                            <Plus className="mr-1 h-4 w-4" />
+                                            Add row
+                                        </Button>
+                                    )}
+                                </div>
+                            </div>
+                        </SortableContext>
 
                         <DragOverlay>
                             {activeCard ? <CardOverlay card={activeCard} /> : null}
