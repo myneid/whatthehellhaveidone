@@ -15,7 +15,8 @@
       "Bash(vendor/bin/pint *)",
       "Bash(grep -v \"Controller.php$\")",
       "Bash(grep -v \"^.*Controller\\\\.php$\")",
-      "Bash(npx shadcn@latest add popover --yes)"
+      "Bash(npx shadcn@latest add popover --yes)",
+      "mcp__laravel-boost__database-schema"
     ]
   },
   "enableAllProjectMcpServers": true,

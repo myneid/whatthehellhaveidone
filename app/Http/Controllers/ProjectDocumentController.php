@@ -103,6 +103,6 @@ class ProjectDocumentController extends Controller
         $this->authorize('update', $projectDocument->project);
         $projectDocument->update(['archived_at' => now()]);
 
-        return redirect()->route('projects.documents.index', $projectDocument->project_id);
+        return redirect()->route('projects.documents.index', $projectDocument->project);
     }
 }

@@ -18,6 +18,11 @@ class Board extends Model
     /** @use HasFactory<BoardFactory> */
     use HasFactory;
 
+    public function getRouteKeyName(): string
+    {
+        return 'slug';
+    }
+
     protected function casts(): array
     {
         return [

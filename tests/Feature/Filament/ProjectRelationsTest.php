@@ -57,7 +57,7 @@ it('shows project members, invitations, and groups in filament', function () {
 
     actingAs($admin);
 
-    get("/admin/projects/{$project->id}/edit")
+    get("/admin/projects/{$project->slug}/edit")
         ->assertOk()
         ->assertSee('Members')
         ->assertSee('Invitations')

@@ -119,7 +119,7 @@ class BoardController extends Controller
         $board->update(['archived_at' => now()]);
 
         return $board->project_id
-            ? redirect()->route('projects.show', $board->project_id)
+            ? redirect()->route('projects.show', $board->project)
             : redirect()->route('dashboard');
     }
 }

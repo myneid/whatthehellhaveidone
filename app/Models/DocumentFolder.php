@@ -11,6 +11,11 @@ use Illuminate\Database\Eloquent\Relations\HasMany;
 #[Fillable(['project_id', 'parent_id', 'name', 'slug', 'position', 'archived_at'])]
 class DocumentFolder extends Model
 {
+    public function getRouteKeyName(): string
+    {
+        return 'slug';
+    }
+
     protected function casts(): array
     {
         return [

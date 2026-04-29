@@ -15,6 +15,11 @@ class ProjectDocument extends Model
     /** @use HasFactory<ProjectDocumentFactory> */
     use HasFactory;
 
+    public function getRouteKeyName(): string
+    {
+        return 'slug';
+    }
+
     protected function casts(): array
     {
         return [
