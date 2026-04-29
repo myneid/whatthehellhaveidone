@@ -1,15 +1,18 @@
 import { router, useForm } from '@inertiajs/react';
-import { Calendar, CheckSquare, MessageSquare, Tag, Trash2, User, X } from 'lucide-react';
-import { useState } from 'react';
+import { Calendar, CheckSquare, Image, MessageSquare, Paperclip, Tag, Trash2, User, X } from 'lucide-react';
+import { useRef, useState } from 'react';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { Input } from '@/components/ui/input';
 import * as cards from '@/routes/cards';
+import * as cardAttachments from '@/routes/cards/attachments';
 import * as cardComments from '@/routes/cards/comments';
+import * as cardLabels from '@/routes/cards/labels';
+import * as attachmentRoutes from '@/routes/attachments';
 import * as commentRoutes from '@/routes/comments';
 import * as checklistItemRoutes from '@/routes/checklist-items';
-import type { Board, BoardList, Card } from '@/types/app';
+import type { Board, BoardList, Card, CardAttachment, Label } from '@/types/app';
 
 type Props = {
     card: Card;
@@ -68,6 +71,116 @@ function CommentForm({ cardId }: { cardId: number }) {
                 Post
             </Button>
         </form>
+    );
+}
+
+function LabelPicker({ card, board }: { card: Card; board: Board }) {
+    const attachedIds = new Set((card.labels ?? []).map((l) => l.id));
+
+    function toggle(label: Label) {
+        if (attachedIds.has(label.id)) {
+            router.delete(cardLabels.detach({ card: card.id, label: label.id }).url, { preserveScroll: true });
+        } else {
+            router.post(cardLabels.attach(card).url, { label_id: label.id }, { preserveScroll: true });
+        }
+    }
+
+    const boardLabels = board.labels ?? [];
+    if (boardLabels.length === 0) return null;
+
+    return (
+        <div>
+            <p className="mb-1.5 flex items-center gap-1 text-xs font-medium uppercase text-muted-foreground">
+                <Tag className="h-3 w-3" /> Labels
+            </p>
+            <div className="flex flex-wrap gap-1.5">
+                {boardLabels.map((label) => {
+                    const active = attachedIds.has(label.id);
+                    return (
+                        <button
+                            key={label.id}
+                            type="button"
+                            onClick={() => toggle(label)}
+                            className={`rounded-full px-2.5 py-0.5 text-xs font-medium transition-opacity ${active ? 'opacity-100' : 'opacity-30 hover:opacity-60'}`}
+                            style={{ backgroundColor: label.color, color: '#fff' }}
+                            title={active ? `Remove ${label.name}` : `Add ${label.name}`}
+                        >
+                            {label.name}
+                        </button>
+                    );
+                })}
+            </div>
+        </div>
+    );
+}
+
+function AttachmentsSection({ card }: { card: Card }) {
+    const fileRef = useRef<HTMLInputElement>(null);
+    const [uploading, setUploading] = useState(false);
+
+    function upload(e: React.ChangeEvent<HTMLInputElement>) {
+        const file = e.target.files?.[0];
+        if (!file) return;
+        setUploading(true);
+        const data = new FormData();
+        data.append('file', file);
+        router.post(cardAttachments.store(card).url, data as any, {
+            preserveScroll: true,
+            onFinish: () => { setUploading(false); if (fileRef.current) fileRef.current.value = ''; },
+        });
+    }
+
+    function remove(attachment: CardAttachment) {
+        router.delete(attachmentRoutes.destroy(attachment).url, { preserveScroll: true });
+    }
+
+    const attachments = card.attachments ?? [];
+    const images = attachments.filter((a) => a.mime_type?.startsWith('image/'));
+    const files = attachments.filter((a) => !a.mime_type?.startsWith('image/'));
+
+    return (
+        <div>
+            <div className="mb-1.5 flex items-center justify-between">
+                <p className="flex items-center gap-1 text-xs font-medium uppercase text-muted-foreground">
+                    <Paperclip className="h-3 w-3" /> Attachments
+                </p>
+                <Button size="sm" variant="outline" className="h-6 px-2 text-xs" onClick={() => fileRef.current?.click()} disabled={uploading}>
+                    <Image className="mr-1 h-3 w-3" />
+                    {uploading ? 'Uploading…' : 'Add'}
+                </Button>
+                <input ref={fileRef} type="file" className="hidden" accept="image/*,.pdf,.doc,.docx,.xls,.xlsx,.txt" onChange={upload} />
+            </div>
+
+            {images.length > 0 && (
+                <div className="mb-2 grid grid-cols-3 gap-1.5">
+                    {images.map((img) => (
+                        <div key={img.id} className="group relative aspect-video overflow-hidden rounded-md border bg-muted">
+                            <img src={img.url ?? ''} alt={img.filename} className="h-full w-full object-cover" />
+                            <button
+                                type="button"
+                                onClick={() => remove(img)}
+                                className="absolute right-1 top-1 hidden rounded-full bg-black/60 p-0.5 text-white group-hover:flex"
+                            >
+                                <X className="h-3 w-3" />
+                            </button>
+                        </div>
+                    ))}
+                </div>
+            )}
+
+            {files.length > 0 && (
+                <div className="space-y-1">
+                    {files.map((file) => (
+                        <div key={file.id} className="flex items-center justify-between rounded-md border px-2 py-1.5 text-xs">
+                            <span className="truncate">{file.filename}</span>
+                            <button type="button" onClick={() => remove(file)} className="ml-2 shrink-0 text-muted-foreground hover:text-destructive">
+                                <X className="h-3 w-3" />
+                            </button>
+                        </div>
+                    ))}
+                </div>
+            )}
+        </div>
     );
 }
 
@@ -141,24 +254,7 @@ export function CardModal({ card, board, lists, open, onClose }: Props) {
 
                 <div className="mt-2 space-y-6">
                     {/* Labels */}
-                    {card.labels && card.labels.length > 0 && (
-                        <div>
-                            <p className="mb-1 flex items-center gap-1 text-xs font-medium uppercase text-muted-foreground">
-                                <Tag className="h-3 w-3" /> Labels
-                            </p>
-                            <div className="flex flex-wrap gap-1">
-                                {card.labels.map((label) => (
-                                    <span
-                                        key={label.id}
-                                        className="rounded-full px-2 py-0.5 text-xs font-medium text-white"
-                                        style={{ backgroundColor: label.color }}
-                                    >
-                                        {label.name}
-                                    </span>
-                                ))}
-                            </div>
-                        </div>
-                    )}
+                    <LabelPicker card={card} board={board} />
 
                     {/* Assignees */}
                     {card.assignees && card.assignees.length > 0 && (
@@ -249,6 +345,9 @@ export function CardModal({ card, board, lists, open, onClose }: Props) {
                             ))}
                         </div>
                     )}
+
+                    {/* Attachments */}
+                    <AttachmentsSection card={card} />
 
                     {/* Comments */}
                     <div>

@@ -2,63 +2,44 @@
 
 namespace App\Http\Controllers;
 
+use App\Models\Card;
+use App\Models\CardAttachment;
+use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Storage;
 
 class CardAttachmentController extends Controller
 {
-    /**
-     * Display a listing of the resource.
-     */
-    public function index()
+    public function store(Request $request, Card $card): RedirectResponse
     {
-        //
+        $this->authorize('update', $card);
+
+        $request->validate([
+            'file' => ['required', 'file', 'max:10240', 'mimes:jpeg,png,gif,webp,svg,pdf,doc,docx,xls,xlsx,txt'],
+        ]);
+
+        $file = $request->file('file');
+        $path = $file->store("attachments/cards/{$card->id}", 'public');
+
+        $card->attachments()->create([
+            'user_id' => $request->user()->id,
+            'filename' => $file->getClientOriginalName(),
+            'path' => $path,
+            'mime_type' => $file->getMimeType(),
+            'size' => $file->getSize(),
+            'disk' => 'public',
+        ]);
+
+        return back()->with('success', 'File uploaded.');
     }
 
-    /**
-     * Show the form for creating a new resource.
-     */
-    public function create()
+    public function destroy(CardAttachment $attachment): RedirectResponse
     {
-        //
-    }
+        $this->authorize('update', $attachment->card);
 
-    /**
-     * Store a newly created resource in storage.
-     */
-    public function store(Request $request)
-    {
-        //
-    }
+        Storage::disk($attachment->disk)->delete($attachment->path);
+        $attachment->delete();
 
-    /**
-     * Display the specified resource.
-     */
-    public function show(string $id)
-    {
-        //
-    }
-
-    /**
-     * Show the form for editing the specified resource.
-     */
-    public function edit(string $id)
-    {
-        //
-    }
-
-    /**
-     * Update the specified resource in storage.
-     */
-    public function update(Request $request, string $id)
-    {
-        //
-    }
-
-    /**
-     * Remove the specified resource from storage.
-     */
-    public function destroy(string $id)
-    {
-        //
+        return back()->with('success', 'Attachment removed.');
     }
 }

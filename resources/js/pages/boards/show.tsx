@@ -11,7 +11,7 @@ import {
 } from '@dnd-kit/core';
 import { SortableContext, arrayMove, horizontalListSortingStrategy, useSortable, verticalListSortingStrategy } from '@dnd-kit/sortable';
 import { CSS } from '@dnd-kit/utilities';
-import { Head, router, useForm } from '@inertiajs/react';
+import { Head, Link, router, useForm } from '@inertiajs/react';
 import { GripVertical, Plus, Settings, Trash2 } from 'lucide-react';
 import { useCallback, useEffect, useMemo, useState } from 'react';
 import { BoardSettingsSheet } from '@/components/boards/board-settings-sheet';
@@ -500,7 +500,10 @@ export default function BoardShow({ board, githubAccounts }: Props) {
                             {board.visibility}
                         </span>
                     )}
-                    <div className="ml-auto">
+                    <div className="ml-auto flex items-center gap-1">
+                        <Button variant="ghost" size="sm" asChild>
+                            <Link href={`/boards/${board.slug}/report`}>Report</Link>
+                        </Button>
                         <Button variant="ghost" size="sm" onClick={() => setShowSettings(true)}>
                             <Settings className="mr-1.5 h-4 w-4" />
                             Settings

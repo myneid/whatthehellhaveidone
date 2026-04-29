@@ -68,6 +68,7 @@ class BoardController extends Controller
                 'cards' => fn ($q) => $q->whereNull('archived_at')->orderBy('position')->with([
                     'assignees',
                     'labels',
+                    'attachments',
                     'githubLink',
                     'checklists.items',
                 ]),
@@ -82,6 +83,23 @@ class BoardController extends Controller
         return Inertia::render('boards/show', [
             'board' => $board,
             'githubAccounts' => $githubAccounts,
+        ]);
+    }
+
+    public function report(Board $board): Response
+    {
+        $this->authorize('view', $board);
+
+        $board->load('labels', 'lists');
+
+        $cards = $board->cards()
+            ->whereNull('archived_at')
+            ->with(['list', 'labels', 'assignees', 'attachments'])
+            ->get();
+
+        return Inertia::render('boards/report', [
+            'board' => $board,
+            'cards' => $cards,
         ]);
     }
 

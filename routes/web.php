@@ -80,6 +80,13 @@ Route::middleware(['auth', 'verified'])->group(function () {
     Route::delete('boards/{board}/discord', [DiscordWebhookController::class, 'destroy'])->name('discord.destroy');
     Route::post('boards/{board}/discord/test', [DiscordWebhookController::class, 'test'])->name('discord.test');
 
+    // Board reports
+    Route::get('boards/{board}/report', [BoardController::class, 'report'])->name('boards.report');
+
+    // Label attach/detach
+    Route::post('cards/{card}/labels', [LabelController::class, 'attach'])->name('cards.labels.attach');
+    Route::delete('cards/{card}/labels/{label}', [LabelController::class, 'detach'])->name('cards.labels.detach');
+
     // Cards
     Route::resource('cards', CardController::class)->except(['index', 'create', 'edit']);
     Route::post('cards/{card}/move', [CardController::class, 'move'])->name('cards.move');
