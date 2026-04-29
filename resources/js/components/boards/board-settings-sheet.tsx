@@ -23,7 +23,24 @@ type Props = {
     onClose: () => void;
 };
 
+function resolveBoardRouteKey(board: Board): string {
+    const fromBoard = board.slug?.toString().trim();
+    if (fromBoard) {
+        return fromBoard;
+    }
+
+    if (typeof window !== 'undefined') {
+        const match = window.location.pathname.match(/^\/boards\/([^/]+)/);
+        if (match?.[1]) {
+            return decodeURIComponent(match[1]);
+        }
+    }
+
+    return String(board.id);
+}
+
 function GitHubSection({ board, githubAccounts }: { board: Board; githubAccounts: GithubAccount[] }) {
+    const boardRouteKey = resolveBoardRouteKey(board);
     const [selectedAccountId, setSelectedAccountId] = useState<number | null>(null);
     const [selectedRepoId, setSelectedRepoId] = useState<number | null>(null);
     const [connecting, setConnecting] = useState(false);
@@ -44,7 +61,7 @@ function GitHubSection({ board, githubAccounts }: { board: Board; githubAccounts
         if (!selectedRepoId) return;
         setConnecting(true);
         router.post(
-            github.connectRepository(board).url,
+            github.connectRepository({ board: boardRouteKey }).url,
             { github_repository_id: selectedRepoId, sync_direction: 'two_way' },
             { preserveScroll: true, onFinish: () => { setConnecting(false); setSelectedRepoId(null); } },
         );
@@ -52,14 +69,14 @@ function GitHubSection({ board, githubAccounts }: { board: Board; githubAccounts
 
     function disconnectRepo(boardGithubRepositoryId: number) {
         router.delete(
-            github.disconnectRepository({ board: board.id, boardGithubRepository: boardGithubRepositoryId }).url,
+            github.disconnectRepository({ board: boardRouteKey, boardGithubRepository: boardGithubRepositoryId }).url,
             { preserveScroll: true },
         );
     }
 
     function importIssues(repoId: number) {
         router.post(
-            github.importIssues(board).url,
+            github.importIssues({ board: boardRouteKey }).url,
             { github_repository_id: repoId, state: 'open' },
             { preserveScroll: true },
         );
@@ -164,6 +181,7 @@ function GitHubSection({ board, githubAccounts }: { board: Board; githubAccounts
 
 function DiscordSection({ board }: { board: Board }) {
     const webhook = board.discord_webhook as DiscordWebhook | null | undefined;
+    const boardRouteKey = resolveBoardRouteKey(board);
     const form = useForm({
         name: webhook?.name ?? '',
         webhook_url: '',
@@ -173,18 +191,18 @@ function DiscordSection({ board }: { board: Board }) {
     function save(e: React.FormEvent) {
         e.preventDefault();
         if (webhook) {
-            form.put(discord.update(board).url, { preserveScroll: true });
+            form.put(discord.update({ board: boardRouteKey }).url, { preserveScroll: true });
         } else {
-            form.post(discord.store(board).url, { preserveScroll: true });
+            form.post(discord.store({ board: boardRouteKey }).url, { preserveScroll: true });
         }
     }
 
     function remove() {
-        router.delete(discord.destroy(board).url, { preserveScroll: true });
+        router.delete(discord.destroy({ board: boardRouteKey }).url, { preserveScroll: true });
     }
 
     function sendTest() {
-        router.post(discord.test(board).url, {}, { preserveScroll: true });
+        router.post(discord.test({ board: boardRouteKey }).url, {}, { preserveScroll: true });
     }
 
     return (
