@@ -20,7 +20,7 @@ return new class extends Migration
             $table->timestamp('archived_at')->nullable();
             $table->timestamps();
 
-            $table->index(['project_id', 'document_folder_id', 'archived_at']);
+            $table->index(['project_id', 'document_folder_id', 'archived_at'], 'proj_docs_proj_folder_arch_idx');
         });
     }
 
