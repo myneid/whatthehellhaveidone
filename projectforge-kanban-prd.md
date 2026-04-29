@@ -1381,12 +1381,12 @@ Suggested MCP tools are listed below.
 
 Suggested readable resources:
 
-- `projectforge://projects/{project_id}`
-- `projectforge://boards/{board_id}`
-- `projectforge://cards/{card_id}`
-- `projectforge://documents/{document_id}`
-- `projectforge://worklog/users/{user_id}/daily/{date}`
-- `projectforge://exports/boards/{board_id}`
+- `whhid://projects/{project_id}`
+- `whhid://boards/{board_id}`
+- `whhid://cards/{card_id}`
+- `whhid://documents/{document_id}`
+- `whhid://worklog/users/{user_id}/daily/{date}`
+- `whhid://exports/boards/{board_id}`
 
 Resources should only expose data the authenticated user or token is allowed to view.
 

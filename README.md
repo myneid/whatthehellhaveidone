@@ -161,7 +161,7 @@ php artisan reverb:start
 
 ## MCP Server (AI Agent Access)
 
-The MCP server is available at `/mcp/projectforge`. It requires a Sanctum API token.
+The MCP server is available at `/mcp/whhid`. It requires a Sanctum API token.
 
 1. Log in and go to **Settings → API Tokens** (or create one programmatically).
 2. Configure your AI client (e.g. Claude Desktop) to connect:
@@ -171,7 +171,7 @@ The MCP server is available at `/mcp/projectforge`. It requires a Sanctum API to
   "mcpServers": {
     "projectforge": {
       "command": "npx",
-      "args": ["-y", "mcp-remote", "https://your-app.com/mcp/projectforge"],
+      "args": ["-y", "mcp-remote", "https://your-app.com/mcp/whhid"],
       "headers": {
         "Authorization": "Bearer YOUR_TOKEN_HERE"
       }

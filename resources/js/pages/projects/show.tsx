@@ -1,16 +1,19 @@
-import { Head, useForm } from '@inertiajs/react';
+import { Head, router, useForm } from '@inertiajs/react';
 import { Link } from '@inertiajs/react';
-import { KanbanSquare, Plus, Users } from 'lucide-react';
+import { KanbanSquare, Mail, Plus, Trash2, Users } from 'lucide-react';
 import { useState } from 'react';
 import { Button } from '@/components/ui/button';
 import { Dialog, DialogContent, DialogFooter, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
+import { Separator } from '@/components/ui/separator';
 import { dashboard } from '@/routes';
 import * as boards from '@/routes/boards';
+import * as projectMembers from '@/routes/projects/members';
+import * as shallowMembers from '@/routes/members';
 import * as projects from '@/routes/projects';
 import type { BreadcrumbItem } from '@/types';
-import type { Board, Project } from '@/types/app';
+import type { Board, Project, ProjectMember } from '@/types/app';
 
 type Props = {
     project: Project;
@@ -65,8 +68,52 @@ function CreateBoardDialog({ open, onClose, projectId }: { open: boolean; onClos
     );
 }
 
+function InviteMemberForm({ project }: { project: Project }) {
+    const form = useForm({ email: '', role: 'member' });
+
+    function submit(e: React.FormEvent) {
+        e.preventDefault();
+        form.post(projectMembers.store({ project: project.id }).url, {
+            preserveScroll: true,
+            onSuccess: () => form.reset(),
+        });
+    }
+
+    return (
+        <form onSubmit={submit} className="flex gap-2 flex-wrap sm:flex-nowrap">
+            <Input
+                type="email"
+                placeholder="Email address"
+                value={form.data.email}
+                onChange={(e) => form.setData('email', e.target.value)}
+                className="flex-1"
+            />
+            <select
+                value={form.data.role}
+                onChange={(e) => form.setData('role', e.target.value)}
+                className="border-input bg-background rounded-md border px-3 py-2 text-sm"
+            >
+                <option value="admin">Admin</option>
+                <option value="member">Member</option>
+                <option value="viewer">Viewer</option>
+            </select>
+            <Button type="submit" size="sm" disabled={form.processing || !form.data.email}>
+                <Mail className="mr-1.5 h-4 w-4" />
+                Invite
+            </Button>
+            {form.errors.email && (
+                <p className="w-full text-xs text-destructive">{form.errors.email}</p>
+            )}
+        </form>
+    );
+}
+
 export default function ProjectShow({ project }: Props) {
     const [showCreateBoard, setShowCreateBoard] = useState(false);
+
+    function removeMember(member: ProjectMember) {
+        router.delete(shallowMembers.destroy(member.id).url, { preserveScroll: true });
+    }
 
     return (
         <>
@@ -146,27 +193,53 @@ export default function ProjectShow({ project }: Props) {
                     )}
                 </div>
 
+                <Separator />
+
                 {/* Members */}
-                {project.members && project.members.length > 0 && (
-                    <div>
-                        <h2 className="mb-3 text-lg font-semibold">Members</h2>
-                        <div className="flex flex-wrap gap-3">
-                            {project.members.map((member) => (
-                                <div key={member.id} className="flex items-center gap-2 rounded-lg border px-3 py-2">
-                                    {member.user?.avatar ? (
-                                        <img src={member.user.avatar} alt={member.user.name} className="h-6 w-6 rounded-full" />
-                                    ) : (
-                                        <div className="flex h-6 w-6 items-center justify-center rounded-full bg-primary text-xs font-medium text-primary-foreground">
-                                            {member.user?.name.charAt(0).toUpperCase()}
-                                        </div>
-                                    )}
-                                    <span className="text-sm">{member.user?.name}</span>
-                                    <span className="text-xs text-muted-foreground capitalize">{member.role}</span>
-                                </div>
-                            ))}
-                        </div>
+                <div>
+                    <div className="mb-4 flex items-center gap-2">
+                        <Users className="h-5 w-5" />
+                        <h2 className="text-lg font-semibold">Members</h2>
                     </div>
-                )}
+
+                    <div className="mb-4">
+                        <p className="mb-2 text-sm text-muted-foreground">
+                            Invite someone by email. If they don't have an account yet, they'll receive an invitation link.
+                        </p>
+                        <InviteMemberForm project={project} />
+                    </div>
+
+                    <div className="space-y-2">
+                        {project.members?.map((member) => (
+                            <div key={member.id} className="flex items-center justify-between rounded-lg border px-4 py-2.5">
+                                <div className="flex items-center gap-3">
+                                    <div className="flex h-8 w-8 items-center justify-center rounded-full bg-primary text-xs font-medium text-primary-foreground">
+                                        {member.user?.name.charAt(0).toUpperCase()}
+                                    </div>
+                                    <div>
+                                        <p className="text-sm font-medium">{member.user?.name}</p>
+                                        <p className="text-xs text-muted-foreground">{member.user?.email}</p>
+                                    </div>
+                                </div>
+                                <div className="flex items-center gap-2">
+                                    <span className="rounded-full bg-muted px-2 py-0.5 text-xs text-muted-foreground capitalize">
+                                        {member.role}
+                                    </span>
+                                    {member.role !== 'owner' && (
+                                        <Button
+                                            size="icon"
+                                            variant="ghost"
+                                            className="h-7 w-7 text-muted-foreground hover:text-destructive"
+                                            onClick={() => removeMember(member)}
+                                        >
+                                            <Trash2 className="h-3.5 w-3.5" />
+                                        </Button>
+                                    )}
+                                </div>
+                            </div>
+                        ))}
+                    </div>
+                </div>
             </div>
 
             <CreateBoardDialog open={showCreateBoard} onClose={() => setShowCreateBoard(false)} projectId={project.id} />

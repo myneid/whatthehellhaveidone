@@ -13,8 +13,8 @@ use App\Http\Controllers\DiscordWebhookController;
 use App\Http\Controllers\DocumentFolderController;
 use App\Http\Controllers\GithubController;
 use App\Http\Controllers\GithubWebhookController;
+use App\Http\Controllers\InvitationController;
 use App\Http\Controllers\LabelController;
-use App\Http\Controllers\McpTokenController;
 use App\Http\Controllers\ProjectController;
 use App\Http\Controllers\ProjectDocumentController;
 use App\Http\Controllers\ProjectMemberController;
@@ -26,6 +26,19 @@ use Laravel\Fortify\Features;
 Route::inertia('/', 'welcome', [
     'canRegister' => Features::enabled(Features::registration()),
 ])->name('home');
+
+// Documentation (public)
+Route::prefix('docs')->name('docs.')->group(function () {
+    Route::inertia('/', 'docs/index')->name('index');
+    Route::inertia('/getting-started', 'docs/getting-started')->name('getting-started');
+    Route::inertia('/boards', 'docs/boards')->name('boards');
+    Route::inertia('/github', 'docs/github')->name('github');
+    Route::inertia('/discord', 'docs/discord')->name('discord');
+    Route::inertia('/trello-import', 'docs/trello-import')->name('trello-import');
+    Route::inertia('/work-log', 'docs/work-log')->name('work-log');
+    Route::inertia('/mcp-setup', 'docs/mcp-setup')->name('mcp-setup');
+    Route::inertia('/mcp-tools', 'docs/mcp-setup')->name('mcp-tools');
+});
 
 Route::middleware(['auth', 'verified'])->group(function () {
     Route::get('dashboard', [ProjectController::class, 'index'])->name('dashboard');
@@ -88,9 +101,11 @@ Route::middleware(['auth', 'verified'])->group(function () {
     Route::resource('projects.documents', ProjectDocumentController::class)->shallow()->except(['create', 'edit']);
     Route::get('documents/{document}/edit', [ProjectDocumentController::class, 'edit'])->name('documents.edit');
 
-    // MCP Tokens
-    Route::resource('mcp-tokens', McpTokenController::class)->except(['create', 'edit', 'show']);
 });
+
+// Invitations (token-based, public show; accept requires auth)
+Route::get('invitations/{token}/accept', [InvitationController::class, 'show'])->name('invitations.show');
+Route::post('invitations/{token}/accept', [InvitationController::class, 'accept'])->name('invitations.accept');
 
 // GitHub webhook (public, signature verified)
 Route::post('webhooks/github', [GithubWebhookController::class, 'handle'])->name('webhooks.github');

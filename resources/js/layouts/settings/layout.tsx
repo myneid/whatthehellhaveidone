@@ -7,6 +7,7 @@ import { useCurrentUrl } from '@/hooks/use-current-url';
 import { cn, toUrl } from '@/lib/utils';
 import { edit as editAppearance } from '@/routes/appearance';
 import { edit as editIntegrations } from '@/routes/integrations';
+import { index as mcpTokensIndex } from '@/routes/mcp-tokens';
 import { edit } from '@/routes/profile';
 import { edit as editSecurity } from '@/routes/security';
 import type { NavItem } from '@/types';
@@ -30,6 +31,11 @@ const sidebarNavItems: NavItem[] = [
     {
         title: 'Integrations',
         href: editIntegrations(),
+        icon: null,
+    },
+    {
+        title: 'MCP Tokens',
+        href: mcpTokensIndex(),
         icon: null,
     },
 ];

@@ -1,5 +1,6 @@
 <?php
 
+use App\Http\Controllers\McpTokenController;
 use App\Http\Controllers\Settings\IntegrationsController;
 use App\Http\Controllers\Settings\ProfileController;
 use App\Http\Controllers\Settings\SecurityController;
@@ -24,4 +25,8 @@ Route::middleware(['auth', 'verified'])->group(function () {
     Route::inertia('settings/appearance', 'settings/appearance')->name('appearance.edit');
 
     Route::get('settings/integrations', [IntegrationsController::class, 'edit'])->name('integrations.edit');
+
+    Route::get('mcp-tokens', [McpTokenController::class, 'index'])->name('mcp-tokens.index');
+    Route::post('mcp-tokens', [McpTokenController::class, 'store'])->name('mcp-tokens.store');
+    Route::delete('mcp-tokens/{mcp_token}', [McpTokenController::class, 'destroy'])->name('mcp-tokens.destroy');
 });
