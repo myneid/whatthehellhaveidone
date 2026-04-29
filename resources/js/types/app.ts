@@ -14,9 +14,20 @@ export type Project = {
     updated_at: string;
     owner?: User;
     members?: ProjectMember[];
+    invitations?: ProjectInvitation[];
     boards?: Board[];
     boards_count?: number;
     members_count?: number;
+};
+
+export type ProjectInvitation = {
+    id: number;
+    email: string;
+    role: 'admin' | 'member' | 'viewer';
+    expires_at: string | null;
+    is_expired: boolean;
+    accept_url: string;
+    inviter?: Pick<User, 'id' | 'name'> | null;
 };
 
 export type ProjectMember = {

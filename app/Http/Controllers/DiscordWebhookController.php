@@ -3,7 +3,6 @@
 namespace App\Http\Controllers;
 
 use App\Models\Board;
-use App\Models\DiscordWebhook;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Crypt;
@@ -17,13 +16,15 @@ class DiscordWebhookController extends Controller
 
         $request->validate([
             'webhook_url' => ['required', 'url'],
-            'event_settings' => ['nullable', 'array'],
+            'name' => ['nullable', 'string', 'max:100'],
+            'events' => ['nullable', 'array'],
         ]);
 
         $board->discordWebhook()->create([
+            'name' => $request->name ?? 'Discord',
             'encrypted_webhook_url' => Crypt::encryptString($request->webhook_url),
             'enabled' => true,
-            'event_settings' => $request->event_settings,
+            'event_settings' => $request->events ?? ['card.created', 'card.moved'],
         ]);
 
         return back()->with('success', 'Discord webhook configured.');
@@ -35,15 +36,22 @@ class DiscordWebhookController extends Controller
 
         $request->validate([
             'webhook_url' => ['sometimes', 'url'],
-            'enabled' => ['sometimes', 'boolean'],
-            'event_settings' => ['nullable', 'array'],
+            'name' => ['nullable', 'string', 'max:100'],
+            'is_active' => ['sometimes', 'boolean'],
+            'events' => ['nullable', 'array'],
         ]);
 
-        $data = array_filter([
-            'enabled' => $request->enabled,
-            'event_settings' => $request->event_settings,
-        ], fn ($v) => $v !== null);
+        $data = [];
 
+        if ($request->has('name')) {
+            $data['name'] = $request->name ?? 'Discord';
+        }
+        if ($request->has('is_active')) {
+            $data['enabled'] = $request->is_active;
+        }
+        if ($request->has('events')) {
+            $data['event_settings'] = $request->events;
+        }
         if ($request->webhook_url) {
             $data['encrypted_webhook_url'] = Crypt::encryptString($request->webhook_url);
         }
@@ -78,7 +86,7 @@ class DiscordWebhookController extends Controller
 
             return back()->with('success', 'Test message sent.');
         } catch (\Exception $e) {
-            return back()->withErrors(['Failed to send test message: ' . $e->getMessage()]);
+            return back()->withErrors(['Failed to send test message: '.$e->getMessage()]);
         }
     }
 }

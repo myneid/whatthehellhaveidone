@@ -2,9 +2,15 @@
 
 namespace App\Providers;
 
+use App\Events\CardCommented;
+use App\Events\CardCompleted;
+use App\Events\CardCreated;
+use App\Events\CardMoved;
+use App\Listeners\SendDiscordNotificationForCardEvent;
 use Carbon\CarbonImmutable;
 use Illuminate\Support\Facades\Date;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Event;
 use Illuminate\Support\ServiceProvider;
 use Illuminate\Validation\Rules\Password;
 
@@ -24,6 +30,14 @@ class AppServiceProvider extends ServiceProvider
     public function boot(): void
     {
         $this->configureDefaults();
+        $this->registerEventListeners();
+    }
+
+    protected function registerEventListeners(): void
+    {
+        foreach ([CardCreated::class, CardMoved::class, CardCompleted::class, CardCommented::class] as $event) {
+            Event::listen($event, SendDiscordNotificationForCardEvent::class);
+        }
     }
 
     /**

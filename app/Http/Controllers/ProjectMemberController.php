@@ -66,10 +66,26 @@ class ProjectMemberController extends Controller
             ],
         );
 
-        $invitation->load(['project', 'invitedBy']);
-        Mail::to($email)->queue(new ProjectInvitationMail($invitation));
+        $this->queueInvitation($invitation);
 
         return back()->with('success', "Invitation sent to {$email}.");
+    }
+
+    public function resend(Request $request, Project $project, Invitation $invitation): RedirectResponse
+    {
+        $this->authorize('update', $project);
+
+        abort_unless($invitation->project_id === $project->id && is_null($invitation->accepted_at), 404);
+
+        $invitation->update([
+            'invited_by' => $request->user()->id,
+            'token' => Str::random(64),
+            'expires_at' => now()->addDays(7),
+        ]);
+
+        $this->queueInvitation($invitation);
+
+        return back()->with('success', "Invitation resent to {$invitation->email}.");
     }
 
     public function update(Request $request, ProjectMember $projectMember): RedirectResponse
@@ -93,5 +109,12 @@ class ProjectMemberController extends Controller
         $projectMember->delete();
 
         return back()->with('success', 'Member removed.');
+    }
+
+    private function queueInvitation(Invitation $invitation): void
+    {
+        $invitation->loadMissing(['project', 'invitedBy']);
+
+        Mail::to($invitation->email)->queue(new ProjectInvitationMail($invitation));
     }
 }

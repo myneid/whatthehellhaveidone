@@ -46,6 +46,8 @@ Route::middleware(['auth', 'verified'])->group(function () {
     // Projects
     Route::resource('projects', ProjectController::class);
     Route::resource('projects.members', ProjectMemberController::class)->shallow();
+    Route::post('projects/{project}/invitations/{invitation}/resend', [ProjectMemberController::class, 'resend'])
+        ->name('projects.invitations.resend');
 
     // Standalone Boards
     Route::resource('boards', BoardController::class);

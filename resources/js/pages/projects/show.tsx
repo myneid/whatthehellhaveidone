@@ -1,19 +1,21 @@
 import { Head, router, useForm } from '@inertiajs/react';
 import { Link } from '@inertiajs/react';
-import { KanbanSquare, Mail, Plus, Trash2, Users } from 'lucide-react';
+import { Check, Copy, KanbanSquare, Mail, Plus, RefreshCw, Trash2, Users } from 'lucide-react';
 import { useState } from 'react';
 import { Button } from '@/components/ui/button';
 import { Dialog, DialogContent, DialogFooter, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Separator } from '@/components/ui/separator';
+import { useClipboard } from '@/hooks/use-clipboard';
 import { dashboard } from '@/routes';
 import * as boards from '@/routes/boards';
+import * as projectInvitations from '@/routes/projects/invitations';
 import * as projectMembers from '@/routes/projects/members';
 import * as shallowMembers from '@/routes/members';
 import * as projects from '@/routes/projects';
 import type { BreadcrumbItem } from '@/types';
-import type { Board, Project, ProjectMember } from '@/types/app';
+import type { Board, Project, ProjectInvitation, ProjectMember } from '@/types/app';
 
 type Props = {
     project: Project;
@@ -105,6 +107,100 @@ function InviteMemberForm({ project }: { project: Project }) {
                 <p className="w-full text-xs text-destructive">{form.errors.email}</p>
             )}
         </form>
+    );
+}
+
+function PendingInvitations({ project }: { project: Project }) {
+    const [copiedText, copy] = useClipboard();
+    const [resendingInvitationId, setResendingInvitationId] = useState<number | null>(null);
+
+    function resendInvitation(invitation: ProjectInvitation) {
+        router.post(
+            projectInvitations.resend({ project: project.id, invitation: invitation.id }).url,
+            {},
+            {
+                preserveScroll: true,
+                onStart: () => setResendingInvitationId(invitation.id),
+                onFinish: () => setResendingInvitationId(null),
+            },
+        );
+    }
+
+    if ((project.invitations?.length ?? 0) === 0) {
+        return null;
+    }
+
+    return (
+        <div className="mb-6 space-y-3">
+            <div className="flex items-center justify-between gap-3">
+                <div>
+                    <h3 className="text-sm font-semibold">Pending invitations</h3>
+                    <p className="text-xs text-muted-foreground">See who has been invited, resend the email, or copy their invite link.</p>
+                </div>
+                <span className="rounded-full bg-muted px-2 py-1 text-xs text-muted-foreground">
+                    {project.invitations?.length} pending
+                </span>
+            </div>
+
+            <div className="space-y-2">
+                {project.invitations?.map((invitation) => {
+                    const copied = copiedText === invitation.accept_url;
+                    const isResending = resendingInvitationId === invitation.id;
+
+                    return (
+                        <div key={invitation.id} className="flex flex-col gap-3 rounded-lg border px-4 py-3 sm:flex-row sm:items-center sm:justify-between">
+                            <div className="space-y-1">
+                                <div className="flex flex-wrap items-center gap-2">
+                                    <p className="text-sm font-medium">{invitation.email}</p>
+                                    <span className="rounded-full bg-muted px-2 py-0.5 text-xs text-muted-foreground capitalize">
+                                        {invitation.role}
+                                    </span>
+                                    <span
+                                        className={`rounded-full px-2 py-0.5 text-xs ${
+                                            invitation.is_expired
+                                                ? 'bg-destructive/10 text-destructive'
+                                                : 'bg-emerald-500/10 text-emerald-700 dark:text-emerald-300'
+                                        }`}
+                                    >
+                                        {invitation.is_expired ? 'Expired' : 'Pending'}
+                                    </span>
+                                </div>
+                                <p className="text-xs text-muted-foreground">
+                                    Invited by {invitation.inviter?.name ?? 'Unknown'}
+                                    {invitation.expires_at
+                                        ? ` • ${invitation.is_expired ? 'Expired' : 'Expires'} ${new Date(invitation.expires_at).toLocaleDateString()}`
+                                        : ''}
+                                </p>
+                            </div>
+
+                            <div className="flex flex-wrap items-center gap-2">
+                                <Button
+                                    type="button"
+                                    size="sm"
+                                    variant="outline"
+                                    onClick={() => {
+                                        void copy(invitation.accept_url);
+                                    }}
+                                >
+                                    {copied ? <Check className="mr-1.5 h-4 w-4" /> : <Copy className="mr-1.5 h-4 w-4" />}
+                                    {copied ? 'Copied' : 'Copy link'}
+                                </Button>
+                                <Button
+                                    type="button"
+                                    size="sm"
+                                    variant="outline"
+                                    disabled={isResending}
+                                    onClick={() => resendInvitation(invitation)}
+                                >
+                                    <RefreshCw className={`mr-1.5 h-4 w-4 ${isResending ? 'animate-spin' : ''}`} />
+                                    {isResending ? 'Resending...' : 'Resend'}
+                                </Button>
+                            </div>
+                        </div>
+                    );
+                })}
+            </div>
+        </div>
     );
 }
 
@@ -208,6 +304,8 @@ export default function ProjectShow({ project }: Props) {
                         </p>
                         <InviteMemberForm project={project} />
                     </div>
+
+                    <PendingInvitations project={project} />
 
                     <div className="space-y-2">
                         {project.members?.map((member) => (

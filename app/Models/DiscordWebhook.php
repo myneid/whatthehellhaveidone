@@ -8,7 +8,7 @@ use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 
-#[Fillable(['board_id', 'encrypted_webhook_url', 'enabled', 'event_settings', 'last_success_at', 'last_failed_at'])]
+#[Fillable(['board_id', 'name', 'encrypted_webhook_url', 'enabled', 'event_settings', 'last_success_at', 'last_failed_at'])]
 #[Hidden(['encrypted_webhook_url'])]
 class DiscordWebhook extends Model
 {
