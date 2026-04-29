@@ -1,5 +1,5 @@
 import { Link, usePage } from '@inertiajs/react';
-import { ClipboardList, LayoutGrid, Settings } from 'lucide-react';
+import { BookOpen, ClipboardList, LayoutGrid, Settings } from 'lucide-react';
 import AppLogo from '@/components/app-logo';
 import { NavFooter } from '@/components/nav-footer';
 import { NavMain } from '@/components/nav-main';
@@ -30,6 +30,11 @@ const mainNavItems: NavItem[] = [
 ];
 
 const footerNavItems: NavItem[] = [
+    {
+        title: 'Documentation',
+        href: '/docs',
+        icon: BookOpen,
+    },
     {
         title: 'Settings',
         href: '/settings/profile',
