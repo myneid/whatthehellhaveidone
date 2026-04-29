@@ -7,7 +7,6 @@ use App\Events\CardMoved;
 use App\Http\Requests\MoveCardRequest;
 use App\Http\Requests\StoreCardRequest;
 use App\Http\Requests\UpdateCardRequest;
-use App\Models\Board;
 use App\Models\BoardList;
 use App\Models\Card;
 use App\Models\User;
@@ -87,7 +86,7 @@ class CardController extends Controller
         return back();
     }
 
-    public function move(MoveCardRequest $request, Card $card): JsonResponse
+    public function move(MoveCardRequest $request, Card $card): RedirectResponse|JsonResponse
     {
         $this->authorize('update', $card);
 
@@ -104,7 +103,11 @@ class CardController extends Controller
 
         event(new CardMoved($card, $oldListId));
 
-        return response()->json(['success' => true]);
+        if ($request->expectsJson() || $request->wantsJson()) {
+            return response()->json(['success' => true]);
+        }
+
+        return back();
     }
 
     public function archive(Request $request, Card $card): RedirectResponse
