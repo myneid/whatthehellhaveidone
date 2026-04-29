@@ -21,12 +21,13 @@ class GithubController extends Controller
     {
         return Socialite::driver('github')
             ->scopes(['read:user', 'user:email', 'public_repo'])
+            ->stateless()
             ->redirect();
     }
 
     public function callback(Request $request): RedirectResponse
     {
-        $githubUser = Socialite::driver('github')->user();
+        $githubUser = Socialite::driver('github')->stateless()->user();
 
         GithubAccount::updateOrCreate(
             ['github_user_id' => (string) $githubUser->getId()],
