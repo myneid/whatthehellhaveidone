@@ -59,7 +59,7 @@ export default function DocsMcpSetup() {
     }
   }
 }`}</Code>
-            <p>Restart Claude Desktop after saving. You should see "ProjectForge" in the tools list.</p>
+            <p>Restart Claude Desktop after saving. You should see "whatthehellhaveidone" in the tools list.</p>
 
             <h3>Claude Code (CLI)</h3>
             <p>Add the server via the CLI:</p>

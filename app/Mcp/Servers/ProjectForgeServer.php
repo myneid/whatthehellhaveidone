@@ -17,9 +17,9 @@ use Laravel\Mcp\Server\Attributes\Instructions;
 use Laravel\Mcp\Server\Attributes\Name;
 use Laravel\Mcp\Server\Attributes\Version;
 
-#[Name('ProjectForge')]
+#[Name('whatthehellhaveidone')]
 #[Version('1.0.0')]
-#[Instructions('ProjectForge MCP server. Manage projects, boards, cards, work logs, and documents. All operations respect the authenticated user\'s permissions.')]
+#[Instructions('whatthehellhaveidone MCP server. Manage projects, boards, cards, work logs, and documents. All operations respect the authenticated user\'s permissions.')]
 class ProjectForgeServer extends Server
 {
     protected array $tools = [

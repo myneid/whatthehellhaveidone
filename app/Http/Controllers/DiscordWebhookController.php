@@ -81,7 +81,7 @@ class DiscordWebhookController extends Controller
         try {
             $url = Crypt::decryptString($webhook->encrypted_webhook_url);
             Http::post($url, [
-                'content' => "✅ **ProjectForge Test**\nWebhook configured successfully for board: **{$board->name}**",
+                'content' => "✅ **WHHID Test**\nWebhook configured successfully for board: **{$board->name}**",
             ]);
 
             return back()->with('success', 'Test message sent.');

@@ -74,7 +74,7 @@ class BoardExportController extends Controller
             'discord' => $board->discordWebhook ? ['enabled' => $board->discordWebhook->enabled] : null,
         ];
 
-        $filename = "projectforge-board-{$board->slug}-" . now()->format('Y-m-d') . '.json';
+        $filename = "whhid-board-{$board->slug}-" . now()->format('Y-m-d') . '.json';
 
         return response(json_encode($export, JSON_PRETTY_PRINT))
             ->header('Content-Type', 'application/json')

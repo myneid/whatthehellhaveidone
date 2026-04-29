@@ -169,7 +169,7 @@ The MCP server is available at `/mcp/whhid`. It requires a Sanctum API token.
 ```json
 {
   "mcpServers": {
-    "projectforge": {
+    "whatthehellhaveidone": {
       "command": "npx",
       "args": ["-y", "mcp-remote", "https://your-app.com/mcp/whhid"],
       "headers": {
