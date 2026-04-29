@@ -31,7 +31,7 @@ class ProcessTrelloImport implements ShouldQueue
             $json = Storage::get($this->storagePath);
 
             if ($json === null) {
-                throw new \RuntimeException('Trello import file not found or could not be read.');
+                throw new \RuntimeException("Trello import file not found or could not be read: {$this->storagePath}");
             }
 
             $data = json_decode($json, true);

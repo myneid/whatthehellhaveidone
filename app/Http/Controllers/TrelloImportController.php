@@ -7,6 +7,7 @@ use App\Models\Board;
 use App\Models\TrelloImport;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Storage;
 use Inertia\Inertia;
 use Inertia\Response;
 
@@ -38,7 +39,13 @@ class TrelloImportController extends Controller
 
         // Store JSON for processing
         $path = "trello-imports/{$import->id}.json";
-        \Illuminate\Support\Facades\Storage::put($path, $json);
+        $stored = Storage::put($path, $json);
+
+        if (! $stored) {
+            $import->delete();
+
+            return back()->withErrors(['file' => 'Failed to store the import file. Please try again.']);
+        }
 
         ProcessTrelloImport::dispatch($import, $path);
 
