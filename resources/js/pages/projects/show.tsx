@@ -1,6 +1,6 @@
 import { Head, router, useForm } from '@inertiajs/react';
 import { Link } from '@inertiajs/react';
-import { Check, Copy, KanbanSquare, Mail, Plus, RefreshCw, Trash2, Users } from 'lucide-react';
+import { Check, Copy, FileText, KanbanSquare, Mail, Plus, RefreshCw, Trash2, Users } from 'lucide-react';
 import { useState } from 'react';
 import { Button } from '@/components/ui/button';
 import { Dialog, DialogContent, DialogFooter, DialogHeader, DialogTitle } from '@/components/ui/dialog';
@@ -10,6 +10,7 @@ import { Separator } from '@/components/ui/separator';
 import { useClipboard } from '@/hooks/use-clipboard';
 import { dashboard } from '@/routes';
 import * as boards from '@/routes/boards';
+import * as projectDocRoutes from '@/routes/projects/documents';
 import * as projectMembers from '@/routes/projects/members';
 import * as shallowMembers from '@/routes/members';
 import * as projects from '@/routes/projects';
@@ -290,6 +291,24 @@ export default function ProjectShow({ project }: Props) {
                             ))}
                         </div>
                     )}
+                </div>
+
+                <Separator />
+
+                {/* Documents */}
+                <div>
+                    <div className="mb-3 flex items-center justify-between">
+                        <h2 className="text-lg font-semibold">Documents</h2>
+                        <Button size="sm" variant="outline" asChild>
+                            <Link href={projectDocRoutes.index(project).url}>
+                                <FileText className="mr-1 h-4 w-4" />
+                                Open Repository
+                            </Link>
+                        </Button>
+                    </div>
+                    <p className="text-sm text-muted-foreground">
+                        Store notes, specs, and documentation for this project. Supports Markdown with folder organisation.
+                    </p>
                 </div>
 
                 <Separator />
