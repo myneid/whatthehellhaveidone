@@ -46,7 +46,7 @@ function FolderTree({ folders, selectedId, onSelect, projectId }: {
 }) {
     function deleteFolder(folder: DocumentFolder) {
         if (!confirm(`Delete folder "${folder.name}"?`)) return;
-        router.delete(folderShallowRoutes.destroy(folder.id).url, { preserveScroll: true });
+        router.delete(folderShallowRoutes.destroy(folder.slug).url, { preserveScroll: true });
     }
 
     return (
@@ -207,7 +207,7 @@ export default function DocumentsIndex({ project, documents, folders, filters }:
                                 {documents.map((doc) => (
                                     <Link
                                         key={doc.id}
-                                        href={documentRoutes.edit(doc).url}
+                                        href={documentRoutes.edit(doc.slug).url}
                                         className="flex items-start justify-between rounded-lg border bg-card px-4 py-3 hover:bg-accent transition-colors"
                                     >
                                         <div className="flex items-start gap-3 min-w-0">

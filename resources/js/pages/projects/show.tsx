@@ -79,7 +79,7 @@ function InviteMemberForm({ project }: { project: Project }) {
 
     function submit(e: React.FormEvent) {
         e.preventDefault();
-        form.post(projectMembers.store({ project: project.id }).url, {
+        form.post(projectMembers.store(project).url, {
             preserveScroll: true,
             onSuccess: () => form.reset(),
         });

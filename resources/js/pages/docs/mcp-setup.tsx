@@ -50,12 +50,11 @@ export default function DocsMcpSetup() {
       "command": "npx",
       "args": [
         "-y",
-        "@modelcontextprotocol/server-fetch",
-        "https://whatthehellhaveidone.net/mcp/whhid"
-      ],
-      "env": {
-        "MCP_BEARER_TOKEN": "YOUR_TOKEN_HERE"
-      }
+        "mcp-remote",
+        "https://whatthehellhaveidone.net/mcp/whhid",
+        "--header",
+        "Authorization:Bearer YOUR_TOKEN_HERE"
+      ]
     }
   }
 }`}</Code>

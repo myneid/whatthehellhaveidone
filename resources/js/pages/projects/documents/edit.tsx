@@ -38,7 +38,7 @@ export default function DocumentEdit({ document, project }: Props) {
         if (saveTimer.current) clearTimeout(saveTimer.current);
         const doSave = () => {
             setSaving(true);
-            router.put(documentRoutes.update(document).url, { title, markdown_body: body }, {
+            router.put(documentRoutes.update(document.slug).url, { title, markdown_body: body }, {
                 preserveScroll: true,
                 onSuccess: () => { setSaving(false); setSaved(true); setTimeout(() => setSaved(false), 2000); },
                 onError: () => setSaving(false),
@@ -81,7 +81,7 @@ export default function DocumentEdit({ document, project }: Props) {
                             Save
                         </Button>
                         <Button size="sm" variant="ghost" asChild>
-                            <a href={documentRoutes.show(document).url} target="_blank" rel="noopener noreferrer">
+                            <a href={documentRoutes.show(document.slug).url} target="_blank" rel="noopener noreferrer">
                                 <Eye className="mr-1.5 h-3.5 w-3.5" />
                                 Preview
                             </a>

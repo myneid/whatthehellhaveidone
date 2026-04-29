@@ -43,7 +43,7 @@ export default function DocumentShow({ document, project }: Props) {
                         </p>
                     </div>
                     <Button size="sm" variant="outline" asChild>
-                        <a href={documentRoutes.edit(document).url}>
+                        <a href={documentRoutes.edit(document.slug).url}>
                             <Pencil className="mr-1.5 h-3.5 w-3.5" />
                             Edit
                         </a>
