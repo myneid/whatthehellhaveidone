@@ -15,7 +15,7 @@ class GetDocumentTool extends Tool
     {
         $request->validate(['document_id' => ['required', 'integer']]);
 
-        $document = ProjectDocument::with(['project', 'folder', 'creator'])->findOrFail($request->input('document_id'));
+        $document = ProjectDocument::with(['project', 'folder', 'creator'])->findOrFail($request->get('document_id'));
         $user = $request->user();
 
         if (! $user->can('view', $document->project)) {

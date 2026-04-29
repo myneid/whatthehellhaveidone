@@ -16,7 +16,7 @@ class ListCardsTool extends Tool
     {
         $request->validate(['board_id' => ['required', 'integer']]);
 
-        $board = Board::findOrFail($request->input('board_id'));
+        $board = Board::findOrFail($request->get('board_id'));
         $user = $request->user();
 
         if (! $user->can('view', $board)) {
@@ -25,8 +25,8 @@ class ListCardsTool extends Tool
 
         $cards = Card::where('board_id', $board->id)
             ->whereNull('archived_at')
-            ->when($request->input('list_id'), fn ($q, $id) => $q->where('list_id', $id))
-            ->when($request->input('priority'), fn ($q, $p) => $q->where('priority', $p))
+            ->when($request->get('list_id'), fn ($q, $id) => $q->where('list_id', $id))
+            ->when($request->get('priority'), fn ($q, $p) => $q->where('priority', $p))
             ->with(['list:id,name', 'assignees:id,name', 'labels:id,name,color'])
             ->orderBy('position')
             ->get(['id', 'title', 'description', 'priority', 'due_at', 'completed_at', 'list_id', 'position']);

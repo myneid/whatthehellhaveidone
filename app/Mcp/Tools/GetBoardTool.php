@@ -15,7 +15,7 @@ class GetBoardTool extends Tool
     {
         $request->validate(['board_id' => ['required', 'integer']]);
 
-        $board = Board::findOrFail($request->input('board_id'));
+        $board = Board::findOrFail($request->get('board_id'));
         $user = $request->user();
 
         if (! $user->can('view', $board)) {

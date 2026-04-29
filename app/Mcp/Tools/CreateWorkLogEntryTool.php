@@ -18,13 +18,13 @@ class CreateWorkLogEntryTool extends Tool
         $request->validate(['body' => ['required', 'string']]);
 
         $entry = $this->workLogService->logFromHashtags(
-            $request->input('body'),
+            $request->get('body'),
             $request->user(),
             array_filter([
-                'project_id' => $request->input('project_id'),
-                'card_id' => $request->input('card_id'),
-                'source' => $request->input('source', 'api'),
-                'reference_url' => $request->input('reference_url'),
+                'project_id' => $request->get('project_id'),
+                'card_id' => $request->get('card_id'),
+                'source' => $request->get('source', 'api'),
+                'reference_url' => $request->get('reference_url'),
             ])
         );
 

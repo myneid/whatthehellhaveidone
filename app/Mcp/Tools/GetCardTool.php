@@ -22,7 +22,7 @@ class GetCardTool extends Tool
             'comments.user:id,name',
             'checklists.items',
             'githubLink',
-        ])->findOrFail($request->input('card_id'));
+        ])->findOrFail($request->get('card_id'));
 
         $user = $request->user();
 

@@ -2,8 +2,8 @@
 
 namespace App\Mcp\Tools;
 
-use App\Models\Card;
 use App\Models\BoardList;
+use App\Models\Card;
 use App\Services\WorkLogService;
 use Laravel\Mcp\Request;
 use Laravel\Mcp\Response;
@@ -22,8 +22,8 @@ class MoveCardTool extends Tool
             'list_id' => ['required', 'integer'],
         ]);
 
-        $card = Card::findOrFail($request->input('card_id'));
-        $list = BoardList::findOrFail($request->input('list_id'));
+        $card = Card::findOrFail($request->get('card_id'));
+        $list = BoardList::findOrFail($request->get('list_id'));
         $user = $request->user();
 
         if (! $user->can('update', $card)) {

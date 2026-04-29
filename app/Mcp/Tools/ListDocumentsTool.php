@@ -16,7 +16,7 @@ class ListDocumentsTool extends Tool
     {
         $request->validate(['project_id' => ['required', 'integer']]);
 
-        $project = Project::findOrFail($request->input('project_id'));
+        $project = Project::findOrFail($request->get('project_id'));
         $user = $request->user();
 
         if (! $user->can('view', $project)) {
@@ -25,8 +25,8 @@ class ListDocumentsTool extends Tool
 
         $documents = ProjectDocument::where('project_id', $project->id)
             ->whereNull('archived_at')
-            ->when($request->input('folder_id'), fn ($q, $id) => $q->where('document_folder_id', $id))
-            ->when($request->input('search'), fn ($q, $s) => $q->where('title', 'like', "%{$s}%"))
+            ->when($request->get('folder_id'), fn ($q, $id) => $q->where('document_folder_id', $id))
+            ->when($request->get('search'), fn ($q, $s) => $q->where('title', 'like', "%{$s}%"))
             ->with(['folder:id,name', 'creator:id,name'])
             ->get(['id', 'title', 'slug', 'document_folder_id', 'creator_id', 'created_at', 'updated_at']);
 

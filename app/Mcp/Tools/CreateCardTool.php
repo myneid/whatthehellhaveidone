@@ -2,7 +2,6 @@
 
 namespace App\Mcp\Tools;
 
-use App\Models\Board;
 use App\Models\BoardList;
 use App\Models\Card;
 use App\Services\WorkLogService;
@@ -25,7 +24,7 @@ class CreateCardTool extends Tool
             'priority' => ['nullable', 'in:low,medium,high,urgent'],
         ]);
 
-        $list = BoardList::findOrFail($request->input('list_id'));
+        $list = BoardList::findOrFail($request->get('list_id'));
         $user = $request->user();
 
         if (! $user->can('update', $list->board)) {
@@ -38,9 +37,9 @@ class CreateCardTool extends Tool
             'board_id' => $list->board_id,
             'list_id' => $list->id,
             'creator_id' => $user->id,
-            'title' => $request->input('title'),
-            'description' => $request->input('description'),
-            'priority' => $request->input('priority', 'medium'),
+            'title' => $request->get('title'),
+            'description' => $request->get('description'),
+            'priority' => $request->get('priority', 'medium'),
             'position' => $position + 1,
         ]);
 
