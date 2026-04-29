@@ -39,6 +39,7 @@ class TrelloImportController extends Controller
 
         // Store JSON for processing
         $path = "trello-imports/{$import->id}.json";
+        Storage::makeDirectory('trello-imports');
         $stored = Storage::put($path, $json);
 
         if (! $stored) {
