@@ -21,7 +21,7 @@ class GithubController extends Controller
     public function redirect(): RedirectResponse
     {
         return Socialite::driver('github')
-            ->scopes(['read:user', 'user:email', 'public_repo'])
+            ->scopes(['read:user', 'user:email', 'repo'])
             ->stateless()
             ->redirect();
     }
