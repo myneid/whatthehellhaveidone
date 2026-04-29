@@ -10,7 +10,6 @@ import { Separator } from '@/components/ui/separator';
 import { useClipboard } from '@/hooks/use-clipboard';
 import { dashboard } from '@/routes';
 import * as boards from '@/routes/boards';
-import * as projectInvitations from '@/routes/projects/invitations/index';
 import * as projectMembers from '@/routes/projects/members';
 import * as shallowMembers from '@/routes/members';
 import * as projects from '@/routes/projects';
@@ -20,6 +19,10 @@ import type { Board, Project, ProjectInvitation, ProjectMember } from '@/types/a
 type Props = {
     project: Project;
 };
+
+function projectInvitationResendUrl(projectId: number, invitationId: number): string {
+    return `/projects/${projectId}/invitations/${invitationId}/resend`;
+}
 
 function CreateBoardDialog({ open, onClose, projectId }: { open: boolean; onClose: () => void; projectId: number }) {
     const form = useForm({ name: '', description: '', visibility: 'team', project_id: projectId });
@@ -116,7 +119,7 @@ function PendingInvitations({ project }: { project: Project }) {
 
     function resendInvitation(invitation: ProjectInvitation) {
         router.post(
-            projectInvitations.resend({ project: project.id, invitation: invitation.id }).url,
+            projectInvitationResendUrl(project.id, invitation.id),
             {},
             {
                 preserveScroll: true,
