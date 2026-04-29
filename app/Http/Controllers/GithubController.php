@@ -9,6 +9,7 @@ use App\Models\Board;
 use App\Models\BoardGithubRepository;
 use App\Models\Card;
 use App\Models\GithubAccount;
+use Illuminate\Http\JsonResponse;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Crypt;
@@ -34,7 +35,7 @@ class GithubController extends Controller
                 'username' => $githubUser->getNickname(),
                 'avatar_url' => $githubUser->getAvatar(),
                 'encrypted_access_token' => Crypt::encryptString($githubUser->token),
-                'scopes' => explode(',', $githubUser->approvedScopes ?? ''),
+                'scopes' => $githubUser->approvedScopes ?? [],
                 'revoked_at' => null,
             ]
         );
@@ -50,7 +51,7 @@ class GithubController extends Controller
         return back()->with('success', 'GitHub account disconnected.');
     }
 
-    public function repositories(Request $request, Board $board): \Illuminate\Http\JsonResponse
+    public function repositories(Request $request, Board $board): JsonResponse
     {
         $this->authorize('update', $board);
 
