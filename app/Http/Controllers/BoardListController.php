@@ -25,9 +25,9 @@ class BoardListController extends Controller
         return back();
     }
 
-    public function update(Request $request, BoardList $boardList): RedirectResponse|JsonResponse
+    public function update(Request $request, BoardList $list): RedirectResponse|JsonResponse
     {
-        $this->authorize('update', $boardList->board);
+        $this->authorize('update', $list->board);
 
         $request->validate([
             'name' => ['sometimes', 'required', 'string', 'max:255'],
@@ -38,15 +38,15 @@ class BoardListController extends Controller
         $attributes = $request->only(['name', 'wip_limit']);
 
         if ($request->has('position')) {
-            $board = $boardList->board;
+            $board = $list->board;
             $position = (int) $request->integer('position');
             $maxPosition = $board->lists()->whereNull('archived_at')->count();
             $targetPosition = max(1, min($position, $maxPosition));
 
-            DB::transaction(function () use ($board, $boardList, $targetPosition, $attributes): void {
+            DB::transaction(function () use ($board, $list, $targetPosition, $attributes): void {
                 $remainingLists = $board->lists()
                     ->whereNull('archived_at')
-                    ->whereKeyNot($boardList->id)
+                    ->whereKeyNot($list->id)
                     ->orderBy('position')
                     ->get();
 
@@ -60,29 +60,29 @@ class BoardListController extends Controller
                     $nextPosition++;
                 }
 
-                $boardList->update([
+                $list->update([
                     ...$attributes,
                     'position' => $targetPosition,
                 ]);
             });
         } else {
-            $boardList->update($attributes);
+            $list->update($attributes);
         }
 
         if ($request->wantsJson()) {
-            return response()->json(['list' => $boardList->fresh()]);
+            return response()->json(['list' => $list->fresh()]);
         }
 
         return back();
     }
 
-    public function destroy(BoardList $boardList): RedirectResponse
+    public function destroy(BoardList $list): RedirectResponse
     {
-        $this->authorize('update', $boardList->board);
+        $this->authorize('update', $list->board);
 
-        DB::transaction(function () use ($boardList): void {
-            $board = $boardList->board;
-            $boardList->update(['archived_at' => now()]);
+        DB::transaction(function () use ($list): void {
+            $board = $list->board;
+            $list->update(['archived_at' => now()]);
 
             $activeLists = $board->lists()->whereNull('archived_at')->orderBy('position')->get();
             foreach ($activeLists as $index => $list) {
