@@ -37,7 +37,7 @@ function GitHubSection({ board, githubAccounts }: { board: Board; githubAccounts
 
     function syncRepos() {
         if (!selectedAccount) return;
-        router.post(github.syncRepos({ githubAccount: selectedAccount.id }).url, {}, { preserveScroll: true });
+        router.post(`/github/${selectedAccount.id}/sync-repos`, {}, { preserveScroll: true });
     }
 
     function connectRepo() {
