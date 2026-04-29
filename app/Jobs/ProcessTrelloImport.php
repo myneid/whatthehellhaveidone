@@ -109,6 +109,21 @@ class ProcessTrelloImport implements ShouldQueue
                 continue;
             }
 
+            if ($normalizedName !== '') {
+                $matchedList = $board->lists()
+                    ->whereNull('archived_at')
+                    ->whereRaw('LOWER(TRIM(name)) = ?', [$normalizedName])
+                    ->orderBy('position')
+                    ->first();
+
+                if ($matchedList) {
+                    $listMap[$trelloList['id']] = $matchedList->id;
+                    $existingListNameMap[$normalizedName] = $matchedList;
+
+                    continue;
+                }
+            }
+
             $list = BoardList::create([
                 'board_id' => $board->id,
                 'name' => $trelloList['name'],
@@ -229,7 +244,8 @@ class ProcessTrelloImport implements ShouldQueue
 
     private function normalizeListName(string $name): string
     {
-        $normalized = preg_replace('/\s+/', ' ', trim($name));
+        $normalized = str_replace("\u{00A0}", ' ', $name);
+        $normalized = preg_replace('/[\pZ\h\v]+/u', ' ', trim($normalized));
 
         return mb_strtolower($normalized ?? '');
     }

@@ -13,7 +13,7 @@ import { SortableContext, arrayMove, horizontalListSortingStrategy, useSortable,
 import { CSS } from '@dnd-kit/utilities';
 import { Head, router, useForm } from '@inertiajs/react';
 import { GripVertical, Plus, Settings, Trash2, X } from 'lucide-react';
-import { useCallback, useMemo, useState } from 'react';
+import { useCallback, useEffect, useMemo, useState } from 'react';
 import { BoardSettingsSheet } from '@/components/boards/board-settings-sheet';
 import { CardModal } from '@/components/boards/card-modal';
 import { Button } from '@/components/ui/button';
@@ -279,6 +279,10 @@ export default function BoardShow({ board, githubAccounts }: Props) {
         useSensor(PointerSensor, { activationConstraint: { distance: 5 } }),
     );
 
+    useEffect(() => {
+        setLists(board.lists ?? []);
+    }, [board.lists]);
+
     function findCard(id: string): { card: Card; listId: number } | null {
         for (const list of lists) {
             for (const card of list.cards ?? []) {
@@ -425,10 +429,18 @@ export default function BoardShow({ board, githubAccounts }: Props) {
             return;
         }
 
-        router.delete(listRoutes.destroy(list).url, {
+        const previousLists = lists;
+        setLists((prev) => prev
+            .filter((currentList) => currentList.id !== list.id)
+            .map((currentList, index) => ({ ...currentList, position: index + 1 })));
+
+        router.delete(listRoutes.destroy(list.id).url, {
             preserveScroll: true,
+            onError: () => {
+                setLists(previousLists);
+            },
         });
-    }, []);
+    }, [lists]);
 
     function openCard(card: Card) {
         // Find the latest version of the card from our state
