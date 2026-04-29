@@ -11,7 +11,7 @@ return new class extends Migration
      */
     public function up(): void
     {
-        Schema::table('text', function (Blueprint $table) {
+        Schema::table('checklist_items', function (Blueprint $table) {
             $table->text('name')->change();
         });
 
