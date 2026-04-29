@@ -10,7 +10,7 @@ import { Separator } from '@/components/ui/separator';
 import { useClipboard } from '@/hooks/use-clipboard';
 import { dashboard } from '@/routes';
 import * as boards from '@/routes/boards';
-import * as projectInvitations from '@/routes/projects/invitations';
+import * as projectInvitations from '@/routes/projects/invitations/index';
 import * as projectMembers from '@/routes/projects/members';
 import * as shallowMembers from '@/routes/members';
 import * as projects from '@/routes/projects';
