@@ -35,7 +35,7 @@ class DiscordWebhookController extends Controller
         $this->authorize('update', $board);
 
         $request->validate([
-            'webhook_url' => ['sometimes', 'url'],
+            'webhook_url' => ['nullable', 'url'],
             'name' => ['nullable', 'string', 'max:100'],
             'is_active' => ['sometimes', 'boolean'],
             'events' => ['nullable', 'array'],
