@@ -51,12 +51,12 @@ class BoardListController extends Controller
                     ->get();
 
                 $nextPosition = 1;
-                foreach ($remainingLists as $list) {
+                foreach ($remainingLists as $remainingList) {
                     if ($nextPosition === $targetPosition) {
                         $nextPosition++;
                     }
 
-                    $list->update(['position' => $nextPosition]);
+                    $remainingList->update(['position' => $nextPosition]);
                     $nextPosition++;
                 }
 
