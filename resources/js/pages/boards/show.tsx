@@ -12,8 +12,9 @@ import {
 import { SortableContext, arrayMove, useSortable, verticalListSortingStrategy } from '@dnd-kit/sortable';
 import { CSS } from '@dnd-kit/utilities';
 import { Head, router, useForm } from '@inertiajs/react';
-import { GripVertical, Plus, X } from 'lucide-react';
+import { GripVertical, Plus, Settings, X } from 'lucide-react';
 import { useCallback, useMemo, useState } from 'react';
+import { BoardSettingsSheet } from '@/components/boards/board-settings-sheet';
 import { CardModal } from '@/components/boards/card-modal';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -198,6 +199,7 @@ export default function BoardShow({ board, githubAccounts }: Props) {
     const [lists, setLists] = useState<BoardList[]>(board.lists ?? []);
     const [activeCard, setActiveCard] = useState<Card | null>(null);
     const [selectedCard, setSelectedCard] = useState<Card | null>(null);
+    const [showSettings, setShowSettings] = useState(false);
 
     const sensors = useSensors(
         useSensor(PointerSensor, { activationConstraint: { distance: 5 } }),
@@ -323,6 +325,12 @@ export default function BoardShow({ board, githubAccounts }: Props) {
                             {board.visibility}
                         </span>
                     )}
+                    <div className="ml-auto">
+                        <Button variant="ghost" size="sm" onClick={() => setShowSettings(true)}>
+                            <Settings className="mr-1.5 h-4 w-4" />
+                            Settings
+                        </Button>
+                    </div>
                 </div>
 
                 {/* Kanban */}
@@ -362,6 +370,13 @@ export default function BoardShow({ board, githubAccounts }: Props) {
                     onClose={() => setSelectedCard(null)}
                 />
             )}
+
+            <BoardSettingsSheet
+                board={board}
+                githubAccounts={githubAccounts}
+                open={showSettings}
+                onClose={() => setShowSettings(false)}
+            />
         </>
     );
 }

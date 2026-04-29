@@ -5,10 +5,8 @@ namespace App\Http\Controllers;
 use App\Http\Requests\StoreBoardRequest;
 use App\Http\Requests\UpdateBoardRequest;
 use App\Models\Board;
-use App\Models\Label;
 use App\Models\Project;
 use Illuminate\Http\RedirectResponse;
-use Illuminate\Http\Request;
 use Illuminate\Support\Str;
 use Inertia\Inertia;
 use Inertia\Response;
@@ -26,7 +24,7 @@ class BoardController extends Controller
         $board = Board::create([
             ...$request->validated(),
             'owner_id' => $request->user()->id,
-            'slug' => Str::slug($request->name) . '-' . Str::random(6),
+            'slug' => Str::slug($request->name).'-'.Str::random(6),
         ]);
 
         $board->members()->create([
@@ -65,6 +63,7 @@ class BoardController extends Controller
             'members.user',
             'labels',
             'discordWebhook',
+            'githubRepositories',
             'lists' => fn ($q) => $q->whereNull('archived_at')->orderBy('position')->with([
                 'cards' => fn ($q) => $q->whereNull('archived_at')->orderBy('position')->with([
                     'assignees',
@@ -75,7 +74,10 @@ class BoardController extends Controller
             ]),
         ]);
 
-        $githubAccounts = auth()->user()->githubAccounts()->with('repositories')->get();
+        $githubAccounts = auth()->user()->githubAccounts()
+            ->whereNull('revoked_at')
+            ->with('repositories')
+            ->get();
 
         return Inertia::render('boards/show', [
             'board' => $board,

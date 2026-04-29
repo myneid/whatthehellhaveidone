@@ -47,6 +47,7 @@ export type Board = {
     lists?: BoardList[];
     labels?: Label[];
     discord_webhook?: DiscordWebhook | null;
+    github_repositories?: (GithubRepository & { pivot?: { sync_direction: string } })[];
     cards_count?: number;
 };
 
@@ -187,6 +188,7 @@ export type GithubAccount = {
     login: string;
     name: string | null;
     avatar_url: string | null;
+    revoked_at: string | null;
     repositories?: GithubRepository[];
 };
 

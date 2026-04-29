@@ -68,7 +68,7 @@ class Board extends Model
     public function githubRepositories(): BelongsToMany
     {
         return $this->belongsToMany(GithubRepository::class, 'board_github_repositories')
-            ->withPivot(['sync_direction', 'status_mapping'])
+            ->withPivot(['id', 'sync_direction', 'status_mapping'])
             ->withTimestamps();
     }
 
