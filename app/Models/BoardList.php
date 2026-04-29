@@ -8,7 +8,7 @@ use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 
-#[Fillable(['board_id', 'name', 'position', 'wip_limit', 'archived_at'])]
+#[Fillable(['board_id', 'name', 'position', 'wip_limit', 'github_action', 'archived_at'])]
 class BoardList extends Model
 {
     protected function casts(): array

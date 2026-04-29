@@ -12,12 +12,14 @@ import {
 import { SortableContext, arrayMove, horizontalListSortingStrategy, useSortable, verticalListSortingStrategy } from '@dnd-kit/sortable';
 import { CSS } from '@dnd-kit/utilities';
 import { Head, router, useForm } from '@inertiajs/react';
-import { GripVertical, Plus, Settings, Trash2, X } from 'lucide-react';
+import { GripVertical, Plus, Settings, Trash2 } from 'lucide-react';
 import { useCallback, useEffect, useMemo, useState } from 'react';
 import { BoardSettingsSheet } from '@/components/boards/board-settings-sheet';
 import { CardModal } from '@/components/boards/card-modal';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
+import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { dashboard } from '@/routes';
 import * as boardRoutes from '@/routes/boards';
 import * as cardRoutes from '@/routes/cards';
@@ -204,6 +206,14 @@ function ListColumn({ list, board, allLists, onOpenCard, onDeleteList }: ListCol
         opacity: isDragging ? 0.5 : 1,
     };
 
+    function saveGithubAction(value: string) {
+        router.patch(
+            listRoutes.update(list).url,
+            { github_action: value === 'none' ? null : value },
+            { preserveScroll: true },
+        );
+    }
+
     return (
         <div ref={setNodeRef} style={style} className="flex h-full max-h-full w-72 shrink-0 flex-col rounded-lg border bg-muted/50">
             <div className="flex items-center justify-between px-3 py-2.5">
@@ -221,15 +231,40 @@ function ListColumn({ list, board, allLists, onOpenCard, onDeleteList }: ListCol
                 </div>
                 <div className="flex items-center gap-1">
                     <span className="text-xs text-muted-foreground">{list.cards?.length ?? 0}</span>
-                    <Button
-                        variant="ghost"
-                        size="icon"
-                        className="h-7 w-7 text-muted-foreground"
-                        onClick={() => onDeleteList(list)}
-                        aria-label={`Delete ${list.name}`}
-                    >
-                        <Trash2 className="h-4 w-4" />
-                    </Button>
+                    <Popover>
+                        <PopoverTrigger asChild>
+                            <Button variant="ghost" size="icon" className="h-7 w-7 text-muted-foreground" aria-label="Column settings">
+                                <Settings className="h-4 w-4" />
+                            </Button>
+                        </PopoverTrigger>
+                        <PopoverContent className="w-64 space-y-3 p-3" align="end">
+                            <div className="space-y-1.5">
+                                <p className="text-xs font-medium">When a card is moved here</p>
+                                <Select value={list.github_action ?? 'none'} onValueChange={saveGithubAction}>
+                                    <SelectTrigger className="h-8 text-xs">
+                                        <SelectValue />
+                                    </SelectTrigger>
+                                    <SelectContent>
+                                        <SelectItem value="none">Do nothing</SelectItem>
+                                        <SelectItem value="open_issue">Create GitHub issue</SelectItem>
+                                        <SelectItem value="close_issue">Close GitHub issue</SelectItem>
+                                        <SelectItem value="reopen_issue">Reopen GitHub issue</SelectItem>
+                                    </SelectContent>
+                                </Select>
+                            </div>
+                            <div className="border-t pt-2">
+                                <Button
+                                    variant="ghost"
+                                    size="sm"
+                                    className="h-7 w-full justify-start text-xs text-destructive hover:text-destructive"
+                                    onClick={() => onDeleteList(list)}
+                                >
+                                    <Trash2 className="mr-1.5 h-3.5 w-3.5" />
+                                    Delete column
+                                </Button>
+                            </div>
+                        </PopoverContent>
+                    </Popover>
                 </div>
             </div>
 

@@ -6,6 +6,7 @@ use App\Events\CardCommented;
 use App\Events\CardCompleted;
 use App\Events\CardCreated;
 use App\Events\CardMoved;
+use App\Listeners\ApplyListGithubActionOnCardMove;
 use App\Listeners\SendDiscordNotificationForCardEvent;
 use Carbon\CarbonImmutable;
 use Illuminate\Support\Facades\Date;
@@ -38,6 +39,8 @@ class AppServiceProvider extends ServiceProvider
         foreach ([CardCreated::class, CardMoved::class, CardCompleted::class, CardCommented::class] as $event) {
             Event::listen($event, SendDiscordNotificationForCardEvent::class);
         }
+
+        Event::listen(CardMoved::class, ApplyListGithubActionOnCardMove::class);
     }
 
     /**

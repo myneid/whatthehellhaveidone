@@ -33,9 +33,10 @@ class BoardListController extends Controller
             'name' => ['sometimes', 'required', 'string', 'max:255'],
             'position' => ['sometimes', 'integer', 'min:1'],
             'wip_limit' => ['nullable', 'integer', 'min:1'],
+            'github_action' => ['nullable', 'in:open_issue,close_issue,reopen_issue'],
         ]);
 
-        $attributes = $request->only(['name', 'wip_limit']);
+        $attributes = $request->only(['name', 'wip_limit', 'github_action']);
 
         if ($request->has('position')) {
             $board = $list->board;

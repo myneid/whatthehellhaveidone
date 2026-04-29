@@ -14,7 +14,8 @@
       "mcp__laravel-boost__last-error",
       "Bash(vendor/bin/pint *)",
       "Bash(grep -v \"Controller.php$\")",
-      "Bash(grep -v \"^.*Controller\\\\.php$\")"
+      "Bash(grep -v \"^.*Controller\\\\.php$\")",
+      "Bash(npx shadcn@latest add popover --yes)"
     ]
   },
   "enableAllProjectMcpServers": true,

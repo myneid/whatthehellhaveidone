@@ -77,6 +77,8 @@ export type BoardList = {
     board_id: number;
     name: string;
     position: number;
+    wip_limit: number | null;
+    github_action: 'open_issue' | 'close_issue' | 'reopen_issue' | null;
     archived_at: string | null;
     created_at: string;
     updated_at: string;
