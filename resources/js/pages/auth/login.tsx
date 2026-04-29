@@ -12,12 +12,14 @@ import { store } from '@/routes/login';
 import { request } from '@/routes/password';
 
 type Props = {
+    email?: string;
     status?: string;
     canResetPassword: boolean;
     canRegister: boolean;
 };
 
 export default function Login({
+    email,
     status,
     canResetPassword,
     canRegister,
@@ -40,6 +42,7 @@ export default function Login({
                                     id="email"
                                     type="email"
                                     name="email"
+                                    defaultValue={email}
                                     required
                                     autoFocus
                                     tabIndex={1}

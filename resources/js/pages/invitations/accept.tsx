@@ -68,10 +68,10 @@ export default function AcceptInvitation({ invitation }: Props) {
                                 Sign in or create an account to join this project.
                             </p>
                             <Button className="w-full" asChild>
-                                <a href={`/login?redirect=/invitations/${invitation.token}/accept`}>Sign In</a>
+                                <a href={`/invitations/${invitation.token}/accept?continue=login`}>Sign In</a>
                             </Button>
                             <Button variant="outline" className="w-full" asChild>
-                                <a href={`/register?email=${encodeURIComponent(invitation.email)}&redirect=/invitations/${invitation.token}/accept`}>
+                                <a href={`/invitations/${invitation.token}/accept?continue=register`}>
                                     Create Account
                                 </a>
                             </Button>

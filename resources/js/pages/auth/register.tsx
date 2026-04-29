@@ -9,7 +9,11 @@ import { Spinner } from '@/components/ui/spinner';
 import { login } from '@/routes';
 import { store } from '@/routes/register';
 
-export default function Register() {
+type Props = {
+    email?: string;
+};
+
+export default function Register({ email }: Props) {
     return (
         <>
             <Head title="Register" />
@@ -46,6 +50,7 @@ export default function Register() {
                                     id="email"
                                     type="email"
                                     required
+                                    defaultValue={email}
                                     tabIndex={2}
                                     autoComplete="email"
                                     name="email"

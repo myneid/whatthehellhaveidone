@@ -1,8 +1,13 @@
 <?php
 
+use App\Models\Invitation;
+use App\Models\Project;
 use App\Models\User;
+use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\RateLimiter;
 use Laravel\Fortify\Features;
+
+uses(RefreshDatabase::class);
 
 test('login screen can be rendered', function () {
     $response = $this->get(route('login'));
@@ -20,6 +25,48 @@ test('users can authenticate using the login screen', function () {
 
     $this->assertAuthenticated();
     $response->assertRedirect(route('dashboard', absolute: false));
+});
+
+test('invited users are added to the project after logging in from an invitation', function () {
+    $owner = User::factory()->create();
+    $invitee = User::factory()->create([
+        'email' => 'invitee@example.com',
+    ]);
+    $project = Project::create([
+        'owner_id' => $owner->id,
+        'name' => 'Apollo',
+        'slug' => 'apollo-project',
+    ]);
+
+    $project->members()->create([
+        'user_id' => $owner->id,
+        'role' => 'owner',
+    ]);
+
+    Invitation::create([
+        'project_id' => $project->id,
+        'invited_by' => $owner->id,
+        'email' => $invitee->email,
+        'role' => 'member',
+        'token' => 'login-invitation-token',
+        'expires_at' => now()->addDays(7),
+    ]);
+
+    $this->get(route('invitations.show', ['token' => 'login-invitation-token']).'?continue=login')
+        ->assertRedirect(route('login', ['email' => $invitee->email], absolute: false));
+
+    $response = $this->post(route('login.store'), [
+        'email' => $invitee->email,
+        'password' => 'password',
+    ]);
+
+    $this->assertAuthenticatedAs($invitee);
+    $response->assertRedirect(route('projects.show', $project, absolute: false));
+    $this->assertDatabaseHas('project_members', [
+        'project_id' => $project->id,
+        'user_id' => $invitee->id,
+        'role' => 'member',
+    ]);
 });
 
 test('users with two factor enabled are redirected to two factor challenge', function () {
