@@ -19,7 +19,7 @@ return new class extends Migration
             $table->string('role')->default('member');
             $table->string('token', 64)->unique();
             $table->timestamp('accepted_at')->nullable();
-            $table->timestamp('expires_at');
+            $table->timestamp('expires_at')->useCurrent();
             $table->timestamps();
 
             $table->unique(['project_id', 'email']);
