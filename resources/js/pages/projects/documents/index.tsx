@@ -1,5 +1,5 @@
 import { Head, Link, router, useForm } from '@inertiajs/react';
-import { FileText, Folder, FolderPlus, Plus, Search, Trash2 } from 'lucide-react';
+import { FileText, Folder, FolderPlus, Github, Plus, Search, Trash2 } from 'lucide-react';
 import { useState } from 'react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -9,6 +9,7 @@ import * as docRoutes from '@/routes/projects/documents';
 import * as folderRoutes from '@/routes/projects/folders';
 import * as documentRoutes from '@/routes/documents';
 import * as folderShallowRoutes from '@/routes/folders';
+import * as githubDocsRoutes from '@/routes/projects/github-docs';
 import type { BreadcrumbItem } from '@/types';
 import type { Project } from '@/types/app';
 
@@ -31,11 +32,14 @@ type ProjectDocument = {
     updated_at: string;
 };
 
+type GithubRepo = { id: number; name: string; full_name: string };
+
 type Props = {
     project: Project;
     documents: ProjectDocument[];
     folders: DocumentFolder[];
     filters: { search?: string; folder_id?: string };
+    githubRepositories: GithubRepo[];
 };
 
 function FolderTree({ folders, selectedId, onSelect, projectId }: {
@@ -75,7 +79,7 @@ function FolderTree({ folders, selectedId, onSelect, projectId }: {
     );
 }
 
-export default function DocumentsIndex({ project, documents, folders, filters }: Props) {
+export default function DocumentsIndex({ project, documents, folders, filters, githubRepositories }: Props) {
     const [search, setSearch] = useState(filters.search ?? '');
     const [selectedFolder, setSelectedFolder] = useState<number | null>(filters.folder_id ? Number(filters.folder_id) : null);
     const [creatingFolder, setCreatingFolder] = useState(false);
@@ -160,6 +164,25 @@ export default function DocumentsIndex({ project, documents, folders, filters }:
 
                             <FolderTree folders={folders} selectedId={selectedFolder} onSelect={selectFolder} projectId={project.id} />
                         </div>
+
+                        {githubRepositories.length > 0 && (
+                            <div>
+                                <p className="text-xs font-medium uppercase text-muted-foreground px-2 mb-1">GitHub</p>
+                                <ul className="space-y-0.5">
+                                    {githubRepositories.map((repo) => (
+                                        <li key={repo.id}>
+                                            <Link
+                                                href={githubDocsRoutes.show({ project, repository: repo }).url}
+                                                className="flex items-center gap-1.5 rounded-md px-2 py-1.5 text-sm hover:bg-muted"
+                                            >
+                                                <Github className="h-3.5 w-3.5 shrink-0 text-muted-foreground" />
+                                                <span className="truncate">{repo.name}</span>
+                                            </Link>
+                                        </li>
+                                    ))}
+                                </ul>
+                            </div>
+                        )}
                     </div>
 
                     {/* Main content */}
