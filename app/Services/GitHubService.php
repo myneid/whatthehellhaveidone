@@ -114,6 +114,34 @@ class GitHubService
         return $account;
     }
 
+    public function getMarkdownTree(GithubAccount $account, GithubRepository $repo): array
+    {
+        $response = $this->clientFor($account)
+            ->get("/repos/{$repo->full_name}/git/trees/HEAD", ['recursive' => 1]);
+
+        if ($response->status() === 404) {
+            return [];
+        }
+
+        $this->assertOk($response, "fetch file tree for {$repo->full_name}");
+
+        return collect($response->json('tree', []))
+            ->filter(fn ($item) => $item['type'] === 'blob' && str_ends_with($item['path'], '.md'))
+            ->map(fn ($item) => ['path' => $item['path'], 'size' => $item['size'] ?? 0])
+            ->values()
+            ->toArray();
+    }
+
+    public function getFileContent(GithubAccount $account, GithubRepository $repo, string $path): string
+    {
+        $response = $this->clientFor($account)
+            ->get("/repos/{$repo->full_name}/contents/{$path}");
+
+        $this->assertOk($response, "fetch file {$path} from {$repo->full_name}");
+
+        return base64_decode(str_replace(["\n", "\r"], '', $response->json('content', '')));
+    }
+
     private function assertOk(Response $response, string $action): void
     {
         if ($response->failed()) {

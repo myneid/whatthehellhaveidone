@@ -81,6 +81,13 @@ class Project extends Model
         return $this->hasMany(ProjectDocument::class);
     }
 
+    public function linkedGithubRepositories(): \Illuminate\Database\Eloquent\Collection
+    {
+        return GithubRepository::distinct()
+            ->whereHas('boards', fn ($q) => $q->where('boards.project_id', $this->id))
+            ->get();
+    }
+
     public function scopeActive(Builder $query): Builder
     {
         return $query->whereNull('archived_at');

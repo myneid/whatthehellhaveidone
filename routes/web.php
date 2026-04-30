@@ -17,6 +17,7 @@ use App\Http\Controllers\InvitationController;
 use App\Http\Controllers\LabelController;
 use App\Http\Controllers\ProjectController;
 use App\Http\Controllers\ProjectDocumentController;
+use App\Http\Controllers\ProjectGithubDocsController;
 use App\Http\Controllers\ProjectMemberController;
 use App\Http\Controllers\TrelloImportController;
 use App\Http\Controllers\WorkLogController;
@@ -110,6 +111,10 @@ Route::middleware(['auth', 'verified'])->group(function () {
     Route::resource('projects.folders', DocumentFolderController::class)->shallow()->except(['create', 'edit', 'show']);
     Route::resource('projects.documents', ProjectDocumentController::class)->shallow()->except(['create', 'edit']);
     Route::get('documents/{document}/edit', [ProjectDocumentController::class, 'edit'])->name('documents.edit');
+
+    // GitHub Docs (read-only markdown from linked repos)
+    Route::get('projects/{project}/github-docs/{repository}', [ProjectGithubDocsController::class, 'show'])
+        ->name('projects.github-docs.show');
 
 });
 

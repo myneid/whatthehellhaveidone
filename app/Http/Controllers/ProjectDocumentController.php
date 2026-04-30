@@ -34,6 +34,8 @@ class ProjectDocumentController extends Controller
             'documents' => $documents,
             'folders' => $folders,
             'filters' => $request->only(['search', 'folder_id']),
+            'githubRepositories' => $project->linkedGithubRepositories()
+                ->map(fn ($r) => ['id' => $r->id, 'name' => $r->name, 'full_name' => $r->full_name]),
         ]);
     }
 
