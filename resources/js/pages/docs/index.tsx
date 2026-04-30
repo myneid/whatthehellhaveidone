@@ -44,7 +44,18 @@ const topics = [
 export default function DocsIndex() {
     return (
         <>
-            <Head title="Documentation" />
+            <Head title="Documentation – What the HELL have I done">
+                <meta name="description" content="A full-featured project management platform with built-in AI integration via MCP. Manage projects, boards, and cards — and let your AI assistant do it for you." />
+                <meta property="og:type" content="website" />
+                <meta property="og:url" content="https://whatthehellhaveidone.net/docs" />
+                <meta property="og:title" content="Documentation – What the HELL have I done" />
+                <meta property="og:description" content="A full-featured project management platform with built-in AI integration via MCP. Manage projects, boards, and cards — and let your AI assistant do it for you." />
+                <meta property="og:image" content="https://whatthehellhaveidone.net/whatthehellhaveidone.png" />
+                <meta name="twitter:card" content="summary_large_image" />
+                <meta name="twitter:title" content="Documentation – What the HELL have I done" />
+                <meta name="twitter:description" content="A full-featured project management platform with built-in AI integration via MCP. Manage projects, boards, and cards — and let your AI assistant do it for you." />
+                <meta name="twitter:image" content="https://whatthehellhaveidone.net/whatthehellhaveidone.png" />
+            </Head>
 
             <div className="space-y-10 not-prose">
                 <div>
