@@ -56,33 +56,33 @@ class ProjectDocumentController extends Controller
         return redirect()->route('documents.edit', $document);
     }
 
-    public function show(ProjectDocument $projectDocument): Response
+    public function show(ProjectDocument $document): Response
     {
-        $this->authorize('view', $projectDocument->project);
+        $this->authorize('view', $document->project);
 
-        $projectDocument->load(['folder', 'creator', 'lastEditor']);
+        $document->load(['folder', 'creator', 'lastEditor']);
 
         return Inertia::render('projects/documents/show', [
-            'document' => $projectDocument,
-            'project' => $projectDocument->project,
+            'document' => $document,
+            'project' => $document->project,
         ]);
     }
 
-    public function edit(ProjectDocument $projectDocument): Response
+    public function edit(ProjectDocument $document): Response
     {
-        $this->authorize('view', $projectDocument->project);
+        $this->authorize('view', $document->project);
 
-        $projectDocument->load(['folder', 'project.documentFolders']);
+        $document->load(['folder', 'project.documentFolders']);
 
         return Inertia::render('projects/documents/edit', [
-            'document' => $projectDocument,
-            'project' => $projectDocument->project,
+            'document' => $document,
+            'project' => $document->project,
         ]);
     }
 
-    public function update(Request $request, ProjectDocument $projectDocument): RedirectResponse
+    public function update(Request $request, ProjectDocument $document): RedirectResponse
     {
-        $this->authorize('view', $projectDocument->project);
+        $this->authorize('view', $document->project);
 
         $request->validate([
             'title' => ['sometimes', 'required', 'string', 'max:255'],
@@ -90,7 +90,7 @@ class ProjectDocumentController extends Controller
             'document_folder_id' => ['nullable', 'exists:document_folders,id'],
         ]);
 
-        $projectDocument->update([
+        $document->update([
             ...$request->only(['title', 'markdown_body', 'document_folder_id']),
             'last_editor_id' => $request->user()->id,
         ]);
@@ -98,11 +98,11 @@ class ProjectDocumentController extends Controller
         return back()->with('success', 'Document saved.');
     }
 
-    public function destroy(ProjectDocument $projectDocument): RedirectResponse
+    public function destroy(ProjectDocument $document): RedirectResponse
     {
-        $this->authorize('update', $projectDocument->project);
-        $projectDocument->update(['archived_at' => now()]);
+        $this->authorize('update', $document->project);
+        $document->update(['archived_at' => now()]);
 
-        return redirect()->route('projects.documents.index', $projectDocument->project);
+        return redirect()->route('projects.documents.index', $document->project);
     }
 }
