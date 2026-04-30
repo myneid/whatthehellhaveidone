@@ -73,6 +73,7 @@ Route::middleware(['auth', 'verified'])->group(function () {
     Route::post('cards/{card}/github/create-issue', [GithubController::class, 'createIssue'])->name('github.create-issue');
     Route::post('cards/{card}/github/link-issue', [GithubController::class, 'linkIssue'])->name('github.link-issue');
     Route::post('cards/{card}/github/sync', [GithubController::class, 'syncCard'])->name('github.sync-card');
+    Route::post('cards/{card}/github/assign-copilot', [GithubController::class, 'assignToCopilot'])->name('github.assign-copilot');
     Route::post('boards/{board}/github/import-issues', [GithubController::class, 'importIssues'])->name('github.import-issues');
 
     // Discord

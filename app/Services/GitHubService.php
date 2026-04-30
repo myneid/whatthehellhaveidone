@@ -104,6 +104,16 @@ class GitHubService
         return $response->json();
     }
 
+    public function assignIssueToCopilot(GithubAccount $account, GithubRepository $repo, int $number): array
+    {
+        $response = $this->clientFor($account)
+            ->post("/repos/{$repo->full_name}/issues/{$number}/assignees", ['assignees' => ['copilot']]);
+
+        $this->assertOk($response, "assign issue #{$number} to Copilot");
+
+        return $response->json();
+    }
+
     public function getAccountForRepo(GithubRepository $repo): GithubAccount
     {
         $account = $repo->githubAccount;

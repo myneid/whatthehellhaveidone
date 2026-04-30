@@ -138,6 +138,22 @@ class GithubController extends Controller
         return back()->with('success', 'Sync queued.');
     }
 
+    public function assignToCopilot(Request $request, Card $card, GitHubService $github): RedirectResponse
+    {
+        $this->authorize('update', $card);
+
+        $link = $card->githubLink;
+        if (! $link) {
+            return back()->with('error', 'No GitHub issue linked to this card.');
+        }
+
+        $repo = $link->githubRepository;
+        $account = $github->getAccountForRepo($repo);
+        $github->assignIssueToCopilot($account, $repo, $link->issue_number);
+
+        return back()->with('success', 'Issue assigned to Copilot agent.');
+    }
+
     public function importIssues(Request $request, Board $board): RedirectResponse
     {
         $this->authorize('update', $board);

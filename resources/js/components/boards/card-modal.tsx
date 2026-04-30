@@ -1,5 +1,5 @@
 import { router, useForm } from '@inertiajs/react';
-import { Calendar, CheckSquare, Image, MessageSquare, Paperclip, Tag, Trash2, User, X } from 'lucide-react';
+import { Calendar, CheckSquare, ExternalLink, Image, MessageSquare, Paperclip, Tag, Trash2, User, X } from 'lucide-react';
 import { useRef, useState } from 'react';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
@@ -12,6 +12,7 @@ import * as cardLabels from '@/routes/cards/labels';
 import * as attachmentRoutes from '@/routes/attachments';
 import * as commentRoutes from '@/routes/comments';
 import * as checklistItemRoutes from '@/routes/checklist-items';
+import * as githubController from '@/actions/App/Http/Controllers/GithubController';
 import type { Board, BoardList, Card, CardAttachment, Label } from '@/types/app';
 
 type Props = {
@@ -109,6 +110,61 @@ function LabelPicker({ card, board }: { card: Card; board: Board }) {
                         </button>
                     );
                 })}
+            </div>
+        </div>
+    );
+}
+
+function GitHubIssueSection({ card }: { card: Card }) {
+    const link = card.github_link;
+    const [assigning, setAssigning] = useState(false);
+
+    if (!link) return null;
+
+    function assignToCopilot() {
+        setAssigning(true);
+        router.post(githubController.assignToCopilot(card).url, {}, {
+            preserveScroll: true,
+            onFinish: () => setAssigning(false),
+        });
+    }
+
+    return (
+        <div>
+            <p className="mb-1.5 flex items-center gap-1 text-xs font-medium uppercase text-muted-foreground">
+                <svg className="h-3 w-3" viewBox="0 0 16 16" fill="currentColor" aria-hidden="true">
+                    <path d="M8 0C3.58 0 0 3.58 0 8c0 3.54 2.29 6.53 5.47 7.59.4.07.55-.17.55-.38 0-.19-.01-.82-.01-1.49-2.01.37-2.53-.49-2.69-.94-.09-.23-.48-.94-.82-1.13-.28-.15-.68-.52-.01-.53.63-.01 1.08.58 1.23.82.72 1.21 1.87.87 2.33.66.07-.52.28-.87.51-1.07-1.78-.2-3.64-.89-3.64-3.95 0-.87.31-1.59.82-2.15-.08-.2-.36-1.02.08-2.12 0 0 .67-.21 2.2.82.64-.18 1.32-.27 2-.27.68 0 1.36.09 2 .27 1.53-1.04 2.2-.82 2.2-.82.44 1.1.16 1.92.08 2.12.51.56.82 1.27.82 2.15 0 3.07-1.87 3.75-3.65 3.95.29.25.54.73.54 1.48 0 1.07-.01 1.93-.01 2.2 0 .21.15.46.55.38A8.013 8.013 0 0016 8c0-4.42-3.58-8-8-8z" />
+                </svg>
+                GitHub Issue
+            </p>
+            <div className="flex items-center gap-2">
+                <a
+                    href={link.issue_url}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="flex items-center gap-1.5 rounded-md border px-2.5 py-1 text-sm hover:bg-muted transition-colors"
+                    onClick={(e) => e.stopPropagation()}
+                >
+                    <span className="font-medium">#{link.issue_number}</span>
+                    <span
+                        className={`rounded-full px-2 py-0.5 text-xs font-medium capitalize ${
+                            link.state === 'open' ? 'bg-green-100 text-green-700' : 'bg-purple-100 text-purple-700'
+                        }`}
+                    >
+                        {link.state}
+                    </span>
+                    <ExternalLink className="h-3 w-3 text-muted-foreground" />
+                </a>
+                <Button
+                    size="sm"
+                    variant="outline"
+                    className="h-7 px-2 text-xs"
+                    onClick={assignToCopilot}
+                    disabled={assigning}
+                    title="Assign this issue to the GitHub Copilot coding agent"
+                >
+                    {assigning ? 'Assigning…' : 'Assign to Copilot'}
+                </Button>
             </div>
         </div>
     );
@@ -278,6 +334,9 @@ export function CardModal({ card, board, lists, open, onClose }: Props) {
                             </div>
                         </div>
                     )}
+
+                    {/* GitHub Issue */}
+                    <GitHubIssueSection card={card} />
 
                     {/* Description */}
                     <div>
