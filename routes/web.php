@@ -15,6 +15,7 @@ use App\Http\Controllers\GithubController;
 use App\Http\Controllers\GithubWebhookController;
 use App\Http\Controllers\InvitationController;
 use App\Http\Controllers\LabelController;
+use App\Http\Controllers\NotificationController;
 use App\Http\Controllers\ProjectController;
 use App\Http\Controllers\ProjectDocumentController;
 use App\Http\Controllers\ProjectGithubDocsController;
@@ -116,6 +117,12 @@ Route::middleware(['auth', 'verified'])->group(function () {
     // GitHub Docs (read-only markdown from linked repos)
     Route::get('projects/{project}/github-docs/{repository}', [ProjectGithubDocsController::class, 'show'])
         ->name('projects.github-docs.show');
+
+    // Notifications
+    Route::get('notifications', [NotificationController::class, 'index'])->name('notifications.index');
+    Route::patch('notifications/read', [NotificationController::class, 'markAllAsRead'])->name('notifications.read');
+    Route::patch('notifications/{notification}/read', [NotificationController::class, 'markAsRead'])->name('notifications.mark-read');
+    Route::delete('notifications/{notification}', [NotificationController::class, 'destroy'])->name('notifications.destroy');
 
 });
 

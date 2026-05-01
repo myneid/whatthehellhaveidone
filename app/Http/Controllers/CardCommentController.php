@@ -6,6 +6,7 @@ use App\Events\CardCommented;
 use App\Models\Card;
 use App\Models\CardComment;
 use App\Services\ActivityLogService;
+use App\Services\MentionService;
 use App\Services\WorkLogService;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
@@ -15,6 +16,7 @@ class CardCommentController extends Controller
     public function __construct(
         private readonly ActivityLogService $activityLog,
         private readonly WorkLogService $workLog,
+        private readonly MentionService $mentionService,
     ) {}
 
     public function store(Request $request, Card $card): RedirectResponse
@@ -29,6 +31,8 @@ class CardCommentController extends Controller
         ]);
 
         $this->activityLog->log($card, 'comment_added', new: ['comment_id' => $comment->id], actor: $request->user());
+
+        $this->mentionService->notifyMentions($card, $request->user(), $comment->body, 'comment');
 
         event(new CardCommented($card, $comment));
 

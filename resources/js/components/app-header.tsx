@@ -1,5 +1,5 @@
 import { Link, usePage } from '@inertiajs/react';
-import { BookOpen, Folder, LayoutGrid, Menu, Search } from 'lucide-react';
+import { Bell, BookOpen, Folder, LayoutGrid, Menu, Search } from 'lucide-react';
 import AppLogo from '@/components/app-logo';
 import AppLogoIcon from '@/components/app-logo-icon';
 import { Breadcrumbs } from '@/components/breadcrumbs';
@@ -33,6 +33,7 @@ import { useCurrentUrl } from '@/hooks/use-current-url';
 import { useInitials } from '@/hooks/use-initials';
 import { cn, toUrl } from '@/lib/utils';
 import { dashboard } from '@/routes';
+import { index as notificationsIndex } from '@/routes/notifications';
 import type { BreadcrumbItem, NavItem } from '@/types';
 
 type Props = {
@@ -185,6 +186,31 @@ export function AppHeader({ breadcrumbs = [] }: Props) {
                             >
                                 <Search className="!size-5 opacity-80 group-hover:opacity-100" />
                             </Button>
+                            <Tooltip>
+                                <TooltipTrigger asChild>
+                                    <Link
+                                        href={notificationsIndex()}
+                                        className="group relative inline-flex h-9 w-9 items-center justify-center rounded-md transition-colors hover:bg-accent"
+                                    >
+                                        <Bell className="!size-5 opacity-80 group-hover:opacity-100" />
+                                        {(auth.unreadNotificationsCount ?? 0) >
+                                            0 && (
+                                            <span className="absolute top-1 right-1 flex h-4 min-w-4 items-center justify-center rounded-full bg-destructive px-1 text-[10px] font-bold text-destructive-foreground">
+                                                {auth.unreadNotificationsCount >
+                                                9
+                                                    ? '9+'
+                                                    : auth.unreadNotificationsCount}
+                                            </span>
+                                        )}
+                                        <span className="sr-only">
+                                            Notifications
+                                        </span>
+                                    </Link>
+                                </TooltipTrigger>
+                                <TooltipContent>
+                                    <p>Notifications</p>
+                                </TooltipContent>
+                            </Tooltip>
                             <div className="ml-1 hidden gap-1 lg:flex">
                                 {rightNavItems.map((item) => (
                                     <Tooltip key={item.title}>

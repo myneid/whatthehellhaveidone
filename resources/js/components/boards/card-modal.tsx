@@ -50,7 +50,7 @@ function ChecklistProgress({ items }: { items: { is_completed: boolean }[] }) {
     );
 }
 
-function CommentForm({ cardId }: { cardId: number }) {
+function CommentForm({ cardId, boardMembers }: { cardId: number; boardMembers: { id: number; name: string }[] }) {
     const form = useForm({ body: '' });
 
     function submit(e: React.FormEvent) {
@@ -61,17 +61,24 @@ function CommentForm({ cardId }: { cardId: number }) {
     }
 
     return (
-        <form onSubmit={submit} className="flex gap-2">
-            <Input
-                value={form.data.body}
-                onChange={(e) => form.setData('body', e.target.value)}
-                placeholder="Add a comment..."
-                className="flex-1"
-            />
-            <Button type="submit" size="sm" disabled={form.processing || !form.data.body.trim()}>
-                Post
-            </Button>
-        </form>
+        <div className="space-y-1.5">
+            <form onSubmit={submit} className="flex gap-2">
+                <Input
+                    value={form.data.body}
+                    onChange={(e) => form.setData('body', e.target.value)}
+                    placeholder="Add a comment..."
+                    className="flex-1"
+                />
+                <Button type="submit" size="sm" disabled={form.processing || !form.data.body.trim()}>
+                    Post
+                </Button>
+            </form>
+            {boardMembers.length > 0 && (
+                <p className="text-xs text-muted-foreground">
+                    Mention someone with @{boardMembers.map((m) => m.name).join(', @')}
+                </p>
+            )}
+        </div>
     );
 }
 
@@ -241,6 +248,7 @@ function AttachmentsSection({ card }: { card: Card }) {
 }
 
 export function CardModal({ card, board, lists, open, onClose }: Props) {
+    const boardMembers = (board.members ?? []).map((m) => ({ id: m.user?.id ?? 0, name: m.user?.name ?? '' })).filter((m) => m.id);
     const [editingTitle, setEditingTitle] = useState(false);
     const [editingDesc, setEditingDesc] = useState(false);
     const [title, setTitle] = useState(card.title);
@@ -293,6 +301,7 @@ export function CardModal({ card, board, lists, open, onClose }: Props) {
                     )}
 
                     <div className="mt-1 flex flex-wrap items-center gap-2 text-sm text-muted-foreground">
+                        {card.creator && <span>Created by <strong>{card.creator.name}</strong></span>}
                         {card.list && <span>in <strong>{card.list.name}</strong></span>}
                         {card.priority && card.priority !== 'none' && (
                             <span className={`rounded-full px-2 py-0.5 text-xs font-medium capitalize ${PRIORITY_COLORS[card.priority] ?? ''}`}>
@@ -413,7 +422,7 @@ export function CardModal({ card, board, lists, open, onClose }: Props) {
                         <p className="mb-2 flex items-center gap-1 text-xs font-medium uppercase text-muted-foreground">
                             <MessageSquare className="h-3 w-3" /> Comments
                         </p>
-                        <CommentForm cardId={card.id} />
+                        <CommentForm cardId={card.id} boardMembers={boardMembers} />
                         <div className="mt-3 space-y-3">
                             {card.comments?.map((comment) => (
                                 <div key={comment.id} className="flex gap-2">

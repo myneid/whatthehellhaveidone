@@ -11,6 +11,7 @@ use App\Models\BoardList;
 use App\Models\Card;
 use App\Models\User;
 use App\Services\ActivityLogService;
+use App\Services\MentionService;
 use App\Services\WorkLogService;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\RedirectResponse;
@@ -23,6 +24,7 @@ class CardController extends Controller
     public function __construct(
         private readonly ActivityLogService $activityLog,
         private readonly WorkLogService $workLog,
+        private readonly MentionService $mentionService,
     ) {}
 
     public function store(StoreCardRequest $request): RedirectResponse
@@ -78,6 +80,10 @@ class CardController extends Controller
         $card->update($request->validated());
 
         $this->activityLog->log($card, 'card_updated', old: $oldValues, new: $card->fresh()->only(array_keys($oldValues)), actor: $request->user());
+
+        if (isset($request->validated()['description'])) {
+            $this->mentionService->notifyMentions($card, $request->user(), $request->validated()['description'], 'description');
+        }
 
         if ($request->wantsJson()) {
             return response()->json(['card' => $card->fresh()]);

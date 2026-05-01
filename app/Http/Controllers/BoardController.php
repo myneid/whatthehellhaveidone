@@ -71,6 +71,8 @@ class BoardController extends Controller
                     'attachments',
                     'githubLink',
                     'checklists.items',
+                    'comments.user',
+                    'creator',
                 ]),
             ]),
         ]);
