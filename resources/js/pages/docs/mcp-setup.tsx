@@ -14,15 +14,6 @@ export default function DocsMcpSetup() {
         <>
             <Head title="MCP Setup – What the HELL have I done">
                 <meta name="description" content="Connect Claude, ChatGPT, or any MCP-compatible AI assistant to your boards, cards, and work log via the built-in MCP server." />
-                <meta property="og:type" content="website" />
-                <meta property="og:url" content="https://whatthehellhaveidone.net/docs/mcp-setup" />
-                <meta property="og:title" content="MCP Setup – What the HELL have I done" />
-                <meta property="og:description" content="Connect Claude, ChatGPT, or any MCP-compatible AI assistant to your boards, cards, and work log via the built-in MCP server." />
-                <meta property="og:image" content="https://whatthehellhaveidone.net/whatthehellhaveidone.png" />
-                <meta name="twitter:card" content="summary_large_image" />
-                <meta name="twitter:title" content="MCP Setup – What the HELL have I done" />
-                <meta name="twitter:description" content="Connect Claude, ChatGPT, or any MCP-compatible AI assistant to your boards, cards, and work log via the built-in MCP server." />
-                <meta name="twitter:image" content="https://whatthehellhaveidone.net/whatthehellhaveidone.png" />
             </Head>
 
             <h1>MCP Setup</h1>
