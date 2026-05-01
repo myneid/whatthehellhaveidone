@@ -1,5 +1,5 @@
 import { router, useForm } from '@inertiajs/react';
-import { Github, MessageSquare, RefreshCw, Trash2, Upload, X } from 'lucide-react';
+import { Download, Github, MessageSquare, RefreshCw, Trash2, Upload, X } from 'lucide-react';
 import { useRef, useState } from 'react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -9,6 +9,7 @@ import { Sheet, SheetContent, SheetHeader, SheetTitle } from '@/components/ui/sh
 import * as discord from '@/routes/discord';
 import * as github from '@/routes/github';
 import * as boardImport from '@/routes/boards/import';
+import * as boardExport from '@/routes/boards/export';
 import type { Board, DiscordWebhook, GithubAccount, GithubRepository } from '@/types/app';
 
 type ConnectedRepo = GithubRepository & {
@@ -340,6 +341,35 @@ export function BoardSettingsSheet({ board, githubAccounts, open, onClose }: Pro
                             <h3 className="font-semibold">Discord Webhook</h3>
                         </div>
                         <DiscordSection board={board} />
+                    </div>
+
+                    <Separator />
+
+                    {/* Export */}
+                    <div>
+                        <div className="mb-3 flex items-center gap-2">
+                            <Download className="h-4 w-4 text-emerald-500" />
+                            <h3 className="font-semibold">Export Board</h3>
+                        </div>
+                        <p className="mb-3 text-sm text-muted-foreground">
+                            Download your board data. Use the Trello format to import into Trello or other compatible tools.
+                        </p>
+                        <div className="flex flex-col gap-2">
+                            <a
+                                href={boardExport.download(board).url}
+                                className="inline-flex items-center justify-center gap-2 rounded-md border px-3 py-2 text-sm hover:bg-muted transition-colors"
+                            >
+                                <Download className="h-3.5 w-3.5" />
+                                Export as JSON (native)
+                            </a>
+                            <a
+                                href={boardExport.download(board, { query: { format: 'trello' } }).url}
+                                className="inline-flex items-center justify-center gap-2 rounded-md border px-3 py-2 text-sm hover:bg-muted transition-colors"
+                            >
+                                <Download className="h-3.5 w-3.5" />
+                                Export for Trello
+                            </a>
+                        </div>
                     </div>
 
                     <Separator />

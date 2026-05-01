@@ -1,24 +1,48 @@
 import { router, useForm } from '@inertiajs/react';
-import { Calendar, CheckSquare, ExternalLink, Image, MessageSquare, Paperclip, Tag, Trash2, User, X } from 'lucide-react';
+import {
+    ArrowRight,
+    Calendar,
+    CheckSquare,
+    ExternalLink,
+    Image,
+    MessageSquare,
+    Paperclip,
+    Tag,
+    Trash2,
+    User,
+    X,
+} from 'lucide-react';
 import { useRef, useState } from 'react';
-import { Badge } from '@/components/ui/badge';
+import * as githubController from '@/actions/App/Http/Controllers/GithubController';
 import { Button } from '@/components/ui/button';
-import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
+import {
+    Dialog,
+    DialogContent,
+    DialogHeader,
+    DialogTitle,
+} from '@/components/ui/dialog';
 import { Input } from '@/components/ui/input';
+import * as attachmentRoutes from '@/routes/attachments';
 import * as cards from '@/routes/cards';
 import * as cardAttachments from '@/routes/cards/attachments';
 import * as cardComments from '@/routes/cards/comments';
 import * as cardLabels from '@/routes/cards/labels';
-import * as attachmentRoutes from '@/routes/attachments';
-import * as commentRoutes from '@/routes/comments';
 import * as checklistItemRoutes from '@/routes/checklist-items';
-import * as githubController from '@/actions/App/Http/Controllers/GithubController';
-import type { Board, BoardList, Card, CardAttachment, Label } from '@/types/app';
+import * as commentRoutes from '@/routes/comments';
+import type {
+    Board,
+    BoardList,
+    Card,
+    CardAttachment,
+    Label,
+} from '@/types/app';
 
 type Props = {
     card: Card;
     board: Board;
     lists: BoardList[];
+    isMoving: boolean;
+    onMoveToList: (list: BoardList) => void;
     open: boolean;
     onClose: () => void;
 };
@@ -32,25 +56,45 @@ const PRIORITY_COLORS: Record<string, string> = {
 };
 
 function formatDate(dateStr: string | null): string {
-    if (!dateStr) return '';
-    return new Date(dateStr).toLocaleDateString(undefined, { month: 'short', day: 'numeric', year: 'numeric' });
+    if (!dateStr) {
+        return '';
+    }
+
+    return new Date(dateStr).toLocaleDateString(undefined, {
+        month: 'short',
+        day: 'numeric',
+        year: 'numeric',
+    });
 }
 
 function ChecklistProgress({ items }: { items: { is_completed: boolean }[] }) {
-    if (items.length === 0) return null;
+    if (items.length === 0) {
+        return null;
+    }
+
     const done = items.filter((i) => i.is_completed).length;
     const pct = Math.round((done / items.length) * 100);
+
     return (
         <div className="flex items-center gap-2">
             <div className="h-2 flex-1 rounded-full bg-muted">
-                <div className="h-full rounded-full bg-primary transition-all" style={{ width: `${pct}%` }} />
+                <div
+                    className="h-full rounded-full bg-primary transition-all"
+                    style={{ width: `${pct}%` }}
+                />
             </div>
             <span className="text-xs text-muted-foreground">{pct}%</span>
         </div>
     );
 }
 
-function CommentForm({ cardId, boardMembers }: { cardId: number; boardMembers: { id: number; name: string }[] }) {
+function CommentForm({
+    cardId,
+    boardMembers,
+}: {
+    cardId: number;
+    boardMembers: { id: number; name: string }[];
+}) {
     const form = useForm({ body: '' });
 
     function submit(e: React.FormEvent) {
@@ -69,13 +113,18 @@ function CommentForm({ cardId, boardMembers }: { cardId: number; boardMembers: {
                     placeholder="Add a comment..."
                     className="flex-1"
                 />
-                <Button type="submit" size="sm" disabled={form.processing || !form.data.body.trim()}>
+                <Button
+                    type="submit"
+                    size="sm"
+                    disabled={form.processing || !form.data.body.trim()}
+                >
                     Post
                 </Button>
             </form>
             {boardMembers.length > 0 && (
                 <p className="text-xs text-muted-foreground">
-                    Mention someone with @{boardMembers.map((m) => m.name).join(', @')}
+                    Mention someone with @
+                    {boardMembers.map((m) => m.name).join(', @')}
                 </p>
             )}
         </div>
@@ -87,31 +136,49 @@ function LabelPicker({ card, board }: { card: Card; board: Board }) {
 
     function toggle(label: Label) {
         if (attachedIds.has(label.id)) {
-            router.delete(cardLabels.detach({ card: card.id, label: label.id }).url, { preserveScroll: true });
+            router.delete(
+                cardLabels.detach({ card: card.id, label: label.id }).url,
+                { preserveScroll: true },
+            );
         } else {
-            router.post(cardLabels.attach(card).url, { label_id: label.id }, { preserveScroll: true });
+            router.post(
+                cardLabels.attach(card).url,
+                { label_id: label.id },
+                { preserveScroll: true },
+            );
         }
     }
 
     const boardLabels = board.labels ?? [];
-    if (boardLabels.length === 0) return null;
+
+    if (boardLabels.length === 0) {
+        return null;
+    }
 
     return (
         <div>
-            <p className="mb-1.5 flex items-center gap-1 text-xs font-medium uppercase text-muted-foreground">
+            <p className="mb-1.5 flex items-center gap-1 text-xs font-medium text-muted-foreground uppercase">
                 <Tag className="h-3 w-3" /> Labels
             </p>
             <div className="flex flex-wrap gap-1.5">
                 {boardLabels.map((label) => {
                     const active = attachedIds.has(label.id);
+
                     return (
                         <button
                             key={label.id}
                             type="button"
                             onClick={() => toggle(label)}
                             className={`rounded-full px-2.5 py-0.5 text-xs font-medium transition-opacity ${active ? 'opacity-100' : 'opacity-30 hover:opacity-60'}`}
-                            style={{ backgroundColor: label.color, color: '#fff' }}
-                            title={active ? `Remove ${label.name}` : `Add ${label.name}`}
+                            style={{
+                                backgroundColor: label.color,
+                                color: '#fff',
+                            }}
+                            title={
+                                active
+                                    ? `Remove ${label.name}`
+                                    : `Add ${label.name}`
+                            }
                         >
                             {label.name}
                         </button>
@@ -126,20 +193,31 @@ function GitHubIssueSection({ card }: { card: Card }) {
     const link = card.github_link;
     const [assigning, setAssigning] = useState(false);
 
-    if (!link) return null;
+    if (!link) {
+        return null;
+    }
 
     function assignToCopilot() {
         setAssigning(true);
-        router.post(githubController.assignToCopilot(card).url, {}, {
-            preserveScroll: true,
-            onFinish: () => setAssigning(false),
-        });
+        router.post(
+            githubController.assignToCopilot(card).url,
+            {},
+            {
+                preserveScroll: true,
+                onFinish: () => setAssigning(false),
+            },
+        );
     }
 
     return (
         <div>
-            <p className="mb-1.5 flex items-center gap-1 text-xs font-medium uppercase text-muted-foreground">
-                <svg className="h-3 w-3" viewBox="0 0 16 16" fill="currentColor" aria-hidden="true">
+            <p className="mb-1.5 flex items-center gap-1 text-xs font-medium text-muted-foreground uppercase">
+                <svg
+                    className="h-3 w-3"
+                    viewBox="0 0 16 16"
+                    fill="currentColor"
+                    aria-hidden="true"
+                >
                     <path d="M8 0C3.58 0 0 3.58 0 8c0 3.54 2.29 6.53 5.47 7.59.4.07.55-.17.55-.38 0-.19-.01-.82-.01-1.49-2.01.37-2.53-.49-2.69-.94-.09-.23-.48-.94-.82-1.13-.28-.15-.68-.52-.01-.53.63-.01 1.08.58 1.23.82.72 1.21 1.87.87 2.33.66.07-.52.28-.87.51-1.07-1.78-.2-3.64-.89-3.64-3.95 0-.87.31-1.59.82-2.15-.08-.2-.36-1.02.08-2.12 0 0 .67-.21 2.2.82.64-.18 1.32-.27 2-.27.68 0 1.36.09 2 .27 1.53-1.04 2.2-.82 2.2-.82.44 1.1.16 1.92.08 2.12.51.56.82 1.27.82 2.15 0 3.07-1.87 3.75-3.65 3.95.29.25.54.73.54 1.48 0 1.07-.01 1.93-.01 2.2 0 .21.15.46.55.38A8.013 8.013 0 0016 8c0-4.42-3.58-8-8-8z" />
                 </svg>
                 GitHub Issue
@@ -149,13 +227,15 @@ function GitHubIssueSection({ card }: { card: Card }) {
                     href={link.issue_url}
                     target="_blank"
                     rel="noopener noreferrer"
-                    className="flex items-center gap-1.5 rounded-md border px-2.5 py-1 text-sm hover:bg-muted transition-colors"
+                    className="flex items-center gap-1.5 rounded-md border px-2.5 py-1 text-sm transition-colors hover:bg-muted"
                     onClick={(e) => e.stopPropagation()}
                 >
                     <span className="font-medium">#{link.issue_number}</span>
                     <span
                         className={`rounded-full px-2 py-0.5 text-xs font-medium capitalize ${
-                            link.state === 'open' ? 'bg-green-100 text-green-700' : 'bg-purple-100 text-purple-700'
+                            link.state === 'open'
+                                ? 'bg-green-100 text-green-700'
+                                : 'bg-purple-100 text-purple-700'
                         }`}
                     >
                         {link.state}
@@ -183,18 +263,30 @@ function AttachmentsSection({ card }: { card: Card }) {
 
     function upload(e: React.ChangeEvent<HTMLInputElement>) {
         const file = e.target.files?.[0];
-        if (!file) return;
+
+        if (!file) {
+            return;
+        }
+
         setUploading(true);
         const data = new FormData();
         data.append('file', file);
         router.post(cardAttachments.store(card).url, data as any, {
             preserveScroll: true,
-            onFinish: () => { setUploading(false); if (fileRef.current) fileRef.current.value = ''; },
+            onFinish: () => {
+                setUploading(false);
+
+                if (fileRef.current) {
+                    fileRef.current.value = '';
+                }
+            },
         });
     }
 
     function remove(attachment: CardAttachment) {
-        router.delete(attachmentRoutes.destroy(attachment).url, { preserveScroll: true });
+        router.delete(attachmentRoutes.destroy(attachment).url, {
+            preserveScroll: true,
+        });
     }
 
     const attachments = card.attachments ?? [];
@@ -204,25 +296,44 @@ function AttachmentsSection({ card }: { card: Card }) {
     return (
         <div>
             <div className="mb-1.5 flex items-center justify-between">
-                <p className="flex items-center gap-1 text-xs font-medium uppercase text-muted-foreground">
+                <p className="flex items-center gap-1 text-xs font-medium text-muted-foreground uppercase">
                     <Paperclip className="h-3 w-3" /> Attachments
                 </p>
-                <Button size="sm" variant="outline" className="h-6 px-2 text-xs" onClick={() => fileRef.current?.click()} disabled={uploading}>
+                <Button
+                    size="sm"
+                    variant="outline"
+                    className="h-6 px-2 text-xs"
+                    onClick={() => fileRef.current?.click()}
+                    disabled={uploading}
+                >
                     <Image className="mr-1 h-3 w-3" />
                     {uploading ? 'Uploading…' : 'Add'}
                 </Button>
-                <input ref={fileRef} type="file" className="hidden" accept="image/*,.pdf,.doc,.docx,.xls,.xlsx,.txt" onChange={upload} />
+                <input
+                    ref={fileRef}
+                    type="file"
+                    className="hidden"
+                    accept="image/*,.pdf,.doc,.docx,.xls,.xlsx,.txt"
+                    onChange={upload}
+                />
             </div>
 
             {images.length > 0 && (
                 <div className="mb-2 grid grid-cols-3 gap-1.5">
                     {images.map((img) => (
-                        <div key={img.id} className="group relative aspect-video overflow-hidden rounded-md border bg-muted">
-                            <img src={img.url ?? ''} alt={img.filename} className="h-full w-full object-cover" />
+                        <div
+                            key={img.id}
+                            className="group relative aspect-video overflow-hidden rounded-md border bg-muted"
+                        >
+                            <img
+                                src={img.url ?? ''}
+                                alt={img.filename}
+                                className="h-full w-full object-cover"
+                            />
                             <button
                                 type="button"
                                 onClick={() => remove(img)}
-                                className="absolute right-1 top-1 hidden rounded-full bg-black/60 p-0.5 text-white group-hover:flex"
+                                className="absolute top-1 right-1 hidden rounded-full bg-black/60 p-0.5 text-white group-hover:flex"
                             >
                                 <X className="h-3 w-3" />
                             </button>
@@ -234,9 +345,16 @@ function AttachmentsSection({ card }: { card: Card }) {
             {files.length > 0 && (
                 <div className="space-y-1">
                     {files.map((file) => (
-                        <div key={file.id} className="flex items-center justify-between rounded-md border px-2 py-1.5 text-xs">
+                        <div
+                            key={file.id}
+                            className="flex items-center justify-between rounded-md border px-2 py-1.5 text-xs"
+                        >
                             <span className="truncate">{file.filename}</span>
-                            <button type="button" onClick={() => remove(file)} className="ml-2 shrink-0 text-muted-foreground hover:text-destructive">
+                            <button
+                                type="button"
+                                onClick={() => remove(file)}
+                                className="ml-2 shrink-0 text-muted-foreground hover:text-destructive"
+                            >
                                 <X className="h-3 w-3" />
                             </button>
                         </div>
@@ -247,8 +365,84 @@ function AttachmentsSection({ card }: { card: Card }) {
     );
 }
 
-export function CardModal({ card, board, lists, open, onClose }: Props) {
-    const boardMembers = (board.members ?? []).map((m) => ({ id: m.user?.id ?? 0, name: m.user?.name ?? '' })).filter((m) => m.id);
+function MoveCardSection({
+    card,
+    lists,
+    isMoving,
+    onMoveToList,
+}: Pick<Props, 'card' | 'lists' | 'isMoving' | 'onMoveToList'>) {
+    if (lists.length < 2) {
+        return null;
+    }
+
+    const currentIndex = lists.findIndex((list) => list.id === card.list_id);
+    const visibleDestinations = lists.filter(
+        (list) => list.id !== card.list_id,
+    );
+
+    if (visibleDestinations.length === 0) {
+        return null;
+    }
+
+    const obviousDestination =
+        currentIndex >= 0
+            ? (lists[currentIndex + 1] ?? lists[currentIndex - 1] ?? null)
+            : (visibleDestinations[0] ?? null);
+    const secondaryDestinations = visibleDestinations.filter(
+        (list) => list.id !== obviousDestination?.id,
+    );
+
+    return (
+        <div className="rounded-xl border bg-muted/30 p-3">
+            <div className="flex flex-wrap items-center justify-between gap-2">
+                <p className="flex items-center gap-1 text-xs font-medium text-muted-foreground uppercase">
+                    <ArrowRight className="h-3 w-3" /> Move to
+                </p>
+                {obviousDestination ? (
+                    <Button
+                        size="sm"
+                        onClick={() => onMoveToList(obviousDestination)}
+                        disabled={isMoving}
+                    >
+                        {isMoving
+                            ? 'Moving…'
+                            : `Move to ${obviousDestination.name}`}
+                    </Button>
+                ) : null}
+            </div>
+
+            {secondaryDestinations.length > 0 ? (
+                <div className="mt-2 flex flex-wrap gap-2">
+                    {secondaryDestinations.map((list) => (
+                        <Button
+                            key={list.id}
+                            type="button"
+                            size="sm"
+                            variant="outline"
+                            onClick={() => onMoveToList(list)}
+                            disabled={isMoving}
+                        >
+                            {list.name}
+                        </Button>
+                    ))}
+                </div>
+            ) : null}
+        </div>
+    );
+}
+
+export function CardModal({
+    card,
+    board,
+    lists,
+    isMoving,
+    onMoveToList,
+    open,
+    onClose,
+}: Props) {
+    const boardMembers = (board.members ?? [])
+        .map((m) => ({ id: m.user?.id ?? 0, name: m.user?.name ?? '' }))
+        .filter((m) => m.id);
     const [editingTitle, setEditingTitle] = useState(false);
     const [editingDesc, setEditingDesc] = useState(false);
     const [title, setTitle] = useState(card.title);
@@ -256,27 +450,41 @@ export function CardModal({ card, board, lists, open, onClose }: Props) {
 
     function saveTitle() {
         if (title !== card.title) {
-            router.patch(cards.update(card).url, { title }, { preserveScroll: true });
+            router.patch(
+                cards.update(card).url,
+                { title },
+                { preserveScroll: true },
+            );
         }
+
         setEditingTitle(false);
     }
 
     function saveDescription() {
         if (description !== (card.description ?? '')) {
-            router.patch(cards.update(card).url, { description }, { preserveScroll: true });
+            router.patch(
+                cards.update(card).url,
+                { description },
+                { preserveScroll: true },
+            );
         }
+
         setEditingDesc(false);
     }
 
     function archiveCard() {
-        router.post(cards.archive(card).url, {}, { preserveScroll: true, onSuccess: onClose });
+        router.post(
+            cards.archive(card).url,
+            {},
+            { preserveScroll: true, onSuccess: onClose },
+        );
     }
 
     function deleteComment(commentId: number) {
-        router.delete(commentRoutes.destroy(commentId).url, { preserveScroll: true });
+        router.delete(commentRoutes.destroy(commentId).url, {
+            preserveScroll: true,
+        });
     }
-
-    const allChecklistItems = card.checklists?.flatMap((cl) => cl.items ?? []) ?? [];
 
     return (
         <Dialog open={open} onOpenChange={(v) => !v && onClose()}>
@@ -287,7 +495,16 @@ export function CardModal({ card, board, lists, open, onClose }: Props) {
                             value={title}
                             onChange={(e) => setTitle(e.target.value)}
                             onBlur={saveTitle}
-                            onKeyDown={(e) => { if (e.key === 'Enter') saveTitle(); if (e.key === 'Escape') { setTitle(card.title); setEditingTitle(false); } }}
+                            onKeyDown={(e) => {
+                                if (e.key === 'Enter') {
+                                    saveTitle();
+                                }
+
+                                if (e.key === 'Escape') {
+                                    setTitle(card.title);
+                                    setEditingTitle(false);
+                                }
+                            }}
                             className="w-full rounded border px-2 py-1 text-xl font-semibold"
                             autoFocus
                         />
@@ -301,10 +518,20 @@ export function CardModal({ card, board, lists, open, onClose }: Props) {
                     )}
 
                     <div className="mt-1 flex flex-wrap items-center gap-2 text-sm text-muted-foreground">
-                        {card.creator && <span>Created by <strong>{card.creator.name}</strong></span>}
-                        {card.list && <span>in <strong>{card.list.name}</strong></span>}
+                        {card.creator && (
+                            <span>
+                                Created by <strong>{card.creator.name}</strong>
+                            </span>
+                        )}
+                        {card.list && (
+                            <span>
+                                in <strong>{card.list.name}</strong>
+                            </span>
+                        )}
                         {card.priority && card.priority !== 'none' && (
-                            <span className={`rounded-full px-2 py-0.5 text-xs font-medium capitalize ${PRIORITY_COLORS[card.priority] ?? ''}`}>
+                            <span
+                                className={`rounded-full px-2 py-0.5 text-xs font-medium capitalize ${PRIORITY_COLORS[card.priority] ?? ''}`}
+                            >
                                 {card.priority}
                             </span>
                         )}
@@ -318,26 +545,44 @@ export function CardModal({ card, board, lists, open, onClose }: Props) {
                 </DialogHeader>
 
                 <div className="mt-2 space-y-6">
+                    <MoveCardSection
+                        card={card}
+                        lists={lists}
+                        isMoving={isMoving}
+                        onMoveToList={onMoveToList}
+                    />
+
                     {/* Labels */}
                     <LabelPicker card={card} board={board} />
 
                     {/* Assignees */}
                     {card.assignees && card.assignees.length > 0 && (
                         <div>
-                            <p className="mb-1 flex items-center gap-1 text-xs font-medium uppercase text-muted-foreground">
+                            <p className="mb-1 flex items-center gap-1 text-xs font-medium text-muted-foreground uppercase">
                                 <User className="h-3 w-3" /> Assignees
                             </p>
                             <div className="flex flex-wrap gap-2">
                                 {card.assignees.map((user) => (
-                                    <div key={user.id} className="flex items-center gap-1.5">
+                                    <div
+                                        key={user.id}
+                                        className="flex items-center gap-1.5"
+                                    >
                                         {user.avatar ? (
-                                            <img src={user.avatar} alt={user.name} className="h-6 w-6 rounded-full" />
+                                            <img
+                                                src={user.avatar}
+                                                alt={user.name}
+                                                className="h-6 w-6 rounded-full"
+                                            />
                                         ) : (
                                             <div className="flex h-6 w-6 items-center justify-center rounded-full bg-primary text-xs font-medium text-primary-foreground">
-                                                {user.name.charAt(0).toUpperCase()}
+                                                {user.name
+                                                    .charAt(0)
+                                                    .toUpperCase()}
                                             </div>
                                         )}
-                                        <span className="text-sm">{user.name}</span>
+                                        <span className="text-sm">
+                                            {user.name}
+                                        </span>
                                     </div>
                                 ))}
                             </div>
@@ -349,19 +594,36 @@ export function CardModal({ card, board, lists, open, onClose }: Props) {
 
                     {/* Description */}
                     <div>
-                        <p className="mb-1 text-xs font-medium uppercase text-muted-foreground">Description</p>
+                        <p className="mb-1 text-xs font-medium text-muted-foreground uppercase">
+                            Description
+                        </p>
                         {editingDesc ? (
                             <div className="space-y-2">
                                 <textarea
                                     value={description}
-                                    onChange={(e) => setDescription(e.target.value)}
+                                    onChange={(e) =>
+                                        setDescription(e.target.value)
+                                    }
                                     rows={5}
-                                    className="border-input bg-background w-full rounded-md border px-3 py-2 text-sm"
+                                    className="w-full rounded-md border border-input bg-background px-3 py-2 text-sm"
                                     autoFocus
                                 />
                                 <div className="flex gap-2">
-                                    <Button size="sm" onClick={saveDescription}>Save</Button>
-                                    <Button size="sm" variant="ghost" onClick={() => { setDescription(card.description ?? ''); setEditingDesc(false); }}>Cancel</Button>
+                                    <Button size="sm" onClick={saveDescription}>
+                                        Save
+                                    </Button>
+                                    <Button
+                                        size="sm"
+                                        variant="ghost"
+                                        onClick={() => {
+                                            setDescription(
+                                                card.description ?? '',
+                                            );
+                                            setEditingDesc(false);
+                                        }}
+                                    >
+                                        Cancel
+                                    </Button>
                                 </div>
                             </div>
                         ) : (
@@ -370,9 +632,13 @@ export function CardModal({ card, board, lists, open, onClose }: Props) {
                                 onClick={() => setEditingDesc(true)}
                             >
                                 {card.description ? (
-                                    <p className="whitespace-pre-wrap">{card.description}</p>
+                                    <p className="whitespace-pre-wrap">
+                                        {card.description}
+                                    </p>
                                 ) : (
-                                    <p className="text-muted-foreground italic">Add a description...</p>
+                                    <p className="text-muted-foreground italic">
+                                        Add a description...
+                                    </p>
                                 )}
                             </div>
                         )}
@@ -381,29 +647,45 @@ export function CardModal({ card, board, lists, open, onClose }: Props) {
                     {/* Checklists */}
                     {card.checklists && card.checklists.length > 0 && (
                         <div>
-                            <p className="mb-2 flex items-center gap-1 text-xs font-medium uppercase text-muted-foreground">
+                            <p className="mb-2 flex items-center gap-1 text-xs font-medium text-muted-foreground uppercase">
                                 <CheckSquare className="h-3 w-3" /> Checklists
                             </p>
                             {card.checklists.map((checklist) => (
                                 <div key={checklist.id} className="mb-4">
-                                    <p className="mb-1 font-medium">{checklist.title}</p>
-                                    <ChecklistProgress items={checklist.items ?? []} />
+                                    <p className="mb-1 font-medium">
+                                        {checklist.title}
+                                    </p>
+                                    <ChecklistProgress
+                                        items={checklist.items ?? []}
+                                    />
                                     <div className="mt-2 space-y-1">
                                         {checklist.items?.map((item) => (
-                                            <div key={item.id} className="flex items-center gap-2">
+                                            <div
+                                                key={item.id}
+                                                className="flex items-center gap-2"
+                                            >
                                                 <input
                                                     type="checkbox"
                                                     checked={item.is_completed}
                                                     onChange={() => {
                                                         router.patch(
-                                                            checklistItemRoutes.toggle(item).url,
-                                                            { is_completed: !item.is_completed },
-                                                            { preserveScroll: true },
+                                                            checklistItemRoutes.toggle(
+                                                                item,
+                                                            ).url,
+                                                            {
+                                                                is_completed:
+                                                                    !item.is_completed,
+                                                            },
+                                                            {
+                                                                preserveScroll: true,
+                                                            },
                                                         );
                                                     }}
                                                     className="h-4 w-4 rounded"
                                                 />
-                                                <span className={`text-sm ${item.is_completed ? 'text-muted-foreground line-through' : ''}`}>
+                                                <span
+                                                    className={`text-sm ${item.is_completed ? 'text-muted-foreground line-through' : ''}`}
+                                                >
                                                     {item.title}
                                                 </span>
                                             </div>
@@ -419,32 +701,47 @@ export function CardModal({ card, board, lists, open, onClose }: Props) {
 
                     {/* Comments */}
                     <div>
-                        <p className="mb-2 flex items-center gap-1 text-xs font-medium uppercase text-muted-foreground">
+                        <p className="mb-2 flex items-center gap-1 text-xs font-medium text-muted-foreground uppercase">
                             <MessageSquare className="h-3 w-3" /> Comments
                         </p>
-                        <CommentForm cardId={card.id} boardMembers={boardMembers} />
+                        <CommentForm
+                            cardId={card.id}
+                            boardMembers={boardMembers}
+                        />
                         <div className="mt-3 space-y-3">
                             {card.comments?.map((comment) => (
                                 <div key={comment.id} className="flex gap-2">
                                     <div className="flex h-7 w-7 shrink-0 items-center justify-center rounded-full bg-primary text-xs font-medium text-primary-foreground">
-                                        {comment.user?.name.charAt(0).toUpperCase()}
+                                        {comment.user?.name
+                                            .charAt(0)
+                                            .toUpperCase()}
                                     </div>
                                     <div className="flex-1 rounded-lg bg-muted px-3 py-2">
                                         <div className="mb-0.5 flex items-center justify-between">
-                                            <span className="text-xs font-medium">{comment.user?.name}</span>
+                                            <span className="text-xs font-medium">
+                                                {comment.user?.name}
+                                            </span>
                                             <div className="flex items-center gap-1">
                                                 <span className="text-xs text-muted-foreground">
-                                                    {new Date(comment.created_at).toLocaleDateString()}
+                                                    {new Date(
+                                                        comment.created_at,
+                                                    ).toLocaleDateString()}
                                                 </span>
                                                 <button
-                                                    onClick={() => deleteComment(comment.id)}
+                                                    onClick={() =>
+                                                        deleteComment(
+                                                            comment.id,
+                                                        )
+                                                    }
                                                     className="text-muted-foreground hover:text-destructive"
                                                 >
                                                     <X className="h-3 w-3" />
                                                 </button>
                                             </div>
                                         </div>
-                                        <p className="text-sm">{comment.body}</p>
+                                        <p className="text-sm">
+                                            {comment.body}
+                                        </p>
                                     </div>
                                 </div>
                             ))}

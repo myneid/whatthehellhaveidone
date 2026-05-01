@@ -1,33 +1,119 @@
 import {
     DndContext,
-    DragEndEvent,
-    DragOverEvent,
     DragOverlay,
-    DragStartEvent,
     PointerSensor,
     closestCenter,
     useSensor,
     useSensors,
 } from '@dnd-kit/core';
-import { SortableContext, arrayMove, horizontalListSortingStrategy, useSortable, verticalListSortingStrategy } from '@dnd-kit/sortable';
+import type {
+    DragEndEvent,
+    DragOverEvent,
+    DragStartEvent,
+} from '@dnd-kit/core';
+import {
+    SortableContext,
+    arrayMove,
+    horizontalListSortingStrategy,
+    useSortable,
+    verticalListSortingStrategy,
+} from '@dnd-kit/sortable';
 import { CSS } from '@dnd-kit/utilities';
 import { Head, Link, router, useForm } from '@inertiajs/react';
-import { GripVertical, Plus, Settings, Trash2 } from 'lucide-react';
-import { useCallback, useEffect, useMemo, useState } from 'react';
+import { GripVertical, Plus, Settings, Trash2, X } from 'lucide-react';
+import { useCallback, useMemo, useState } from 'react';
 import { BoardSettingsSheet } from '@/components/boards/board-settings-sheet';
 import { CardModal } from '@/components/boards/card-modal';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
-import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import {
+    Popover,
+    PopoverContent,
+    PopoverTrigger,
+} from '@/components/ui/popover';
+import {
+    Select,
+    SelectContent,
+    SelectItem,
+    SelectTrigger,
+    SelectValue,
+} from '@/components/ui/select';
 import { dashboard } from '@/routes';
 import * as boardRoutes from '@/routes/boards';
-import * as cardRoutes from '@/routes/cards';
 import * as boardListRoutes from '@/routes/boards/lists';
+import * as cardRoutes from '@/routes/cards';
 import * as listRoutes from '@/routes/lists';
 import * as projectRoutes from '@/routes/projects';
 import type { BreadcrumbItem } from '@/types';
 import type { Board, BoardList, Card, GithubAccount } from '@/types/app';
+
+function normalizeLists(nextLists: BoardList[]): BoardList[] {
+    return nextLists.map((list) => {
+        const listSnapshot: BoardList = { ...list, cards: undefined };
+
+        return {
+            ...list,
+            cards: (list.cards ?? []).map((card, index) => ({
+                ...card,
+                list_id: list.id,
+                position: index + 1,
+                list: listSnapshot,
+            })),
+        };
+    });
+}
+
+function moveCardBetweenLists(
+    nextLists: BoardList[],
+    cardId: number,
+    targetListId: number,
+    targetPosition: number,
+): BoardList[] {
+    let movingCard: Card | null = null;
+
+    const listsWithoutCard = nextLists.map((list) => {
+        const cardIndex = (list.cards ?? []).findIndex(
+            (card) => card.id === cardId,
+        );
+
+        if (cardIndex === -1) {
+            return list;
+        }
+
+        movingCard = (list.cards ?? [])[cardIndex] ?? null;
+
+        return {
+            ...list,
+            cards: (list.cards ?? []).filter((card) => card.id !== cardId),
+        };
+    });
+
+    const cardToMove = movingCard;
+
+    if (!cardToMove) {
+        return nextLists;
+    }
+
+    const movedLists = listsWithoutCard.map((list) => {
+        if (list.id !== targetListId) {
+            return list;
+        }
+
+        const cards = [...(list.cards ?? [])];
+        const insertIndex = Math.max(
+            0,
+            Math.min(targetPosition - 1, cards.length),
+        );
+        cards.splice(insertIndex, 0, cardToMove);
+
+        return {
+            ...list,
+            cards,
+        };
+    });
+
+    return normalizeLists(movedLists);
+}
 
 type Props = {
     board: Board;
@@ -42,14 +128,27 @@ const PRIORITY_COLORS: Record<string, string> = {
     critical: 'border-l-red-500',
 };
 
-function AddCardForm({ listId, onDone }: { listId: number; onDone: () => void }) {
+function AddCardForm({
+    listId,
+    onDone,
+}: {
+    listId: number;
+    onDone: () => void;
+}) {
     const form = useForm({ title: '', list_id: listId });
 
     function submit(e: React.FormEvent) {
         e.preventDefault();
-        if (!form.data.title.trim()) return;
+
+        if (!form.data.title.trim()) {
+            return;
+        }
+
         form.post(cardRoutes.store().url, {
-            onSuccess: () => { form.reset(); onDone(); },
+            onSuccess: () => {
+                form.reset();
+                onDone();
+            },
         });
     }
 
@@ -60,11 +159,24 @@ function AddCardForm({ listId, onDone }: { listId: number; onDone: () => void })
                 onChange={(e) => form.setData('title', e.target.value)}
                 placeholder="Card title..."
                 autoFocus
-                onKeyDown={(e) => { if (e.key === 'Escape') onDone(); }}
+                onKeyDown={(e) => {
+                    if (e.key === 'Escape') {
+                        onDone();
+                    }
+                }}
             />
             <div className="flex gap-1">
-                <Button type="submit" size="sm" disabled={form.processing}>Add</Button>
-                <Button type="button" size="sm" variant="ghost" onClick={onDone}><X className="h-4 w-4" /></Button>
+                <Button type="submit" size="sm" disabled={form.processing}>
+                    Add
+                </Button>
+                <Button
+                    type="button"
+                    size="sm"
+                    variant="ghost"
+                    onClick={onDone}
+                >
+                    <X className="h-4 w-4" />
+                </Button>
             </div>
         </form>
     );
@@ -75,6 +187,7 @@ function AddListForm({ board, onDone }: { board: Board; onDone: () => void }) {
 
     function submit(e: React.FormEvent) {
         e.preventDefault();
+
         if (!form.data.name.trim()) {
             return;
         }
@@ -102,8 +215,17 @@ function AddListForm({ board, onDone }: { board: Board; onDone: () => void }) {
                 }}
             />
             <div className="flex gap-1">
-                <Button type="submit" size="sm" disabled={form.processing}>Add row</Button>
-                <Button type="button" size="sm" variant="ghost" onClick={onDone}><X className="h-4 w-4" /></Button>
+                <Button type="submit" size="sm" disabled={form.processing}>
+                    Add row
+                </Button>
+                <Button
+                    type="button"
+                    size="sm"
+                    variant="ghost"
+                    onClick={onDone}
+                >
+                    <X className="h-4 w-4" />
+                </Button>
             </div>
         </form>
     );
@@ -111,13 +233,18 @@ function AddListForm({ board, onDone }: { board: Board; onDone: () => void }) {
 
 type SortableCardProps = {
     card: Card;
-    board: Board;
-    lists: BoardList[];
     onOpen: (card: Card) => void;
 };
 
-function SortableCard({ card, board, lists, onOpen }: SortableCardProps) {
-    const { attributes, listeners, setNodeRef, transform, transition, isDragging } = useSortable({
+function SortableCard({ card, onOpen }: SortableCardProps) {
+    const {
+        attributes,
+        listeners,
+        setNodeRef,
+        transform,
+        transition,
+        isDragging,
+    } = useSortable({
         id: `card-${card.id}`,
         data: { type: 'card', card },
     });
@@ -132,7 +259,7 @@ function SortableCard({ card, board, lists, onOpen }: SortableCardProps) {
         <div
             ref={setNodeRef}
             style={style}
-            className={`group cursor-pointer rounded-md border bg-card p-2 shadow-sm hover:shadow-md transition-shadow border-l-4 ${PRIORITY_COLORS[card.priority ?? 'none']}`}
+            className={`group cursor-pointer rounded-md border border-l-4 bg-card p-2 shadow-sm transition-shadow hover:shadow-md ${PRIORITY_COLORS[card.priority ?? 'none']}`}
             onClick={() => onOpen(card)}
         >
             <div className="flex items-start justify-between gap-1">
@@ -140,7 +267,7 @@ function SortableCard({ card, board, lists, onOpen }: SortableCardProps) {
                 <button
                     {...attributes}
                     {...listeners}
-                    className="shrink-0 cursor-grab opacity-0 group-hover:opacity-100 text-muted-foreground"
+                    className="shrink-0 cursor-grab text-muted-foreground opacity-0 group-hover:opacity-100"
                     onClick={(e) => e.stopPropagation()}
                 >
                     <GripVertical className="h-4 w-4" />
@@ -160,13 +287,33 @@ function SortableCard({ card, board, lists, onOpen }: SortableCardProps) {
                 </div>
             )}
 
-            {(card.assignees?.length || card.due_at || card.checklists?.length || card.github_link) ? (
+            {card.assignees?.length ||
+            card.due_at ||
+            card.checklists?.length ||
+            card.github_link ? (
                 <div className="mt-1.5 flex items-center gap-2 text-xs text-muted-foreground">
-                    {card.due_at && <span>{new Date(card.due_at).toLocaleDateString(undefined, { month: 'short', day: 'numeric' })}</span>}
+                    {card.due_at && (
+                        <span>
+                            {new Date(card.due_at).toLocaleDateString(
+                                undefined,
+                                { month: 'short', day: 'numeric' },
+                            )}
+                        </span>
+                    )}
                     {card.checklists?.length ? (
                         <span>
-                            {card.checklists.reduce((n, cl) => n + (cl.items?.filter((i) => i.is_completed).length ?? 0), 0)}/
-                            {card.checklists.reduce((n, cl) => n + (cl.items?.length ?? 0), 0)}
+                            {card.checklists.reduce(
+                                (n, cl) =>
+                                    n +
+                                    (cl.items?.filter((i) => i.is_completed)
+                                        .length ?? 0),
+                                0,
+                            )}
+                            /
+                            {card.checklists.reduce(
+                                (n, cl) => n + (cl.items?.length ?? 0),
+                                0,
+                            )}
                         </span>
                     ) : null}
                     {card.github_link && (
@@ -178,7 +325,12 @@ function SortableCard({ card, board, lists, onOpen }: SortableCardProps) {
                             title={`GitHub issue #${card.github_link.issue_number} (${card.github_link.state})`}
                             onClick={(e) => e.stopPropagation()}
                         >
-                            <svg className="h-3 w-3" viewBox="0 0 16 16" fill="currentColor" aria-hidden="true">
+                            <svg
+                                className="h-3 w-3"
+                                viewBox="0 0 16 16"
+                                fill="currentColor"
+                                aria-hidden="true"
+                            >
                                 <path d="M8 0C3.58 0 0 3.58 0 8c0 3.54 2.29 6.53 5.47 7.59.4.07.55-.17.55-.38 0-.19-.01-.82-.01-1.49-2.01.37-2.53-.49-2.69-.94-.09-.23-.48-.94-.82-1.13-.28-.15-.68-.52-.01-.53.63-.01 1.08.58 1.23.82.72 1.21 1.87.87 2.33.66.07-.52.28-.87.51-1.07-1.78-.2-3.64-.89-3.64-3.95 0-.87.31-1.59.82-2.15-.08-.2-.36-1.02.08-2.12 0 0 .67-.21 2.2.82.64-.18 1.32-.27 2-.27.68 0 1.36.09 2 .27 1.53-1.04 2.2-.82 2.2-.82.44 1.1.16 1.92.08 2.12.51.56.82 1.27.82 2.15 0 3.07-1.87 3.75-3.65 3.95.29.25.54.73.54 1.48 0 1.07-.01 1.93-.01 2.2 0 .21.15.46.55.38A8.013 8.013 0 0016 8c0-4.42-3.58-8-8-8z" />
                             </svg>
                             <span>#{card.github_link.issue_number}</span>
@@ -187,7 +339,10 @@ function SortableCard({ card, board, lists, onOpen }: SortableCardProps) {
                     {card.assignees?.length ? (
                         <div className="ml-auto flex -space-x-1">
                             {card.assignees.slice(0, 3).map((u) => (
-                                <div key={u.id} className="h-5 w-5 rounded-full bg-primary ring-1 ring-card flex items-center justify-center text-[10px] font-medium text-primary-foreground">
+                                <div
+                                    key={u.id}
+                                    className="flex h-5 w-5 items-center justify-center rounded-full bg-primary text-[10px] font-medium text-primary-foreground ring-1 ring-card"
+                                >
                                     {u.name.charAt(0).toUpperCase()}
                                 </div>
                             ))}
@@ -201,16 +356,24 @@ function SortableCard({ card, board, lists, onOpen }: SortableCardProps) {
 
 type ListColumnProps = {
     list: BoardList;
-    board: Board;
-    allLists: BoardList[];
     onOpenCard: (card: Card) => void;
     onDeleteList: (list: BoardList) => void;
 };
 
-function ListColumn({ list, board, allLists, onOpenCard, onDeleteList }: ListColumnProps) {
+function ListColumn({ list, onOpenCard, onDeleteList }: ListColumnProps) {
     const [addingCard, setAddingCard] = useState(false);
-    const cardIds = useMemo(() => (list.cards ?? []).map((c) => `card-${c.id}`), [list.cards]);
-    const { attributes, listeners, setNodeRef, transform, transition, isDragging } = useSortable({
+    const cardIds = useMemo(
+        () => (list.cards ?? []).map((c) => `card-${c.id}`),
+        [list.cards],
+    );
+    const {
+        attributes,
+        listeners,
+        setNodeRef,
+        transform,
+        transition,
+        isDragging,
+    } = useSortable({
         id: `list-${list.id}`,
         data: { type: 'list', list },
     });
@@ -230,7 +393,11 @@ function ListColumn({ list, board, allLists, onOpenCard, onDeleteList }: ListCol
     }
 
     return (
-        <div ref={setNodeRef} style={style} className="flex h-full max-h-full w-72 shrink-0 flex-col rounded-lg border bg-muted/50">
+        <div
+            ref={setNodeRef}
+            style={style}
+            className="flex h-full max-h-full w-72 shrink-0 flex-col rounded-lg border bg-muted/50"
+        >
             <div className="flex items-center justify-between px-3 py-2.5">
                 <div className="flex min-w-0 items-center gap-2">
                     <button
@@ -242,28 +409,53 @@ function ListColumn({ list, board, allLists, onOpenCard, onDeleteList }: ListCol
                     >
                         <GripVertical className="h-4 w-4" />
                     </button>
-                    <span className="truncate text-sm font-medium">{list.name}</span>
+                    <span className="truncate text-sm font-medium">
+                        {list.name}
+                    </span>
                 </div>
                 <div className="flex items-center gap-1">
-                    <span className="text-xs text-muted-foreground">{list.cards?.length ?? 0}</span>
+                    <span className="text-xs text-muted-foreground">
+                        {list.cards?.length ?? 0}
+                    </span>
                     <Popover>
                         <PopoverTrigger asChild>
-                            <Button variant="ghost" size="icon" className="h-7 w-7 text-muted-foreground" aria-label="Column settings">
+                            <Button
+                                variant="ghost"
+                                size="icon"
+                                className="h-7 w-7 text-muted-foreground"
+                                aria-label="Column settings"
+                            >
                                 <Settings className="h-4 w-4" />
                             </Button>
                         </PopoverTrigger>
-                        <PopoverContent className="w-64 space-y-3 p-3" align="end">
+                        <PopoverContent
+                            className="w-64 space-y-3 p-3"
+                            align="end"
+                        >
                             <div className="space-y-1.5">
-                                <p className="text-xs font-medium">When a card is moved here</p>
-                                <Select value={list.github_action ?? 'none'} onValueChange={saveGithubAction}>
+                                <p className="text-xs font-medium">
+                                    When a card is moved here
+                                </p>
+                                <Select
+                                    value={list.github_action ?? 'none'}
+                                    onValueChange={saveGithubAction}
+                                >
                                     <SelectTrigger className="h-8 text-xs">
                                         <SelectValue />
                                     </SelectTrigger>
                                     <SelectContent>
-                                        <SelectItem value="none">Do nothing</SelectItem>
-                                        <SelectItem value="open_issue">Create GitHub issue</SelectItem>
-                                        <SelectItem value="close_issue">Close GitHub issue</SelectItem>
-                                        <SelectItem value="reopen_issue">Reopen GitHub issue</SelectItem>
+                                        <SelectItem value="none">
+                                            Do nothing
+                                        </SelectItem>
+                                        <SelectItem value="open_issue">
+                                            Create GitHub issue
+                                        </SelectItem>
+                                        <SelectItem value="close_issue">
+                                            Close GitHub issue
+                                        </SelectItem>
+                                        <SelectItem value="reopen_issue">
+                                            Reopen GitHub issue
+                                        </SelectItem>
                                     </SelectContent>
                                 </Select>
                             </div>
@@ -283,17 +475,30 @@ function ListColumn({ list, board, allLists, onOpenCard, onDeleteList }: ListCol
                 </div>
             </div>
 
-            <SortableContext items={cardIds} strategy={verticalListSortingStrategy}>
-                <div className="flex min-h-0 flex-1 flex-col gap-2 overflow-y-auto px-2 pb-2" style={{ minHeight: 40 }}>
+            <SortableContext
+                items={cardIds}
+                strategy={verticalListSortingStrategy}
+            >
+                <div
+                    className="flex min-h-0 flex-1 flex-col gap-2 overflow-y-auto px-2 pb-2"
+                    style={{ minHeight: 40 }}
+                >
                     {(list.cards ?? []).map((card) => (
-                        <SortableCard key={card.id} card={card} board={board} lists={allLists} onOpen={onOpenCard} />
+                        <SortableCard
+                            key={card.id}
+                            card={card}
+                            onOpen={onOpenCard}
+                        />
                     ))}
                 </div>
             </SortableContext>
 
             <div className="px-2 pb-2">
                 {addingCard ? (
-                    <AddCardForm listId={list.id} onDone={() => setAddingCard(false)} />
+                    <AddCardForm
+                        listId={list.id}
+                        onDone={() => setAddingCard(false)}
+                    />
                 ) : (
                     <Button
                         variant="ghost"
@@ -319,26 +524,84 @@ function CardOverlay({ card }: { card: Card }) {
 }
 
 export default function BoardShow({ board, githubAccounts }: Props) {
-    const [lists, setLists] = useState<BoardList[]>(board.lists ?? []);
+    const boardLists = useMemo(
+        () => normalizeLists(board.lists ?? []),
+        [board.lists],
+    );
+    const boardListSignature = useMemo(
+        () =>
+            boardLists
+                .map(
+                    (list) =>
+                        `${list.id}:${(list.cards ?? []).map((card) => `${card.id}:${card.updated_at}`).join(',')}`,
+                )
+                .join('|'),
+        [boardLists],
+    );
+    const [listsState, setListsState] = useState<{
+        signature: string;
+        items: BoardList[];
+    }>({
+        signature: boardListSignature,
+        items: boardLists,
+    });
     const [activeCard, setActiveCard] = useState<Card | null>(null);
     const [addingList, setAddingList] = useState(false);
-    const [selectedCard, setSelectedCard] = useState<Card | null>(null);
+    const [selectedCardId, setSelectedCardId] = useState<number | null>(null);
+    const [movingCardId, setMovingCardId] = useState<number | null>(null);
     const [showSettings, setShowSettings] = useState(false);
+    const lists =
+        listsState.signature === boardListSignature
+            ? listsState.items
+            : boardLists;
+    const selectedCard = useMemo(
+        () =>
+            selectedCardId === null
+                ? null
+                : (lists
+                      .flatMap((list) => list.cards ?? [])
+                      .find((card) => card.id === selectedCardId) ?? null),
+        [lists, selectedCardId],
+    );
+
+    const updateLists = useCallback(
+        (
+            nextLists:
+                | BoardList[]
+                | ((currentLists: BoardList[]) => BoardList[]),
+        ) => {
+            setListsState((currentState) => {
+                const currentLists =
+                    currentState.signature === boardListSignature
+                        ? currentState.items
+                        : boardLists;
+                const resolvedLists =
+                    typeof nextLists === 'function'
+                        ? nextLists(currentLists)
+                        : nextLists;
+
+                return {
+                    signature: boardListSignature,
+                    items: resolvedLists,
+                };
+            });
+        },
+        [boardListSignature, boardLists],
+    );
 
     const sensors = useSensors(
         useSensor(PointerSensor, { activationConstraint: { distance: 5 } }),
     );
 
-    useEffect(() => {
-        setLists(board.lists ?? []);
-    }, [board.lists]);
-
     function findCard(id: string): { card: Card; listId: number } | null {
         for (const list of lists) {
             for (const card of list.cards ?? []) {
-                if (`card-${card.id}` === id) return { card, listId: list.id };
+                if (`card-${card.id}` === id) {
+                    return { card, listId: list.id };
+                }
             }
         }
+
         return null;
     }
 
@@ -348,7 +611,10 @@ export default function BoardShow({ board, githubAccounts }: Props) {
         }
 
         const found = findCard(String(event.active.id));
-        if (found) setActiveCard(found.card);
+
+        if (found) {
+            setActiveCard(found.card);
+        }
     }
 
     function onDragOver(event: DragOverEvent) {
@@ -357,62 +623,117 @@ export default function BoardShow({ board, githubAccounts }: Props) {
         }
 
         const { active, over } = event;
-        if (!over) return;
+
+        if (!over) {
+            return;
+        }
 
         const activeId = String(active.id);
         const overId = String(over.id);
-        if (activeId === overId) return;
+
+        if (activeId === overId) {
+            return;
+        }
 
         const activeFound = findCard(activeId);
-        if (!activeFound) return;
+
+        if (!activeFound) {
+            return;
+        }
 
         // Dropped over a list column (not a card)
         const overList = lists.find((l) => `list-${l.id}` === overId);
+
         if (overList) {
-            if (activeFound.listId === overList.id) return;
-            setLists((prev) =>
-                prev.map((list) => {
-                    if (list.id === activeFound.listId) {
-                        return { ...list, cards: (list.cards ?? []).filter((c) => c.id !== activeFound.card.id) };
-                    }
-                    if (list.id === overList.id) {
-                        return { ...list, cards: [...(list.cards ?? []), activeFound.card] };
-                    }
-                    return list;
-                }),
+            if (activeFound.listId === overList.id) {
+                return;
+            }
+
+            updateLists((prev) =>
+                normalizeLists(
+                    prev.map((list) => {
+                        if (list.id === activeFound.listId) {
+                            return {
+                                ...list,
+                                cards: (list.cards ?? []).filter(
+                                    (c) => c.id !== activeFound.card.id,
+                                ),
+                            };
+                        }
+
+                        if (list.id === overList.id) {
+                            return {
+                                ...list,
+                                cards: [
+                                    ...(list.cards ?? []),
+                                    activeFound.card,
+                                ],
+                            };
+                        }
+
+                        return list;
+                    }),
+                ),
             );
+
             return;
         }
 
         const overFound = findCard(overId);
-        if (!overFound) return;
+
+        if (!overFound) {
+            return;
+        }
 
         if (activeFound.listId === overFound.listId) {
-            // Reorder within same list
-            setLists((prev) =>
-                prev.map((list) => {
-                    if (list.id !== activeFound.listId) return list;
-                    const cards = list.cards ?? [];
-                    const oldIdx = cards.findIndex((c) => c.id === activeFound.card.id);
-                    const newIdx = cards.findIndex((c) => c.id === overFound.card.id);
-                    return { ...list, cards: arrayMove(cards, oldIdx, newIdx) };
-                }),
+            updateLists((prev) =>
+                normalizeLists(
+                    prev.map((list) => {
+                        if (list.id !== activeFound.listId) {
+                            return list;
+                        }
+
+                        const cards = list.cards ?? [];
+                        const oldIdx = cards.findIndex(
+                            (c) => c.id === activeFound.card.id,
+                        );
+                        const newIdx = cards.findIndex(
+                            (c) => c.id === overFound.card.id,
+                        );
+
+                        return {
+                            ...list,
+                            cards: arrayMove(cards, oldIdx, newIdx),
+                        };
+                    }),
+                ),
             );
         } else {
-            // Move to different list
-            setLists((prev) =>
-                prev.map((list) => {
-                    if (list.id === activeFound.listId) {
-                        return { ...list, cards: (list.cards ?? []).filter((c) => c.id !== activeFound.card.id) };
-                    }
-                    if (list.id === overFound.listId) {
-                        const cards = [...(list.cards ?? [])];
-                        const insertIdx = cards.findIndex((c) => c.id === overFound.card.id);
-                        cards.splice(insertIdx, 0, activeFound.card);
-                        return { ...list, cards };
-                    }
-                    return list;
-                }),
+            updateLists((prev) =>
+                normalizeLists(
+                    prev.map((list) => {
+                        if (list.id === activeFound.listId) {
+                            return {
+                                ...list,
+                                cards: (list.cards ?? []).filter(
+                                    (c) => c.id !== activeFound.card.id,
+                                ),
+                            };
+                        }
+
+                        if (list.id === overFound.listId) {
+                            const cards = [...(list.cards ?? [])];
+                            const insertIdx = cards.findIndex(
+                                (c) => c.id === overFound.card.id,
+                            );
+                            cards.splice(insertIdx, 0, activeFound.card);
+
+                            return { ...list, cards };
+                        }
+
+                        return list;
+                    }),
+                ),
             );
         }
     }
@@ -422,29 +743,37 @@ export default function BoardShow({ board, githubAccounts }: Props) {
 
         if (event.active.data.current?.type === 'list') {
             const overId = event.over?.id;
+
             if (!overId) {
                 return;
             }
 
-            const activeListId = Number(String(event.active.id).replace('list-', ''));
+            const activeListId = Number(
+                String(event.active.id).replace('list-', ''),
+            );
             const overListId = Number(String(overId).replace('list-', ''));
 
             if (activeListId === overListId) {
                 return;
             }
 
-            const oldIndex = lists.findIndex((list) => list.id === activeListId);
+            const oldIndex = lists.findIndex(
+                (list) => list.id === activeListId,
+            );
             const newIndex = lists.findIndex((list) => list.id === overListId);
+
             if (oldIndex === -1 || newIndex === -1) {
                 return;
             }
 
-            const reordered = arrayMove(lists, oldIndex, newIndex).map((list, index) => ({
-                ...list,
-                position: index + 1,
-            }));
+            const reordered = arrayMove(lists, oldIndex, newIndex).map(
+                (list, index) => ({
+                    ...list,
+                    position: index + 1,
+                }),
+            );
 
-            setLists(reordered);
+            updateLists(reordered);
 
             router.patch(
                 listRoutes.update(activeListId).url,
@@ -456,16 +785,29 @@ export default function BoardShow({ board, githubAccounts }: Props) {
         }
 
         const { active, over } = event;
-        if (!over) return;
+
+        if (!over) {
+            return;
+        }
 
         const activeId = String(active.id);
         const activeFound = findCard(activeId);
-        if (!activeFound) return;
 
-        const newList = lists.find((l) => l.cards?.some((c) => c.id === activeFound.card.id));
-        if (!newList) return;
+        if (!activeFound) {
+            return;
+        }
 
-        const newPosition = (newList.cards?.findIndex((c) => c.id === activeFound.card.id) ?? 0) + 1;
+        const newList = lists.find((l) =>
+            l.cards?.some((c) => c.id === activeFound.card.id),
+        );
+
+        if (!newList) {
+            return;
+        }
+
+        const newPosition =
+            (newList.cards?.findIndex((c) => c.id === activeFound.card.id) ??
+                0) + 1;
 
         router.post(
             cardRoutes.move(activeFound.card).url,
@@ -474,31 +816,72 @@ export default function BoardShow({ board, githubAccounts }: Props) {
         );
     }
 
-    const deleteList = useCallback((list: BoardList) => {
-        if (!window.confirm(`Delete row \"${list.name}\"?`)) {
-            return;
-        }
+    const deleteList = useCallback(
+        (list: BoardList) => {
+            if (!window.confirm(`Delete row "${list.name}"?`)) {
+                return;
+            }
 
-        const previousLists = lists;
-        setLists((prev) => prev
-            .filter((currentList) => currentList.id !== list.id)
-            .map((currentList, index) => ({ ...currentList, position: index + 1 })));
+            const previousLists = lists;
+            updateLists((prev) =>
+                prev
+                    .filter((currentList) => currentList.id !== list.id)
+                    .map((currentList, index) => ({
+                        ...currentList,
+                        position: index + 1,
+                    })),
+            );
 
-        router.delete(listRoutes.destroy(list.id).url, {
-            preserveScroll: true,
-            onError: () => {
-                setLists(previousLists);
-            },
-        });
-    }, [lists]);
+            router.delete(listRoutes.destroy(list.id).url, {
+                preserveScroll: true,
+                onError: () => {
+                    updateLists(previousLists);
+                },
+            });
+        },
+        [lists, updateLists],
+    );
+
+    const moveCardToList = useCallback(
+        (card: Card, targetList: BoardList) => {
+            if (card.list_id === targetList.id || movingCardId === card.id) {
+                return;
+            }
+
+            const previousLists = lists;
+            const nextPosition = (targetList.cards?.length ?? 0) + 1;
+
+            setMovingCardId(card.id);
+            updateLists((currentLists) =>
+                moveCardBetweenLists(
+                    currentLists,
+                    card.id,
+                    targetList.id,
+                    nextPosition,
+                ),
+            );
+
+            router.post(
+                cardRoutes.move(card).url,
+                { list_id: targetList.id, position: nextPosition },
+                {
+                    preserveScroll: true,
+                    onError: () => {
+                        updateLists(previousLists);
+                    },
+                    onFinish: () => {
+                        setMovingCardId((currentCardId) =>
+                            currentCardId === card.id ? null : currentCardId,
+                        );
+                    },
+                },
+            );
+        },
+        [lists, movingCardId, updateLists],
+    );
 
     function openCard(card: Card) {
-        // Find the latest version of the card from our state
-        for (const list of lists) {
-            const found = list.cards?.find((c) => c.id === card.id);
-            if (found) { setSelectedCard(found); return; }
-        }
-        setSelectedCard(card);
+        setSelectedCardId(card.id);
     }
 
     return (
@@ -506,9 +889,14 @@ export default function BoardShow({ board, githubAccounts }: Props) {
             <Head title={board.name} />
 
             <div className="flex h-full flex-col">
-                {/* Board Header */}
-                <div className="flex items-center gap-3 border-b px-6 py-3"
-                    style={board.background_color ? { borderBottomColor: board.background_color } : {}}>
+                <div
+                    className="flex items-center gap-3 border-b px-6 py-3"
+                    style={
+                        board.background_color
+                            ? { borderBottomColor: board.background_color }
+                            : {}
+                    }
+                >
                     <h1 className="text-xl font-bold">{board.name}</h1>
                     {board.visibility && board.visibility !== 'team' && (
                         <span className="rounded-full bg-muted px-2 py-0.5 text-xs text-muted-foreground capitalize">
@@ -517,16 +905,21 @@ export default function BoardShow({ board, githubAccounts }: Props) {
                     )}
                     <div className="ml-auto flex items-center gap-1">
                         <Button variant="ghost" size="sm" asChild>
-                            <Link href={`/boards/${board.slug}/report`}>Report</Link>
+                            <Link href={`/boards/${board.slug}/report`}>
+                                Report
+                            </Link>
                         </Button>
-                        <Button variant="ghost" size="sm" onClick={() => setShowSettings(true)}>
+                        <Button
+                            variant="ghost"
+                            size="sm"
+                            onClick={() => setShowSettings(true)}
+                        >
                             <Settings className="mr-1.5 h-4 w-4" />
                             Settings
                         </Button>
                     </div>
                 </div>
 
-                {/* Kanban */}
                 <div className="flex-1 overflow-x-auto overflow-y-hidden">
                     <DndContext
                         sensors={sensors}
@@ -544,8 +937,6 @@ export default function BoardShow({ board, githubAccounts }: Props) {
                                     <ListColumn
                                         key={list.id}
                                         list={list}
-                                        board={board}
-                                        allLists={lists}
                                         onOpenCard={openCard}
                                         onDeleteList={deleteList}
                                     />
@@ -553,7 +944,10 @@ export default function BoardShow({ board, githubAccounts }: Props) {
 
                                 <div className="w-72 shrink-0 rounded-lg border bg-muted/30 p-2">
                                     {addingList ? (
-                                        <AddListForm board={board} onDone={() => setAddingList(false)} />
+                                        <AddListForm
+                                            board={board}
+                                            onDone={() => setAddingList(false)}
+                                        />
                                     ) : (
                                         <Button
                                             variant="ghost"
@@ -570,7 +964,9 @@ export default function BoardShow({ board, githubAccounts }: Props) {
                         </SortableContext>
 
                         <DragOverlay>
-                            {activeCard ? <CardOverlay card={activeCard} /> : null}
+                            {activeCard ? (
+                                <CardOverlay card={activeCard} />
+                            ) : null}
                         </DragOverlay>
                     </DndContext>
                 </div>
@@ -581,8 +977,10 @@ export default function BoardShow({ board, githubAccounts }: Props) {
                     card={selectedCard}
                     board={board}
                     lists={lists}
+                    isMoving={movingCardId === selectedCard.id}
+                    onMoveToList={(list) => moveCardToList(selectedCard, list)}
                     open={!!selectedCard}
-                    onClose={() => setSelectedCard(null)}
+                    onClose={() => setSelectedCardId(null)}
                 />
             )}
 
@@ -597,10 +995,21 @@ export default function BoardShow({ board, githubAccounts }: Props) {
 }
 
 BoardShow.layout = (props: Props): { breadcrumbs: BreadcrumbItem[] } => {
-    const crumbs: BreadcrumbItem[] = [{ title: 'Dashboard', href: dashboard() }];
+    const crumbs: BreadcrumbItem[] = [
+        { title: 'Dashboard', href: dashboard() },
+    ];
+
     if (props.board.project) {
-        crumbs.push({ title: props.board.project.name, href: projectRoutes.show(props.board.project).url });
+        crumbs.push({
+            title: props.board.project.name,
+            href: projectRoutes.show(props.board.project).url,
+        });
     }
-    crumbs.push({ title: props.board.name, href: boardRoutes.show(props.board).url });
+
+    crumbs.push({
+        title: props.board.name,
+        href: boardRoutes.show(props.board).url,
+    });
+
     return { breadcrumbs: crumbs };
 };
