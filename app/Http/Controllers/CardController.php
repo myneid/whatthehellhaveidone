@@ -30,7 +30,7 @@ class CardController extends Controller
     public function store(StoreCardRequest $request): RedirectResponse
     {
         $list = BoardList::findOrFail($request->list_id);
-        $this->authorize('update', $list->board);
+        $this->authorize('create', [Card::class, $list->board]);
 
         $position = Card::where('list_id', $list->id)->whereNull('archived_at')->max('position') ?? 0;
 
