@@ -106,7 +106,9 @@ Route::middleware(['auth', 'verified'])->group(function () {
     Route::patch('checklist-items/{checklistItem}/toggle', [ChecklistItemController::class, 'toggle'])->name('checklist-items.toggle');
 
     // Work Log
-    Route::resource('work-log', WorkLogController::class)->except(['create', 'edit']);
+    Route::resource('work-log', WorkLogController::class)
+        ->parameters(['work-log' => 'workLogEntry'])
+        ->except(['create', 'edit']);
     Route::get('work-log/export', [WorkLogController::class, 'export'])->name('work-log.export');
 
     // Documents

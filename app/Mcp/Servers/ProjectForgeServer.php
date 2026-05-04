@@ -12,6 +12,7 @@ use App\Mcp\Tools\ListCardsTool;
 use App\Mcp\Tools\ListDocumentsTool;
 use App\Mcp\Tools\ListProjectsTool;
 use App\Mcp\Tools\MoveCardTool;
+use App\Mcp\Tools\UpdateWorkLogEntryTool;
 use Laravel\Mcp\Server;
 use Laravel\Mcp\Server\Attributes\Instructions;
 use Laravel\Mcp\Server\Attributes\Name;
@@ -30,6 +31,7 @@ class ProjectForgeServer extends Server
         CreateCardTool::class,
         MoveCardTool::class,
         CreateWorkLogEntryTool::class,
+        UpdateWorkLogEntryTool::class,
         GetDailyWorkLogTool::class,
         ListDocumentsTool::class,
         GetDocumentTool::class,

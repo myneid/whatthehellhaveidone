@@ -1,6 +1,6 @@
-import { Head, Link, router, useForm, usePage } from '@inertiajs/react';
-import { Download, Plus, Search } from 'lucide-react';
-import { useState } from 'react';
+import { Head, Link, router, useForm } from '@inertiajs/react';
+import { Download, Pencil, Plus, Search } from 'lucide-react';
+import { useEffect, useState } from 'react';
 import { Button } from '@/components/ui/button';
 import { Dialog, DialogContent, DialogFooter, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { Input } from '@/components/ui/input';
@@ -27,11 +27,19 @@ type Props = {
 };
 
 function CreateEntryDialog({ open, onClose }: { open: boolean; onClose: () => void }) {
-    const form = useForm({ body: '' });
+    const form = useForm({ body: '', duration_minutes: '' });
 
     function submit(e: React.FormEvent) {
         e.preventDefault();
-        form.post(workLog.store().url, { onSuccess: () => { form.reset(); onClose(); } });
+        form.transform((data) => ({
+            body: data.body,
+            duration_seconds: data.duration_minutes ? Math.round(Number(data.duration_minutes) * 60) : null,
+        })).post(workLog.store().url, {
+            onSuccess: () => {
+                form.reset();
+                onClose();
+            },
+        });
     }
 
     return (
@@ -52,7 +60,21 @@ function CreateEntryDialog({ open, onClose }: { open: boolean; onClose: () => vo
                             autoFocus
                             className="border-input bg-background w-full rounded-md border px-3 py-2 text-sm"
                         />
+                        <p className="text-xs text-muted-foreground">Use hashtags like #client-portal to auto-link projects.</p>
                         {form.errors.body && <p className="text-destructive text-sm">{form.errors.body}</p>}
+                    </div>
+                    <div className="space-y-1">
+                        <Label htmlFor="entry-duration">Time spent (minutes)</Label>
+                        <Input
+                            id="entry-duration"
+                            type="number"
+                            min={0}
+                            step="1"
+                            value={form.data.duration_minutes}
+                            onChange={(e) => form.setData('duration_minutes', e.target.value)}
+                            placeholder="Optional"
+                        />
+                        {form.errors.duration_seconds && <p className="text-destructive text-sm">{form.errors.duration_seconds}</p>}
                     </div>
                     <DialogFooter>
                         <Button variant="outline" type="button" onClick={onClose}>
@@ -60,6 +82,84 @@ function CreateEntryDialog({ open, onClose }: { open: boolean; onClose: () => vo
                         </Button>
                         <Button type="submit" disabled={form.processing}>
                             Save Entry
+                        </Button>
+                    </DialogFooter>
+                </form>
+            </DialogContent>
+        </Dialog>
+    );
+}
+
+function EditEntryDialog({ entry, onClose }: { entry: WorkLogEntry | null; onClose: () => void }) {
+    const form = useForm({ body: '', duration_minutes: '' });
+
+    useEffect(() => {
+        if (!entry) {
+            return;
+        }
+
+        form.setData({
+            body: entry.body,
+            duration_minutes: entry.duration_seconds ? Math.round(entry.duration_seconds / 60).toString() : '',
+        });
+    }, [entry]);
+
+    function submit(e: React.FormEvent) {
+        e.preventDefault();
+        if (!entry) {
+            return;
+        }
+
+        form.transform((data) => ({
+            body: data.body,
+            duration_seconds: data.duration_minutes ? Math.round(Number(data.duration_minutes) * 60) : null,
+        })).put(workLog.update(entry.id).url, {
+            onSuccess: () => {
+                form.reset();
+                onClose();
+            },
+        });
+    }
+
+    return (
+        <Dialog open={Boolean(entry)} onOpenChange={(v) => !v && onClose()}>
+            <DialogContent>
+                <DialogHeader>
+                    <DialogTitle>Edit Work Log Entry</DialogTitle>
+                </DialogHeader>
+                <form onSubmit={submit} className="space-y-4">
+                    <div className="space-y-1">
+                        <Label htmlFor="edit-entry-body">Entry</Label>
+                        <textarea
+                            id="edit-entry-body"
+                            value={form.data.body}
+                            onChange={(e) => form.setData('body', e.target.value)}
+                            rows={4}
+                            autoFocus
+                            className="border-input bg-background w-full rounded-md border px-3 py-2 text-sm"
+                        />
+                        <p className="text-xs text-muted-foreground">Hashtags are re-parsed when you save this entry.</p>
+                        {form.errors.body && <p className="text-destructive text-sm">{form.errors.body}</p>}
+                    </div>
+                    <div className="space-y-1">
+                        <Label htmlFor="edit-entry-duration">Time spent (minutes)</Label>
+                        <Input
+                            id="edit-entry-duration"
+                            type="number"
+                            min={0}
+                            step="1"
+                            value={form.data.duration_minutes}
+                            onChange={(e) => form.setData('duration_minutes', e.target.value)}
+                            placeholder="Optional"
+                        />
+                        {form.errors.duration_seconds && <p className="text-destructive text-sm">{form.errors.duration_seconds}</p>}
+                    </div>
+                    <DialogFooter>
+                        <Button variant="outline" type="button" onClick={onClose}>
+                            Cancel
+                        </Button>
+                        <Button type="submit" disabled={form.processing}>
+                            Save Changes
                         </Button>
                     </DialogFooter>
                 </form>
@@ -92,6 +192,7 @@ function formatDuration(seconds: number): string {
 
 export default function WorkLogIndex({ entries, filters }: Props) {
     const [showCreate, setShowCreate] = useState(false);
+    const [editingEntry, setEditingEntry] = useState<WorkLogEntry | null>(null);
     const [search, setSearch] = useState(filters.search ?? '');
 
     function applyFilters(newFilters: Partial<Filters>) {
@@ -238,6 +339,10 @@ export default function WorkLogIndex({ entries, filters }: Props) {
                                                 minute: '2-digit',
                                             })}
                                         </time>
+                                        <Button size="icon" variant="ghost" onClick={() => setEditingEntry(entry)}>
+                                            <Pencil className="h-4 w-4" />
+                                            <span className="sr-only">Edit entry</span>
+                                        </Button>
                                     </div>
                                 </div>
                             ))}
@@ -269,6 +374,7 @@ export default function WorkLogIndex({ entries, filters }: Props) {
             </div>
 
             <CreateEntryDialog open={showCreate} onClose={() => setShowCreate(false)} />
+            <EditEntryDialog entry={editingEntry} onClose={() => setEditingEntry(null)} />
         </>
     );
 }

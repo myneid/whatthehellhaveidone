@@ -3,6 +3,7 @@
 namespace App\Http\Controllers\Api;
 
 use App\Http\Controllers\Controller;
+use App\Http\Requests\UpdateWorkLogEntryRequest;
 use App\Models\WorkLogEntry;
 use App\Services\WorkLogService;
 use Illuminate\Http\JsonResponse;
@@ -56,5 +57,22 @@ class WorkLogApiController extends Controller
             ->get();
 
         return response()->json($entries);
+    }
+
+    public function update(UpdateWorkLogEntryRequest $request, WorkLogEntry $workLogEntry): JsonResponse
+    {
+        abort_if($workLogEntry->user_id !== $request->user()->id, 403);
+
+        $validated = $request->validated();
+
+        $entry = $this->workLogService->updateEntryFromHashtags(
+            $workLogEntry,
+            $validated['body'],
+            collect($validated)
+                ->except(['body'])
+                ->all(),
+        );
+
+        return response()->json(['entry' => $entry->load(['project', 'board', 'card'])]);
     }
 }

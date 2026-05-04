@@ -6,6 +6,7 @@ use App\Models\BoardList;
 use App\Models\Card;
 use App\Models\User;
 use App\Models\WorkLogEntry;
+use App\Models\WorkLogProjectAlias;
 use App\WorkLogEntryType;
 use App\WorkLogSource;
 
@@ -46,14 +47,7 @@ class WorkLogService
 
     public function logFromHashtags(string $body, User $user, array $extra = []): WorkLogEntry
     {
-        preg_match_all('/#([a-zA-Z0-9_-]+)/', $body, $matches);
-        $hashtags = $matches[1] ?? [];
-
-        $projectId = null;
-        if ($hashtags) {
-            $alias = \App\Models\WorkLogProjectAlias::whereIn('alias', $hashtags)->first();
-            $projectId = $alias?->project_id;
-        }
+        ['hashtags' => $hashtags, 'project_id' => $projectId] = $this->extractHashtagsAndProject($body);
 
         return WorkLogEntry::create([
             'user_id' => $user->id,
@@ -64,5 +58,39 @@ class WorkLogService
             'hashtags' => $hashtags ?: null,
             ...$extra,
         ]);
+    }
+
+    public function updateEntryFromHashtags(WorkLogEntry $entry, string $body, array $extra = []): WorkLogEntry
+    {
+        ['hashtags' => $hashtags, 'project_id' => $projectId] = $this->extractHashtagsAndProject($body);
+
+        $entry->update([
+            'body' => $body,
+            'project_id' => $projectId,
+            'hashtags' => $hashtags ?: null,
+            ...$extra,
+        ]);
+
+        return $entry->refresh();
+    }
+
+    /**
+     * @return array{hashtags: array<int, string>, project_id: int|null}
+     */
+    private function extractHashtagsAndProject(string $body): array
+    {
+        preg_match_all('/#([a-zA-Z0-9_-]+)/', $body, $matches);
+        $hashtags = array_values(array_unique($matches[1] ?? []));
+
+        $projectId = null;
+        if ($hashtags !== []) {
+            $alias = WorkLogProjectAlias::whereIn('alias', $hashtags)->first();
+            $projectId = $alias?->project_id;
+        }
+
+        return [
+            'hashtags' => $hashtags,
+            'project_id' => $projectId,
+        ];
     }
 }

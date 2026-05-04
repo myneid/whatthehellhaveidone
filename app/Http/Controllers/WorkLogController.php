@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Http\Requests\StoreWorkLogEntryRequest;
+use App\Http\Requests\UpdateWorkLogEntryRequest;
 use App\Models\WorkLogEntry;
 use App\Services\WorkLogService;
 use Illuminate\Http\RedirectResponse;
@@ -45,12 +46,19 @@ class WorkLogController extends Controller
         return back();
     }
 
-    public function update(Request $request, WorkLogEntry $workLogEntry): RedirectResponse
+    public function update(UpdateWorkLogEntryRequest $request, WorkLogEntry $workLogEntry): RedirectResponse
     {
         abort_if($workLogEntry->user_id !== $request->user()->id, 403);
 
-        $request->validate(['body' => ['required', 'string']]);
-        $workLogEntry->update(['body' => $request->body]);
+        $validated = $request->validated();
+
+        $this->workLogService->updateEntryFromHashtags(
+            $workLogEntry,
+            $validated['body'],
+            collect($validated)
+                ->except(['body'])
+                ->all(),
+        );
 
         return back();
     }
@@ -80,22 +88,22 @@ class WorkLogController extends Controller
                 $csv .= implode(',', [
                     $entry->id,
                     $entry->created_at->toDateTimeString(),
-                    '"' . str_replace('"', '""', $entry->body) . '"',
+                    '"'.str_replace('"', '""', $entry->body).'"',
                     $entry->source,
                     $entry->entry_type,
                     $entry->project?->name ?? '',
                     $entry->board?->name ?? '',
                     $entry->card?->title ?? '',
-                ]) . "\n";
+                ])."\n";
             }
 
             return response($csv)
                 ->header('Content-Type', 'text/csv')
-                ->header('Content-Disposition', 'attachment; filename="work-log-' . now()->format('Y-m-d') . '.csv"');
+                ->header('Content-Disposition', 'attachment; filename="work-log-'.now()->format('Y-m-d').'.csv"');
         }
 
         return response(json_encode($entries->toArray(), JSON_PRETTY_PRINT))
             ->header('Content-Type', 'application/json')
-            ->header('Content-Disposition', 'attachment; filename="work-log-' . now()->format('Y-m-d') . '.json"');
+            ->header('Content-Disposition', 'attachment; filename="work-log-'.now()->format('Y-m-d').'.json"');
     }
 }
