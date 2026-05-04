@@ -28,13 +28,16 @@ type Props = {
 
 function CreateEntryDialog({ open, onClose }: { open: boolean; onClose: () => void }) {
     const form = useForm({ body: '', duration_minutes: '' });
+    const durationError = form.errors.duration_minutes ?? (form.errors as Record<string, string | undefined>).duration_seconds;
 
     function submit(e: React.FormEvent) {
         e.preventDefault();
         form.transform((data) => ({
             body: data.body,
             duration_seconds: data.duration_minutes ? Math.round(Number(data.duration_minutes) * 60) : null,
-        })).post(workLog.store().url, {
+        }));
+
+        form.post(workLog.store().url, {
             onSuccess: () => {
                 form.reset();
                 onClose();
@@ -74,7 +77,7 @@ function CreateEntryDialog({ open, onClose }: { open: boolean; onClose: () => vo
                             onChange={(e) => form.setData('duration_minutes', e.target.value)}
                             placeholder="Optional"
                         />
-                        {form.errors.duration_seconds && <p className="text-destructive text-sm">{form.errors.duration_seconds}</p>}
+                        {durationError && <p className="text-destructive text-sm">{durationError}</p>}
                     </div>
                     <DialogFooter>
                         <Button variant="outline" type="button" onClick={onClose}>
@@ -92,6 +95,7 @@ function CreateEntryDialog({ open, onClose }: { open: boolean; onClose: () => vo
 
 function EditEntryDialog({ entry, onClose }: { entry: WorkLogEntry | null; onClose: () => void }) {
     const form = useForm({ body: '', duration_minutes: '' });
+    const durationError = form.errors.duration_minutes ?? (form.errors as Record<string, string | undefined>).duration_seconds;
 
     useEffect(() => {
         if (!entry) {
@@ -113,7 +117,9 @@ function EditEntryDialog({ entry, onClose }: { entry: WorkLogEntry | null; onClo
         form.transform((data) => ({
             body: data.body,
             duration_seconds: data.duration_minutes ? Math.round(Number(data.duration_minutes) * 60) : null,
-        })).put(workLog.update(entry.id).url, {
+        }));
+
+        form.put(workLog.update(entry.id).url, {
             onSuccess: () => {
                 form.reset();
                 onClose();
@@ -152,7 +158,7 @@ function EditEntryDialog({ entry, onClose }: { entry: WorkLogEntry | null; onClo
                             onChange={(e) => form.setData('duration_minutes', e.target.value)}
                             placeholder="Optional"
                         />
-                        {form.errors.duration_seconds && <p className="text-destructive text-sm">{form.errors.duration_seconds}</p>}
+                        {durationError && <p className="text-destructive text-sm">{durationError}</p>}
                     </div>
                     <DialogFooter>
                         <Button variant="outline" type="button" onClick={onClose}>
@@ -205,7 +211,13 @@ export default function WorkLogIndex({ entries, filters }: Props) {
     }
 
     function exportData(format: 'json' | 'csv') {
-        window.location.href = workLogExport.url({ format, date_from: filters.date_from, date_to: filters.date_to });
+        window.location.href = workLogExport.url({
+            query: {
+                format,
+                date_from: filters.date_from,
+                date_to: filters.date_to,
+            },
+        });
     }
 
     return (
