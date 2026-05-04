@@ -20,7 +20,7 @@ import {
 } from '@dnd-kit/sortable';
 import { CSS } from '@dnd-kit/utilities';
 import { Head, Link, router, useForm } from '@inertiajs/react';
-import { GripVertical, Plus, Settings, Trash2, X } from 'lucide-react';
+import { GripVertical, Paperclip, Plus, Settings, Trash2, X } from 'lucide-react';
 import { useCallback, useMemo, useState } from 'react';
 import { BoardSettingsSheet } from '@/components/boards/board-settings-sheet';
 import { CardModal } from '@/components/boards/card-modal';
@@ -288,6 +288,7 @@ function SortableCard({ card, onOpen }: SortableCardProps) {
             )}
 
             {card.assignees?.length ||
+            card.attachments?.length ||
             card.due_at ||
             card.checklists?.length ||
             card.github_link ? (
@@ -314,6 +315,12 @@ function SortableCard({ card, onOpen }: SortableCardProps) {
                                 (n, cl) => n + (cl.items?.length ?? 0),
                                 0,
                             )}
+                        </span>
+                    ) : null}
+                    {card.attachments?.length ? (
+                        <span className="inline-flex items-center gap-1" title={`${card.attachments.length} attachment${card.attachments.length === 1 ? '' : 's'}`}>
+                            <Paperclip className="h-3 w-3" />
+                            <span>{card.attachments.length}</span>
                         </span>
                     ) : null}
                     {card.github_link && (
