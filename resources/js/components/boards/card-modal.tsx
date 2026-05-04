@@ -261,25 +261,54 @@ function AttachmentsSection({ card }: { card: Card }) {
     const fileRef = useRef<HTMLInputElement>(null);
     const [uploading, setUploading] = useState(false);
     const [previewImage, setPreviewImage] = useState<CardAttachment | null>(null);
+    const [pendingFile, setPendingFile] = useState<File | null>(null);
+    const [pendingPreviewUrl, setPendingPreviewUrl] = useState<string | null>(
+        null,
+    );
 
-    function upload(e: React.ChangeEvent<HTMLInputElement>) {
+    function clearPending() {
+        if (pendingPreviewUrl) {
+            URL.revokeObjectURL(pendingPreviewUrl);
+        }
+
+        setPendingFile(null);
+        setPendingPreviewUrl(null);
+
+        if (fileRef.current) {
+            fileRef.current.value = '';
+        }
+    }
+
+    function selectFile(e: React.ChangeEvent<HTMLInputElement>) {
         const file = e.target.files?.[0];
 
         if (!file) {
             return;
         }
 
+        if (pendingPreviewUrl) {
+            URL.revokeObjectURL(pendingPreviewUrl);
+        }
+
+        setPendingFile(file);
+        setPendingPreviewUrl(
+            file.type.startsWith('image/') ? URL.createObjectURL(file) : null,
+        );
+    }
+
+    function uploadPendingFile() {
+        if (!pendingFile) {
+            return;
+        }
+
         setUploading(true);
         const data = new FormData();
-        data.append('file', file);
+        data.append('file', pendingFile);
         router.post(cardAttachments.store(card).url, data as any, {
             preserveScroll: true,
             onFinish: () => {
                 setUploading(false);
-
-                if (fileRef.current) {
-                    fileRef.current.value = '';
-                }
+                clearPending();
             },
         });
     }
@@ -308,16 +337,63 @@ function AttachmentsSection({ card }: { card: Card }) {
                     disabled={uploading}
                 >
                     <Image className="mr-1 h-3 w-3" />
-                    {uploading ? 'Uploading…' : 'Add'}
+                    {pendingFile ? 'Replace' : 'Add'}
                 </Button>
                 <input
                     ref={fileRef}
                     type="file"
                     className="hidden"
                     accept="image/*,.pdf,.doc,.docx,.xls,.xlsx,.txt"
-                    onChange={upload}
+                    onChange={selectFile}
                 />
             </div>
+
+            {pendingFile && (
+                <div className="mb-2 space-y-2 rounded-md border bg-muted/30 p-2">
+                    <p className="text-xs font-medium text-muted-foreground uppercase">
+                        Preview before saving
+                    </p>
+
+                    {pendingPreviewUrl ? (
+                        <div className="overflow-hidden rounded-md border bg-background">
+                            <img
+                                src={pendingPreviewUrl}
+                                alt={pendingFile.name}
+                                className="max-h-56 w-full object-contain"
+                            />
+                        </div>
+                    ) : (
+                        <div className="rounded-md border bg-background px-2 py-1.5 text-xs">
+                            <p className="truncate font-medium">
+                                {pendingFile.name}
+                            </p>
+                            <p className="text-muted-foreground">
+                                {(pendingFile.size / 1024).toFixed(1)} KB
+                            </p>
+                        </div>
+                    )}
+
+                    <div className="flex items-center justify-end gap-2">
+                        <Button
+                            type="button"
+                            size="sm"
+                            variant="ghost"
+                            onClick={clearPending}
+                            disabled={uploading}
+                        >
+                            Cancel
+                        </Button>
+                        <Button
+                            type="button"
+                            size="sm"
+                            onClick={uploadPendingFile}
+                            disabled={uploading}
+                        >
+                            {uploading ? 'Uploading…' : 'Save'}
+                        </Button>
+                    </div>
+                </div>
+            )}
 
             {images.length > 0 && (
                 <div className="mb-2 grid grid-cols-3 gap-1.5">
