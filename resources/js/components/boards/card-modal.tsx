@@ -260,6 +260,7 @@ function GitHubIssueSection({ card }: { card: Card }) {
 function AttachmentsSection({ card }: { card: Card }) {
     const fileRef = useRef<HTMLInputElement>(null);
     const [uploading, setUploading] = useState(false);
+    const [previewImage, setPreviewImage] = useState<CardAttachment | null>(null);
 
     function upload(e: React.ChangeEvent<HTMLInputElement>) {
         const file = e.target.files?.[0];
@@ -325,14 +326,24 @@ function AttachmentsSection({ card }: { card: Card }) {
                             key={img.id}
                             className="group relative aspect-video overflow-hidden rounded-md border bg-muted"
                         >
-                            <img
-                                src={img.url ?? ''}
-                                alt={img.filename}
-                                className="h-full w-full object-cover"
-                            />
                             <button
                                 type="button"
-                                onClick={() => remove(img)}
+                                className="h-full w-full"
+                                onClick={() => setPreviewImage(img)}
+                                title="Open image preview"
+                            >
+                                <img
+                                    src={img.url ?? ''}
+                                    alt={img.filename}
+                                    className="h-full w-full object-cover"
+                                />
+                            </button>
+                            <button
+                                type="button"
+                                onClick={(event) => {
+                                    event.stopPropagation();
+                                    remove(img);
+                                }}
                                 className="absolute top-1 right-1 hidden rounded-full bg-black/60 p-0.5 text-white group-hover:flex"
                             >
                                 <X className="h-3 w-3" />
@@ -341,6 +352,34 @@ function AttachmentsSection({ card }: { card: Card }) {
                     ))}
                 </div>
             )}
+
+            <Dialog
+                open={previewImage !== null}
+                onOpenChange={(open) => {
+                    if (!open) {
+                        setPreviewImage(null);
+                    }
+                }}
+            >
+                <DialogContent className="w-[95vw] max-w-5xl p-2 sm:p-4">
+                    {previewImage && (
+                        <div className="space-y-2">
+                            <DialogHeader>
+                                <DialogTitle className="truncate text-sm">
+                                    {previewImage.filename}
+                                </DialogTitle>
+                            </DialogHeader>
+                            <div className="max-h-[80vh] overflow-auto rounded-md border bg-muted/20 p-1">
+                                <img
+                                    src={previewImage.url ?? ''}
+                                    alt={previewImage.filename}
+                                    className="mx-auto h-auto max-h-[75vh] w-auto max-w-full object-contain"
+                                />
+                            </div>
+                        </div>
+                    )}
+                </DialogContent>
+            </Dialog>
 
             {files.length > 0 && (
                 <div className="space-y-1">
