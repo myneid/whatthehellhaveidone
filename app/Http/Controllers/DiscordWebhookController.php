@@ -81,6 +81,7 @@ class DiscordWebhookController extends Controller
         try {
             $url = Crypt::decryptString($webhook->encrypted_webhook_url);
             Http::post($url, [
+                'username' => 'WHHID bot',
                 'content' => "✅ **WHHID Test**\nWebhook configured successfully for board: **{$board->name}**",
             ]);
 

@@ -540,7 +540,20 @@ export default function BoardShow({ board, githubAccounts }: Props) {
             boardLists
                 .map(
                     (list) =>
-                        `${list.id}:${(list.cards ?? []).map((card) => `${card.id}:${card.updated_at}`).join(',')}`,
+                        `${list.id}:${(list.cards ?? [])
+                            .map((card) => {
+                                const attachmentSignature = (
+                                    card.attachments ?? []
+                                )
+                                    .map(
+                                        (attachment) =>
+                                            `${attachment.id}:${attachment.updated_at}`,
+                                    )
+                                    .join('.');
+
+                                return `${card.id}:${card.updated_at}:${attachmentSignature}`;
+                            })
+                            .join(',')}`,
                 )
                 .join('|'),
         [boardLists],

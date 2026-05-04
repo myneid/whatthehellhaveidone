@@ -86,6 +86,7 @@ class SendDiscordNotification implements ShouldQueue
         };
 
         return [
+            'username' => 'WHHID bot',
             'embeds' => [[
                 'title' => $title,
                 'description' => $description,
