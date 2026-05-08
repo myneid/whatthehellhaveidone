@@ -152,6 +152,16 @@ return [
             'confirmPassword' => true,
             // 'window' => 0
         ]),
+        Features::passkeys([
+            'confirmPassword' => true,
+        ]),
+    ],
+
+    'passkeys' => [
+        'relying_party_id' => parse_url(config('app.url'), PHP_URL_HOST),
+        'allowed_origins' => [config('app.url')],
+        'user_handle_secret' => config('app.key'),
+        'timeout' => 60000,
     ],
 
 ];

@@ -5,6 +5,7 @@ use App\Models\Project;
 use App\Models\User;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\RateLimiter;
+use Inertia\Testing\AssertableInertia as Assert;
 use Laravel\Fortify\Features;
 
 uses(RefreshDatabase::class);
@@ -12,7 +13,19 @@ uses(RefreshDatabase::class);
 test('login screen can be rendered', function () {
     $response = $this->get(route('login'));
 
-    $response->assertOk();
+    $response->assertOk()
+        ->assertInertia(fn (Assert $page) => $page
+            ->component('auth/login')
+            ->where('canUsePasskeys', Features::enabled(Features::passkeys()))
+        );
+});
+
+test('passkey login options endpoint can be accessed by guests', function () {
+    $this->skipUnlessFortifyHas(Features::passkeys());
+
+    $this->getJson(route('passkey.login-options'))
+        ->assertOk()
+        ->assertJsonStructure(['options']);
 });
 
 test('users can authenticate using the login screen', function () {

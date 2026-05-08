@@ -1,6 +1,7 @@
 import { Form, Head } from '@inertiajs/react';
+import { usePasskeyRegister } from '@laravel/passkeys/react';
 import { ShieldCheck } from 'lucide-react';
-import { useEffect, useRef, useState } from 'react';
+import { useEffect, useRef, useState, type FormEvent } from 'react';
 import SecurityController from '@/actions/App/Http/Controllers/Settings/SecurityController';
 import Heading from '@/components/heading';
 import InputError from '@/components/input-error';
@@ -8,6 +9,7 @@ import PasswordInput from '@/components/password-input';
 import TwoFactorRecoveryCodes from '@/components/two-factor-recovery-codes';
 import TwoFactorSetupModal from '@/components/two-factor-setup-modal';
 import { Button } from '@/components/ui/button';
+import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { useTwoFactorAuth } from '@/hooks/use-two-factor-auth';
 import { edit } from '@/routes/security';
@@ -15,12 +17,16 @@ import { disable, enable } from '@/routes/two-factor';
 
 type Props = {
     canManageTwoFactor?: boolean;
+    canManagePasskeys?: boolean;
+    passkeysEnabled?: boolean;
     requiresConfirmation?: boolean;
     twoFactorEnabled?: boolean;
 };
 
 export default function Security({
     canManageTwoFactor = false,
+    canManagePasskeys = false,
+    passkeysEnabled = false,
     requiresConfirmation = false,
     twoFactorEnabled = false,
 }: Props) {
@@ -39,6 +45,23 @@ export default function Security({
         errors,
     } = useTwoFactorAuth();
     const [showSetupModal, setShowSetupModal] = useState<boolean>(false);
+    const [passkeyName, setPasskeyName] = useState('');
+    const [passkeyRegisteredMessage, setPasskeyRegisteredMessage] = useState<
+        string | null
+    >(null);
+
+    const {
+        register: registerPasskey,
+        isLoading: isPasskeyRegistrationLoading,
+        error: passkeyRegistrationError,
+        isSupported: passkeyRegistrationSupported,
+    } = usePasskeyRegister({
+        onSuccess: () => {
+            setPasskeyName('');
+            setPasskeyRegisteredMessage('Passkey added successfully.');
+        },
+    });
+
     const prevTwoFactorEnabled = useRef(twoFactorEnabled);
 
     useEffect(() => {
@@ -48,6 +71,20 @@ export default function Security({
 
         prevTwoFactorEnabled.current = twoFactorEnabled;
     }, [twoFactorEnabled, clearTwoFactorAuthData]);
+
+    const handlePasskeyRegistration = async (event: FormEvent) => {
+        event.preventDefault();
+
+        setPasskeyRegisteredMessage(null);
+
+        const trimmedName = passkeyName.trim();
+
+        if (trimmedName.length === 0) {
+            return;
+        }
+
+        await registerPasskey(trimmedName);
+    };
 
     return (
         <>
@@ -233,6 +270,69 @@ export default function Security({
                         fetchSetupData={fetchSetupData}
                         errors={errors}
                     />
+                </div>
+            )}
+
+            {canManagePasskeys && (
+                <div className="space-y-6">
+                    <Heading
+                        variant="small"
+                        title="Passkeys"
+                        description="Sign in with biometrics or a hardware key without entering your password"
+                    />
+
+                    <div className="space-y-4">
+                        <p className="text-sm text-muted-foreground">
+                            {passkeysEnabled
+                                ? 'You already have passkeys enabled for this account. You can add another one below.'
+                                : 'Register a passkey from this device to use passwordless sign-in.'}
+                        </p>
+
+                        <form
+                            className="flex flex-col gap-3 sm:flex-row sm:items-center"
+                            onSubmit={(event) => void handlePasskeyRegistration(event)}
+                        >
+                            <Input
+                                value={passkeyName}
+                                onChange={(event) =>
+                                    setPasskeyName(event.target.value)
+                                }
+                                placeholder="e.g. MacBook Pro"
+                                aria-label="Passkey name"
+                                disabled={
+                                    isPasskeyRegistrationLoading ||
+                                    !passkeyRegistrationSupported
+                                }
+                            />
+
+                            <Button
+                                type="submit"
+                                disabled={
+                                    isPasskeyRegistrationLoading ||
+                                    !passkeyRegistrationSupported ||
+                                    passkeyName.trim().length === 0
+                                }
+                            >
+                                Register passkey
+                            </Button>
+                        </form>
+
+                        {passkeyRegisteredMessage && (
+                            <p className="text-sm text-green-600">
+                                {passkeyRegisteredMessage}
+                            </p>
+                        )}
+
+                        <InputError
+                            message={passkeyRegistrationError ?? undefined}
+                        />
+
+                        {!passkeyRegistrationSupported && (
+                            <p className="text-sm text-muted-foreground">
+                                Your browser or device does not support passkeys.
+                            </p>
+                        )}
+                    </div>
                 </div>
             )}
         </>

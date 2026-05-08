@@ -19,10 +19,20 @@ class SecurityController extends Controller implements HasMiddleware
      */
     public static function middleware(): array
     {
-        return Features::canManageTwoFactorAuthentication()
-            && Features::optionEnabled(Features::twoFactorAuthentication(), 'confirmPassword')
+        return static::requiresPasswordConfirmation()
                 ? [new Middleware('password.confirm', only: ['edit'])]
                 : [];
+    }
+
+    /**
+     * Determine whether password confirmation is required for the security page.
+     */
+    private static function requiresPasswordConfirmation(): bool
+    {
+        return (Features::canManageTwoFactorAuthentication()
+            && Features::optionEnabled(Features::twoFactorAuthentication(), 'confirmPassword'))
+            || (Features::canManagePasskeys()
+                && Features::optionEnabled(Features::passkeys(), 'confirmPassword'));
     }
 
     /**
@@ -32,6 +42,7 @@ class SecurityController extends Controller implements HasMiddleware
     {
         $props = [
             'canManageTwoFactor' => Features::canManageTwoFactorAuthentication(),
+            'canManagePasskeys' => Features::canManagePasskeys(),
         ];
 
         if (Features::canManageTwoFactorAuthentication()) {
@@ -39,6 +50,10 @@ class SecurityController extends Controller implements HasMiddleware
 
             $props['twoFactorEnabled'] = $request->user()->hasEnabledTwoFactorAuthentication();
             $props['requiresConfirmation'] = Features::optionEnabled(Features::twoFactorAuthentication(), 'confirm');
+        }
+
+        if (Features::canManagePasskeys()) {
+            $props['passkeysEnabled'] = $request->user()->hasPasskeysEnabled();
         }
 
         return Inertia::render('settings/security', $props);

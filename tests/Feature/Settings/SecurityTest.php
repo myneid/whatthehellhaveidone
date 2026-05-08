@@ -1,9 +1,12 @@
 <?php
 
 use App\Models\User;
+use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\Hash;
 use Inertia\Testing\AssertableInertia as Assert;
 use Laravel\Fortify\Features;
+
+uses(RefreshDatabase::class);
 
 test('security page is displayed', function () {
     $this->skipUnlessFortifyHas(Features::twoFactorAuthentication());
@@ -21,6 +24,7 @@ test('security page is displayed', function () {
         ->assertInertia(fn (Assert $page) => $page
             ->component('settings/security')
             ->where('canManageTwoFactor', true)
+            ->where('canManagePasskeys', true)
             ->where('twoFactorEnabled', false),
         );
 });
@@ -51,6 +55,10 @@ test('security page does not require password confirmation when disabled', funct
         'confirmPassword' => false,
     ]);
 
+    Features::passkeys([
+        'confirmPassword' => false,
+    ]);
+
     $this->actingAs($user)
         ->get(route('security.edit'))
         ->assertOk()
@@ -72,6 +80,7 @@ test('security page renders without two factor when feature is disabled', functi
         ->assertInertia(fn (Assert $page) => $page
             ->component('settings/security')
             ->where('canManageTwoFactor', false)
+            ->where('canManagePasskeys', false)
             ->missing('twoFactorEnabled')
             ->missing('requiresConfirmation'),
         );

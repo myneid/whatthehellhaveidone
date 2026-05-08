@@ -1,4 +1,5 @@
-import { Form, Head } from '@inertiajs/react';
+import { Form, Head, router } from '@inertiajs/react';
+import { usePasskeyVerify } from '@laravel/passkeys/react';
 import InputError from '@/components/input-error';
 import PasswordInput from '@/components/password-input';
 import TextLink from '@/components/text-link';
@@ -16,6 +17,7 @@ type Props = {
     status?: string;
     canResetPassword: boolean;
     canRegister: boolean;
+    canUsePasskeys: boolean;
 };
 
 export default function Login({
@@ -23,7 +25,21 @@ export default function Login({
     status,
     canResetPassword,
     canRegister,
+    canUsePasskeys,
 }: Props) {
+    const {
+        verify,
+        isLoading: passkeyProcessing,
+        error: passkeyError,
+        isSupported: passkeysSupported,
+    } = usePasskeyVerify({
+        onSuccess: (response) => {
+            if (response.redirect) {
+                router.visit(response.redirect);
+            }
+        },
+    });
+
     return (
         <>
             <Head title="Log in" />
@@ -46,7 +62,7 @@ export default function Login({
                                     required
                                     autoFocus
                                     tabIndex={1}
-                                    autoComplete="email"
+                                    autoComplete={canUsePasskeys ? 'email webauthn' : 'email'}
                                     placeholder="email@example.com"
                                 />
                                 <InputError message={errors.email} />
@@ -95,6 +111,28 @@ export default function Login({
                                 {processing && <Spinner />}
                                 Log in
                             </Button>
+
+                            {canUsePasskeys && (
+                                <Button
+                                    type="button"
+                                    variant="outline"
+                                    className="w-full"
+                                    onClick={() => void verify()}
+                                    disabled={
+                                        processing ||
+                                        passkeyProcessing ||
+                                        !passkeysSupported
+                                    }
+                                    data-test="login-passkey-button"
+                                >
+                                    {passkeyProcessing && <Spinner />}
+                                    Log in with passkey
+                                </Button>
+                            )}
+
+                            {canUsePasskeys && (
+                                <InputError message={passkeyError ?? undefined} />
+                            )}
                         </div>
 
                         {canRegister && (
