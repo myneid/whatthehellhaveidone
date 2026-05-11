@@ -14,7 +14,9 @@ use Illuminate\Http\JsonResponse;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Crypt;
+use Inertia\Inertia;
 use Laravel\Socialite\Facades\Socialite;
+use RuntimeException;
 
 class GithubController extends Controller
 {
@@ -144,14 +146,24 @@ class GithubController extends Controller
 
         $link = $card->githubLink;
         if (! $link) {
-            return back()->with('error', 'No GitHub issue linked to this card.');
+            Inertia::flash('toast', ['type' => 'error', 'message' => 'No GitHub issue linked to this card.']);
+
+            return back();
         }
 
-        $repo = $link->githubRepository;
-        $account = $github->getAccountForRepo($repo);
-        $github->assignIssueToCopilot($account, $repo, $link->issue_number);
+        try {
+            $repo = $link->githubRepository;
+            $account = $github->getAccountForRepo($repo);
+            $github->assignIssueToCopilot($account, $repo, $link->issue_number);
+        } catch (RuntimeException $e) {
+            Inertia::flash('toast', ['type' => 'error', 'message' => $e->getMessage()]);
 
-        return back()->with('success', 'Issue assigned to Copilot agent.');
+            return back();
+        }
+
+        Inertia::flash('toast', ['type' => 'success', 'message' => 'Issue assigned to GitHub Copilot.']);
+
+        return back();
     }
 
     public function importIssues(Request $request, Board $board): RedirectResponse
