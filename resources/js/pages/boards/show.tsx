@@ -540,7 +540,7 @@ export default function BoardShow({ board, githubAccounts }: Props) {
             boardLists
                 .map(
                     (list) =>
-                        `${list.id}:${(list.cards ?? [])
+                        `${list.id}:${list.name}:${list.position}:${list.github_action ?? 'none'}:${(list.cards ?? [])
                             .map((card) => {
                                 const attachmentSignature = (
                                     card.attachments ?? []
@@ -551,7 +551,11 @@ export default function BoardShow({ board, githubAccounts }: Props) {
                                     )
                                     .join('.');
 
-                                return `${card.id}:${card.updated_at}:${attachmentSignature}`;
+                                const githubLinkSignature = card.github_link
+                                    ? `${card.github_link.id}:${card.github_link.issue_number}:${card.github_link.state}:${card.github_link.synced_at ?? ''}`
+                                    : 'none';
+
+                                return `${card.id}:${card.updated_at}:${attachmentSignature}:${githubLinkSignature}`;
                             })
                             .join(',')}`,
                 )
@@ -612,6 +616,16 @@ export default function BoardShow({ board, githubAccounts }: Props) {
     const sensors = useSensors(
         useSensor(PointerSensor, { activationConstraint: { distance: 5 } }),
     );
+
+    const reloadBoardAfterMove = useCallback(() => {
+        window.setTimeout(() => {
+            router.reload({
+                only: ['board'],
+                preserveScroll: true,
+                preserveState: true,
+            });
+        }, 1400);
+    }, []);
 
     function findCard(id: string): { card: Card; listId: number } | null {
         for (const list of lists) {
@@ -832,7 +846,12 @@ export default function BoardShow({ board, githubAccounts }: Props) {
         router.post(
             cardRoutes.move(activeFound.card).url,
             { list_id: newList.id, position: newPosition },
-            { preserveScroll: true },
+            {
+                preserveScroll: true,
+                onSuccess: () => {
+                    reloadBoardAfterMove();
+                },
+            },
         );
     }
 
@@ -886,6 +905,9 @@ export default function BoardShow({ board, githubAccounts }: Props) {
                 { list_id: targetList.id, position: nextPosition },
                 {
                     preserveScroll: true,
+                    onSuccess: () => {
+                        reloadBoardAfterMove();
+                    },
                     onError: () => {
                         updateLists(previousLists);
                     },
@@ -897,7 +919,7 @@ export default function BoardShow({ board, githubAccounts }: Props) {
                 },
             );
         },
-        [lists, movingCardId, updateLists],
+        [lists, movingCardId, reloadBoardAfterMove, updateLists],
     );
 
     function openCard(card: Card) {
