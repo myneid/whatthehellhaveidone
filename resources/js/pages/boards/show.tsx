@@ -553,7 +553,7 @@ export default function BoardShow({ board, githubAccounts }: Props) {
                                 const commentSignature = (card.comments ?? [])
                                     .map(
                                         (comment) =>
-                                            `${comment.id}:${comment.updated_at}`,
+                                            `${comment.id}:${comment.updated_at ?? comment.created_at}`,
                                     )
                                     .join('.');
 
