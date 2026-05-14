@@ -24,7 +24,7 @@ class DiscordWebhookController extends Controller
             'name' => $request->name ?? 'Discord',
             'encrypted_webhook_url' => Crypt::encryptString($request->webhook_url),
             'enabled' => true,
-            'event_settings' => $request->events ?? ['card.created', 'card.moved'],
+            'event_settings' => $request->events ?? ['card.created', 'card.moved', 'card.commented', 'card.attachment_added'],
         ]);
 
         return back()->with('success', 'Discord webhook configured.');

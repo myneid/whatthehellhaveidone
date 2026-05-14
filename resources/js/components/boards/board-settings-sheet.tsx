@@ -186,7 +186,7 @@ function DiscordSection({ board }: { board: Board }) {
     const form = useForm({
         name: webhook?.name ?? '',
         webhook_url: '',
-        events: webhook?.events ?? ['card.created', 'card.moved'],
+        events: webhook?.events ?? ['card.created', 'card.moved', 'card.commented', 'card.attachment_added'],
     });
 
     function save(e: React.FormEvent) {

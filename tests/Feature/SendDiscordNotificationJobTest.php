@@ -59,3 +59,51 @@ it('sends card event notifications as WHHID bot', function (): void {
             && $payload['embeds'][0]['title'] === '🟢 Card Created';
     });
 });
+
+it('sends attachment notifications as WHHID bot', function (): void {
+    Http::fake();
+
+    $user = User::factory()->create();
+
+    $board = Board::create([
+        'owner_id' => $user->id,
+        'name' => 'Roadmap',
+        'slug' => 'roadmap-job-attachment',
+        'visibility' => 'team',
+    ]);
+
+    $list = BoardList::create([
+        'board_id' => $board->id,
+        'name' => 'To Do',
+        'position' => 1,
+    ]);
+
+    $card = Card::create([
+        'board_id' => $board->id,
+        'list_id' => $list->id,
+        'creator_id' => $user->id,
+        'title' => 'Upload attachment',
+        'position' => 1,
+        'priority' => 'medium',
+    ]);
+
+    $webhook = DiscordWebhook::create([
+        'board_id' => $board->id,
+        'name' => 'Discord',
+        'encrypted_webhook_url' => Crypt::encryptString('https://discord.com/api/webhooks/test-attachment'),
+        'enabled' => true,
+        'event_settings' => null,
+    ]);
+
+    $job = new SendDiscordNotification($webhook, $card, 'card.attachment_added');
+    $job->handle();
+
+    Http::assertSent(function ($request): bool {
+        $payload = $request->data();
+
+        return $request->url() === 'https://discord.com/api/webhooks/test-attachment'
+            && ($payload['username'] ?? null) === 'WHHID bot'
+            && isset($payload['embeds'][0]['title'])
+            && $payload['embeds'][0]['title'] === '📎 Attachment Added';
+    });
+});

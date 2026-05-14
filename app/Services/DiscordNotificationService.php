@@ -5,7 +5,6 @@ namespace App\Services;
 use App\Jobs\SendDiscordNotification;
 use App\Models\Board;
 use App\Models\Card;
-use Illuminate\Support\Facades\Crypt;
 
 class DiscordNotificationService
 {
@@ -33,7 +32,7 @@ class DiscordNotificationService
             'card' => $card->title,
             'from' => $fromList,
             'to' => $card->list->name,
-            'actor' => auth()->user()?->name,
+            'actor' => request()->user()?->name,
             'card_url' => url("/cards/{$card->id}"),
         ];
     }
@@ -46,15 +45,16 @@ class DiscordNotificationService
             'card_assigned' => '👤',
             'card_completed' => '✅',
             'card_commented' => '💬',
+            'card_attachment_added' => '📎',
             'github_issue_linked' => '🐙',
             'github_synced' => '🔄',
             default => '📢',
         };
 
-        $lines = ["{$emoji} **" . ucwords(str_replace('_', ' ', $eventType)) . "**"];
+        $lines = ["{$emoji} **".ucwords(str_replace('_', ' ', $eventType)).'**'];
         foreach ($data as $key => $value) {
             if ($value && $key !== 'event') {
-                $lines[] = "**" . ucfirst(str_replace('_', ' ', $key)) . ":** {$value}";
+                $lines[] = '**'.ucfirst(str_replace('_', ' ', $key)).":** {$value}";
             }
         }
 

@@ -7,9 +7,12 @@ use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\Crypt;
 use Illuminate\Support\Facades\Http;
 
+use function Pest\Laravel\actingAs;
+
 uses(RefreshDatabase::class);
 
 it('updates a discord webhook without requiring webhook url', function (): void {
+    /** @var User $user */
     $user = User::factory()->create();
 
     $board = Board::create([
@@ -27,7 +30,7 @@ it('updates a discord webhook without requiring webhook url', function (): void 
         'event_settings' => ['card.created'],
     ]);
 
-    $response = $this->actingAs($user)
+    $response = actingAs($user)
         ->from(route('boards.show', $board))
         ->put(route('discord.update', $board), [
             'name' => 'Engineering Alerts',
@@ -47,9 +50,38 @@ it('updates a discord webhook without requiring webhook url', function (): void 
         ->toBe('https://discord.com/api/webhooks/original');
 });
 
+it('defaults discord webhook events to include comments and attachments', function (): void {
+    /** @var User $user */
+    $user = User::factory()->create();
+
+    $board = Board::create([
+        'owner_id' => $user->id,
+        'name' => 'Roadmap',
+        'slug' => 'roadmap-discord-defaults',
+        'visibility' => 'team',
+    ]);
+
+    $response = actingAs($user)
+        ->from(route('boards.show', $board))
+        ->post(route('discord.store', $board), [
+            'webhook_url' => 'https://discord.com/api/webhooks/defaults',
+        ]);
+
+    $response->assertRedirect(route('boards.show', $board));
+    $response->assertSessionHasNoErrors();
+
+    expect($board->fresh()->discordWebhook?->event_settings)->toBe([
+        'card.created',
+        'card.moved',
+        'card.commented',
+        'card.attachment_added',
+    ]);
+});
+
 it('sends test webhook messages as WHHID bot', function (): void {
     Http::fake();
 
+    /** @var User $user */
     $user = User::factory()->create();
 
     $board = Board::create([
@@ -67,7 +99,7 @@ it('sends test webhook messages as WHHID bot', function (): void {
         'event_settings' => ['card.created'],
     ]);
 
-    $response = $this->actingAs($user)
+    $response = actingAs($user)
         ->from(route('boards.show', $board))
         ->post(route('discord.test', $board));
 

@@ -2,6 +2,7 @@
 
 namespace App\Providers;
 
+use App\Events\CardAttachmentAdded;
 use App\Events\CardCommented;
 use App\Events\CardCompleted;
 use App\Events\CardCreated;
@@ -37,12 +38,12 @@ class AppServiceProvider extends ServiceProvider
 
     protected function registerEventListeners(): void
     {
-        foreach ([CardCreated::class, CardMoved::class, CardCompleted::class, CardCommented::class] as $event) {
+        foreach ([CardCreated::class, CardMoved::class, CardCompleted::class, CardCommented::class, CardAttachmentAdded::class] as $event) {
             Event::listen($event, SendDiscordNotificationForCardEvent::class);
         }
 
         Event::listen(CardMoved::class, ApplyListGithubActionOnCardMove::class);
-        Event::listen([CardCommented::class, CardMoved::class], NotifyCardParticipants::class);
+        Event::listen([CardCommented::class, CardMoved::class, CardAttachmentAdded::class], NotifyCardParticipants::class);
     }
 
     /**

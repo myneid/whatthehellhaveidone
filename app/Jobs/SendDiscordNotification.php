@@ -28,7 +28,7 @@ class SendDiscordNotification implements ShouldQueue
             return;
         }
 
-        $allowedEvents = $this->webhook->event_settings ?? ['card.created', 'card.moved'];
+        $allowedEvents = $this->webhook->event_settings ?? ['card.created', 'card.moved', 'card.commented', 'card.attachment_added'];
         if (! in_array($this->eventType, $allowedEvents, true)) {
             return;
         }
@@ -66,6 +66,7 @@ class SendDiscordNotification implements ShouldQueue
             'card.moved' => 0x3B82F6,
             'card.completed' => 0xA855F7,
             'card.commented' => 0xF97316,
+            'card.attachment_added' => 0x14B8A6,
             default => 0x6B7280,
         };
 
@@ -74,6 +75,7 @@ class SendDiscordNotification implements ShouldQueue
             'card.moved' => '🔵 Card Moved',
             'card.completed' => '✅ Card Completed',
             'card.commented' => '💬 New Comment',
+            'card.attachment_added' => '📎 Attachment Added',
             default => ucfirst(str_replace('.', ' ', $this->eventType)),
         };
 
@@ -82,6 +84,7 @@ class SendDiscordNotification implements ShouldQueue
             'card.moved' => "**[{$card->title}]({$cardUrl})** was moved to **{$listName}**",
             'card.completed' => "**[{$card->title}]({$cardUrl})** was completed",
             'card.commented' => "A comment was added to **[{$card->title}]({$cardUrl})**",
+            'card.attachment_added' => "An attachment was added to **[{$card->title}]({$cardUrl})**",
             default => "**[{$card->title}]({$cardUrl})** — {$this->eventType}",
         };
 

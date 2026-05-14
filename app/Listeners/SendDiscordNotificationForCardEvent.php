@@ -2,6 +2,7 @@
 
 namespace App\Listeners;
 
+use App\Events\CardAttachmentAdded;
 use App\Events\CardCommented;
 use App\Events\CardCompleted;
 use App\Events\CardCreated;
@@ -31,6 +32,7 @@ class SendDiscordNotificationForCardEvent
             $event instanceof CardMoved => 'card.moved',
             $event instanceof CardCompleted => 'card.completed',
             $event instanceof CardCommented => 'card.commented',
+            $event instanceof CardAttachmentAdded => 'card.attachment_added',
             default => null,
         };
 

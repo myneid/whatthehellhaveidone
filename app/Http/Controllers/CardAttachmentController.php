@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Events\CardAttachmentAdded;
 use App\Models\Card;
 use App\Models\CardAttachment;
 use Illuminate\Http\RedirectResponse;
@@ -21,7 +22,7 @@ class CardAttachmentController extends Controller
         $file = $request->file('file');
         $path = $file->store("attachments/cards/{$card->id}", 'public');
 
-        $card->attachments()->create([
+        $attachment = $card->attachments()->create([
             'user_id' => $request->user()->id,
             'filename' => $file->getClientOriginalName(),
             'path' => $path,
@@ -30,6 +31,8 @@ class CardAttachmentController extends Controller
             'disk' => 'public',
         ]);
 
+        event(new CardAttachmentAdded($card, $attachment));
+
         return back()->with('success', 'File uploaded.');
     }
 
@@ -37,8 +40,8 @@ class CardAttachmentController extends Controller
     {
         $this->authorize('update', $attachment->card);
 
-        Storage::disk($attachment->disk)->delete($attachment->path);
-        $attachment->delete();
+        Storage::disk($attachment->disk)->delete([$attachment->path]);
+        CardAttachment::query()->whereKey($attachment->getKey())->delete();
 
         return back()->with('success', 'Attachment removed.');
     }

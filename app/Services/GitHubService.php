@@ -14,6 +14,8 @@ class GitHubService
 {
     private const API_BASE = 'https://api.github.com';
 
+    private const COPILOT_AGENT_ASSIGNEE = 'copilot-swe-agent[bot]';
+
     public function clientFor(GithubAccount $account): PendingRequest
     {
         $token = Crypt::decryptString($account->encrypted_access_token);
@@ -107,7 +109,12 @@ class GitHubService
     public function assignIssueToCopilot(GithubAccount $account, GithubRepository $repo, int $number): array
     {
         $response = $this->clientFor($account)
-            ->post("/repos/{$repo->full_name}/issues/{$number}/assignees", ['assignees' => ['copilot']]);
+            ->post("/repos/{$repo->full_name}/issues/{$number}/assignees", [
+                'assignees' => [self::COPILOT_AGENT_ASSIGNEE],
+                'agent_assignment' => [
+                    'target_repo' => $repo->full_name,
+                ],
+            ]);
 
         $this->assertOk($response, "assign issue #{$number} to Copilot");
 

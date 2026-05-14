@@ -9,7 +9,7 @@ export default function DocsDiscord() {
             <h1>Discord Notifications</h1>
 
             <p>
-                Get notified in a Discord channel whenever cards are created, moved, or updated on your board.
+                Get notified in a Discord channel whenever cards are created, moved, commented on, or receive attachments on your board.
             </p>
 
             <h2>Create a Discord Webhook</h2>
@@ -37,8 +37,10 @@ export default function DocsDiscord() {
             <ul>
                 <li>Card created</li>
                 <li>Card moved between lists</li>
+                <li>Card commented on</li>
+                <li>Attachment added to a card</li>
             </ul>
-            <p>Additional events can be configured in future releases.</p>
+            <p>Additional events can be configured in board settings.</p>
 
             <h2>Managing the Webhook</h2>
             <p>
