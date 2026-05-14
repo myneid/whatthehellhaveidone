@@ -547,7 +547,13 @@ export default function BoardShow({ board, githubAccounts }: Props) {
                                 )
                                     .map(
                                         (attachment) =>
-                                            `${attachment.id}:${attachment.updated_at}`,
+                                            `${attachment.id}:${attachment.updated_at ?? attachment.created_at}`,
+                                    )
+                                    .join('.');
+                                const commentSignature = (card.comments ?? [])
+                                    .map(
+                                        (comment) =>
+                                            `${comment.id}:${comment.updated_at ?? comment.created_at}`,
                                     )
                                     .join('.');
 
@@ -555,7 +561,7 @@ export default function BoardShow({ board, githubAccounts }: Props) {
                                     ? `${card.github_link.id}:${card.github_link.issue_number}:${card.github_link.state}:${card.github_link.synced_at ?? ''}`
                                     : 'none';
 
-                                return `${card.id}:${card.updated_at}:${attachmentSignature}:${githubLinkSignature}`;
+                                return `${card.id}:${card.updated_at}:${attachmentSignature}:${commentSignature}:${githubLinkSignature}`;
                             })
                             .join(',')}`,
                 )
