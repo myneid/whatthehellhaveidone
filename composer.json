@@ -17,6 +17,7 @@
         "laravel/socialite": "^5.27",
         "laravel/tinker": "^3.0",
         "laravel/wayfinder": "^0.1.14",
+        "myneid/laravel-db-tui": "^1.0",
         "symfony/resend-mailer": "^8.0"
     },
     "require-dev": {
