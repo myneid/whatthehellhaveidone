@@ -34,8 +34,18 @@ class BoardController extends Controller
 
         // Create default lists
         $defaultLists = ['Backlog', 'To Do', 'In Progress', 'Review', 'Done'];
+        $copilotDoneListId = null;
+
         foreach ($defaultLists as $index => $name) {
-            $board->lists()->create(['name' => $name, 'position' => $index]);
+            $list = $board->lists()->create(['name' => $name, 'position' => $index]);
+
+            if ($name === 'Review') {
+                $copilotDoneListId = $list->id;
+            }
+        }
+
+        if ($copilotDoneListId) {
+            $board->update(['copilot_done_list_id' => $copilotDoneListId]);
         }
 
         // Create default labels

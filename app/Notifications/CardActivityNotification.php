@@ -14,7 +14,8 @@ class CardActivityNotification extends Notification
     public function __construct(
         public readonly Card $card,
         public readonly string $action,
-        public readonly User $actor,
+        public readonly ?User $actor,
+        public readonly string $actorName,
         public readonly ?string $detail = null,
     ) {}
 
@@ -30,7 +31,7 @@ class CardActivityNotification extends Notification
             'card_id' => $this->card->id,
             'card_title' => $this->card->title,
             'action' => $this->action,
-            'actor_name' => $this->actor->name,
+            'actor_name' => $this->actorName,
             'detail' => $this->detail,
             'board_slug' => $this->card->board?->slug,
         ];

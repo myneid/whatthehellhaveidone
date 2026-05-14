@@ -48,6 +48,7 @@ export type Board = {
     slug: string;
     description: string | null;
     background_color: string | null;
+    copilot_done_list_id: number | null;
     visibility: 'private' | 'team' | 'public';
     archived_at: string | null;
     created_at: string;
@@ -59,6 +60,7 @@ export type Board = {
     labels?: Label[];
     discord_webhook?: DiscordWebhook | null;
     github_repositories?: (GithubRepository & { pivot?: { sync_direction: string } })[];
+    copilot_done_list?: BoardList | null;
     cards_count?: number;
 };
 

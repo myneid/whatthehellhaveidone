@@ -107,7 +107,7 @@ class CardController extends Controller
         $this->activityLog->log($card, 'card_moved', old: ['list_id' => $oldListId, 'position' => $oldPosition], new: ['list_id' => $card->list_id, 'position' => $card->position], actor: $request->user());
         $this->workLog->logCardMoved($card, $oldListId, $request->user());
 
-        event(new CardMoved($card, $oldListId));
+        event(new CardMoved($card, $oldListId, $request->user()));
 
         if ($request->expectsJson() || $request->wantsJson()) {
             return response()->json(['success' => true]);

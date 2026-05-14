@@ -13,11 +13,19 @@ class NotifyCardParticipants
     public function handle(CardCommented|CardMoved|CardAttachmentAdded $event): void
     {
         $card = $event->card;
-        $actor = match (true) {
-            $event instanceof CardCommented => $event->comment->user,
-            $event instanceof CardAttachmentAdded => $event->attachment->user,
-            default => Auth::user(),
-        };
+        $actor = Auth::user();
+        $actorName = $actor?->name ?? 'System';
+
+        if ($event instanceof CardCommented) {
+            $actor = $event->comment->user;
+            $actorName = $event->comment->user->name;
+        } elseif ($event instanceof CardAttachmentAdded) {
+            $actor = $event->attachment->user;
+            $actorName = $event->attachment->user->name;
+        } elseif ($event instanceof CardMoved) {
+            $actor = $event->actor;
+            $actorName = $event->actor?->name ?? $event->actorName ?? 'System';
+        }
 
         if ($event instanceof CardCommented) {
             $action = 'commented';
@@ -44,7 +52,7 @@ class NotifyCardParticipants
             ->values();
 
         $recipients->each(
-            fn ($user) => $user->notify(new CardActivityNotification($card, $action, $actor, $detail))
+            fn ($user) => $user->notify(new CardActivityNotification($card, $action, $actor, $actorName, $detail))
         );
     }
 }

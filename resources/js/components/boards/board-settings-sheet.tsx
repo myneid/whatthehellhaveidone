@@ -8,9 +8,10 @@ import { Separator } from '@/components/ui/separator';
 import { Sheet, SheetContent, SheetHeader, SheetTitle } from '@/components/ui/sheet';
 import * as discord from '@/routes/discord';
 import * as github from '@/routes/github';
+import * as boards from '@/routes/boards';
 import * as boardImport from '@/routes/boards/import';
 import * as boardExport from '@/routes/boards/export';
-import type { Board, DiscordWebhook, GithubAccount, GithubRepository } from '@/types/app';
+import type { Board, BoardList, DiscordWebhook, GithubAccount, GithubRepository } from '@/types/app';
 
 type ConnectedRepo = GithubRepository & {
     pivot?: { sync_direction: string; id: number };
@@ -45,9 +46,11 @@ function GitHubSection({ board, githubAccounts }: { board: Board; githubAccounts
     const [selectedAccountId, setSelectedAccountId] = useState<number | null>(null);
     const [selectedRepoId, setSelectedRepoId] = useState<number | null>(null);
     const [connecting, setConnecting] = useState(false);
+    const [savingDoneList, setSavingDoneList] = useState(false);
 
     const connectedRepos = (board.github_repositories as ConnectedRepo[] | undefined) ?? [];
     const activeAccounts = githubAccounts.filter((a) => !a.revoked_at);
+    const activeLists = (board.lists ?? []).filter((list) => !list.archived_at);
 
     const selectedAccount = activeAccounts.find((a) => a.id === selectedAccountId) ?? activeAccounts[0];
     const allRepos = selectedAccount?.repositories ?? [];
@@ -83,6 +86,15 @@ function GitHubSection({ board, githubAccounts }: { board: Board; githubAccounts
         );
     }
 
+    function saveCopilotDoneList(value: string) {
+        setSavingDoneList(true);
+        router.patch(
+            boards.update({ board: boardRouteKey }).url,
+            { copilot_done_list_id: value === 'none' ? null : Number(value) },
+            { preserveScroll: true, onFinish: () => setSavingDoneList(false) },
+        );
+    }
+
     if (activeAccounts.length === 0) {
         return (
             <div className="space-y-2">
@@ -99,6 +111,26 @@ function GitHubSection({ board, githubAccounts }: { board: Board; githubAccounts
 
     return (
         <div className="space-y-4">
+            <div className="space-y-2 rounded-md border p-3">
+                <div>
+                    <p className="text-xs font-medium uppercase text-muted-foreground">Copilot Completion</p>
+                    <p className="mt-1 text-sm text-muted-foreground">
+                        When GitHub Copilot opens a reviewable pull request for a linked issue, move the card to:
+                    </p>
+                </div>
+                <select
+                    value={board.copilot_done_list_id ?? 'none'}
+                    onChange={(e) => saveCopilotDoneList(e.target.value)}
+                    disabled={savingDoneList}
+                    className="border-input bg-background w-full rounded-md border px-3 py-2 text-sm"
+                >
+                    <option value="none">Do not move automatically</option>
+                    {activeLists.map((list: BoardList) => (
+                        <option key={list.id} value={list.id}>{list.name}</option>
+                    ))}
+                </select>
+            </div>
+
             {/* Connected repos */}
             {connectedRepos.length > 0 && (
                 <div className="space-y-2">
