@@ -22,6 +22,12 @@ const topics = [
         href: '/docs/github',
     },
     {
+        icon: Github,
+        title: 'GitHub Board Workflow',
+        description: 'In Progress → assign Copilot or teammate → PR moves card to Review.',
+        href: '/docs/github-workflow',
+    },
+    {
         icon: MessageSquare,
         title: 'Discord Notifications',
         description: 'Get notified in Discord when cards are created or moved.',

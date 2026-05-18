@@ -60,6 +60,12 @@ GITHUB_REDIRECT_URL=https://your-domain.com/github/callback`}</pre>
             <h2>Create a GitHub Issue from a Card</h2>
             <p>Open a card and use the GitHub panel to create a new issue or link to an existing one.</p>
 
+            <p>
+                <Link href="/docs/github-workflow">
+                    Read the full team summary of the GitHub + board workflow →
+                </Link>
+            </p>
+
             <h2>Column automation</h2>
             <ol>
                 <li>

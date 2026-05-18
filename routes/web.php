@@ -35,6 +35,7 @@ Route::prefix('docs')->name('docs.')->group(function () {
     Route::inertia('/getting-started', 'docs/getting-started')->name('getting-started');
     Route::inertia('/boards', 'docs/boards')->name('boards');
     Route::inertia('/github', 'docs/github')->name('github');
+    Route::inertia('/github-workflow', 'docs/github-workflow')->name('github-workflow');
     Route::inertia('/discord', 'docs/discord')->name('discord');
     Route::inertia('/trello-import', 'docs/trello-import')->name('trello-import');
     Route::inertia('/work-log', 'docs/work-log')->name('work-log');
