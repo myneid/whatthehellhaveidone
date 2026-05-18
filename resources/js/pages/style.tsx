@@ -90,7 +90,7 @@ function Swatch({
     textClass: string;
 }) {
     return (
-        <div className="overflow-hidden rounded-2xl border-2 border-border shadow-brand-sm transition-all hover:border-primary hover:shadow-brand">
+        <div className="overflow-hidden rounded-2xl border-2 border-border shadow-brand-sm transition-brand hover:-translate-y-0.5 hover:border-primary hover:shadow-brand">
             <div className={`flex h-24 items-end p-4 ${className}`}>
                 <span className={`text-sm font-bold ${textClass}`}>{name}</span>
             </div>
@@ -232,7 +232,7 @@ export default function StyleGuide() {
                         description="Cards use rounded-xl corners and pick up primary border color on hover."
                     >
                         <div className="grid gap-4 sm:grid-cols-2">
-                            <Card className="transition-all hover:border-primary hover:shadow-brand">
+                            <Card className="hover:-translate-y-0.5 hover:border-primary hover:shadow-brand">
                                 <CardHeader>
                                     <CardTitle>Move card to Done</CardTitle>
                                     <CardDescription>
@@ -250,7 +250,7 @@ export default function StyleGuide() {
                                 </CardFooter>
                             </Card>
 
-                            <Card className="border-secondary/50 bg-secondary/10 transition-all hover:border-secondary hover:shadow-brand">
+                            <Card className="border-secondary/50 bg-secondary/10 hover:-translate-y-0.5 hover:border-secondary hover:shadow-brand">
                                 <CardHeader>
                                     <CardTitle className="text-secondary-foreground">
                                         DONE column
@@ -286,7 +286,7 @@ export default function StyleGuide() {
                             <p className="text-sm text-muted-foreground">
                                 Muted text for descriptions and helper copy.
                             </p>
-                            <a href="#" className="text-sm font-medium text-primary hover:underline">
+                            <a href="#" className="text-sm font-medium text-primary transition-brand hover:text-primary/80 hover:underline">
                                 Link styled with primary red
                             </a>
                         </div>
