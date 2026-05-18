@@ -67,13 +67,17 @@ GITHUB_REDIRECT_URL=https://your-domain.com/github/callback`}</pre>
                     Moving a card there creates a linked GitHub issue when the board has a connected repository.
                 </li>
                 <li>
+                    After the move, choose <strong>GitHub Copilot</strong> or a <strong>team member</strong> (board owner or members with edit access).
+                    Team members are assigned on the board only; Copilot review is skipped for them.
+                </li>
+                <li>
                     In board settings, choose which column receives cards when a linked pull request is opened
                     (defaults to <strong>Review</strong> on new boards).
                 </li>
             </ol>
             <p>
                 Reference the issue in the PR title or body (for example <code>Fixes #12</code> or <code>#12</code>).
-                The app moves the card and requests a Copilot code review automatically.
+                The app moves the card automatically. Copilot code review is requested only when you assigned the card to Copilot on move.
             </p>
 
             <h2>Webhooks and local development</h2>

@@ -9,6 +9,9 @@ use App\Models\Board;
 use App\Models\BoardGithubRepository;
 use App\Models\Card;
 use App\Models\GithubAccount;
+use App\Models\User;
+use App\Services\ActivityLogService;
+use App\Services\GithubCardIssueService;
 use App\Services\GitHubService;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\RedirectResponse;
@@ -195,6 +198,8 @@ class GithubController extends Controller
             $repo = $link->githubRepository;
             $account = $github->getAccountForRepo($repo);
             $github->assignIssueToCopilot($account, $repo, $link->issue_number);
+            $link->update(['request_copilot_review' => true]);
+            $card->assignees()->detach();
         } catch (RuntimeException $e) {
             Inertia::flash('toast', ['type' => 'error', 'message' => $e->getMessage()]);
 
@@ -202,6 +207,80 @@ class GithubController extends Controller
         }
 
         Inertia::flash('toast', ['type' => 'success', 'message' => 'Issue assigned to GitHub Copilot.']);
+
+        return back();
+    }
+
+    public function assignWork(
+        Request $request,
+        Card $card,
+        GithubCardIssueService $githubCardIssues,
+        GitHubService $github,
+        ActivityLogService $activityLog,
+    ): RedirectResponse {
+        $this->authorize('update', $card);
+
+        $validated = $request->validate([
+            'mode' => ['required', 'in:copilot,user'],
+            'user_id' => ['required_if:mode,user', 'nullable', 'exists:users,id'],
+        ]);
+
+        try {
+            $link = $githubCardIssues->ensureIssueForCardOrFail($card);
+        } catch (RuntimeException $exception) {
+            Inertia::flash('toast', ['type' => 'error', 'message' => $exception->getMessage()]);
+
+            return back();
+        }
+
+        $board = $card->board()->firstOrFail();
+
+        if ($validated['mode'] === 'user') {
+            /** @var User $assignee */
+            $assignee = User::query()->findOrFail($validated['user_id']);
+
+            if (! $board->canAssignWorkTo($assignee)) {
+                return back()->withErrors([
+                    'user_id' => 'That user cannot be assigned work on this board.',
+                ]);
+            }
+
+            $card->assignees()->sync([
+                $assignee->id => ['assigned_by' => $request->user()->id],
+            ]);
+
+            $activityLog->log(
+                $card,
+                'user_assigned',
+                new: ['user_id' => $assignee->id],
+                actor: $request->user(),
+            );
+
+            $link->update(['request_copilot_review' => false]);
+
+            Inertia::flash('toast', [
+                'type' => 'success',
+                'message' => "Work assigned to {$assignee->name}. Copilot review is disabled for this card.",
+            ]);
+
+            return back();
+        }
+
+        $card->assignees()->detach();
+
+        try {
+            $repo = $link->githubRepository;
+            $account = $github->getAccountForRepo($repo);
+            $github->assignIssueToCopilot($account, $repo, $link->issue_number);
+        } catch (RuntimeException $exception) {
+            Inertia::flash('toast', ['type' => 'error', 'message' => $exception->getMessage()]);
+
+            return back();
+        }
+
+        $link->update(['request_copilot_review' => true]);
+
+        Inertia::flash('toast', ['type' => 'success', 'message' => 'Work assigned to GitHub Copilot.']);
 
         return back();
     }

@@ -24,6 +24,10 @@ import { GripVertical, Paperclip, Plus, Settings, Trash2, X } from 'lucide-react
 import { useCallback, useMemo, useState } from 'react';
 import { BoardSettingsSheet } from '@/components/boards/board-settings-sheet';
 import { CardModal } from '@/components/boards/card-modal';
+import {
+    WorkAssigneeDialog,
+    type AssignableMember,
+} from '@/components/boards/work-assignee-dialog';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import {
@@ -118,7 +122,12 @@ function moveCardBetweenLists(
 type Props = {
     board: Board;
     githubAccounts: GithubAccount[];
+    assignableMembers: AssignableMember[];
 };
+
+function listPromptsWorkAssignment(list: BoardList): boolean {
+    return list.github_action === 'open_issue';
+}
 
 const PRIORITY_COLORS: Record<string, string> = {
     none: 'border-l-gray-200',
@@ -530,7 +539,11 @@ function CardOverlay({ card }: { card: Card }) {
     );
 }
 
-export default function BoardShow({ board, githubAccounts }: Props) {
+export default function BoardShow({
+    board,
+    githubAccounts,
+    assignableMembers,
+}: Props) {
     const boardLists = useMemo(
         () => normalizeLists(board.lists ?? []),
         [board.lists],
@@ -580,6 +593,8 @@ export default function BoardShow({ board, githubAccounts }: Props) {
     const [selectedCardId, setSelectedCardId] = useState<number | null>(null);
     const [movingCardId, setMovingCardId] = useState<number | null>(null);
     const [showSettings, setShowSettings] = useState(false);
+    const [pendingWorkAssignmentCardId, setPendingWorkAssignmentCardId] =
+        useState<number | null>(null);
     const lists =
         listsState.signature === boardListSignature
             ? listsState.items
@@ -632,6 +647,31 @@ export default function BoardShow({ board, githubAccounts }: Props) {
             });
         }, 1400);
     }, []);
+
+    const promptWorkAssignmentIfNeeded = useCallback(
+        (cardId: number, targetList: BoardList) => {
+            if (listPromptsWorkAssignment(targetList)) {
+                setPendingWorkAssignmentCardId(cardId);
+            }
+        },
+        [],
+    );
+
+    const pendingWorkAssignmentCard = useMemo(() => {
+        if (pendingWorkAssignmentCardId === null) {
+            return null;
+        }
+
+        for (const list of lists) {
+            for (const card of list.cards ?? []) {
+                if (card.id === pendingWorkAssignmentCardId) {
+                    return card;
+                }
+            }
+        }
+
+        return null;
+    }, [lists, pendingWorkAssignmentCardId]);
 
     function findCard(id: string): { card: Card; listId: number } | null {
         for (const list of lists) {
@@ -855,6 +895,10 @@ export default function BoardShow({ board, githubAccounts }: Props) {
             {
                 preserveScroll: true,
                 onSuccess: () => {
+                    promptWorkAssignmentIfNeeded(
+                        activeFound.card.id,
+                        newList,
+                    );
                     reloadBoardAfterMove();
                 },
             },
@@ -912,6 +956,7 @@ export default function BoardShow({ board, githubAccounts }: Props) {
                 {
                     preserveScroll: true,
                     onSuccess: () => {
+                        promptWorkAssignmentIfNeeded(card.id, targetList);
                         reloadBoardAfterMove();
                     },
                     onError: () => {
@@ -925,7 +970,13 @@ export default function BoardShow({ board, githubAccounts }: Props) {
                 },
             );
         },
-        [lists, movingCardId, reloadBoardAfterMove, updateLists],
+        [
+            lists,
+            movingCardId,
+            promptWorkAssignmentIfNeeded,
+            reloadBoardAfterMove,
+            updateLists,
+        ],
     );
 
     function openCard(card: Card) {
@@ -1037,6 +1088,13 @@ export default function BoardShow({ board, githubAccounts }: Props) {
                 githubAccounts={githubAccounts}
                 open={showSettings}
                 onClose={() => setShowSettings(false)}
+            />
+
+            <WorkAssigneeDialog
+                card={pendingWorkAssignmentCard}
+                assignableMembers={assignableMembers}
+                open={pendingWorkAssignmentCardId !== null}
+                onClose={() => setPendingWorkAssignmentCardId(null)}
             />
         </>
     );

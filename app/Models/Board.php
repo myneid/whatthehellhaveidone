@@ -11,6 +11,7 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Database\Eloquent\Relations\HasOne;
+use Illuminate\Support\Collection;
 
 #[Fillable(['project_id', 'owner_id', 'name', 'slug', 'description', 'visibility', 'background_color', 'copilot_done_list_id', 'archived_at'])]
 class Board extends Model
@@ -90,5 +91,34 @@ class Board extends Model
     public function scopeActive(Builder $query): Builder
     {
         return $query->whereNull('archived_at');
+    }
+
+    /**
+     * @return Collection<int, User>
+     */
+    public function assignableUsers(): Collection
+    {
+        $this->loadMissing(['owner', 'members.user']);
+
+        $users = collect();
+
+        if ($this->owner) {
+            $users->push($this->owner);
+        }
+
+        foreach ($this->members as $member) {
+            if ($member->role === 'viewer' || ! $member->user) {
+                continue;
+            }
+
+            $users->push($member->user);
+        }
+
+        return $users->unique('id')->values();
+    }
+
+    public function canAssignWorkTo(User $user): bool
+    {
+        return $this->assignableUsers()->contains('id', $user->id);
     }
 }

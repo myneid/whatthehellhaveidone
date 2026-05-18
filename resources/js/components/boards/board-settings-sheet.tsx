@@ -116,7 +116,7 @@ function GitHubSection({ board, githubAccounts }: { board: Board; githubAccounts
                     <p className="text-xs font-medium uppercase text-muted-foreground">Pull request automation</p>
                     <p className="mt-1 text-sm text-muted-foreground">
                         When a pull request references a linked issue (for example <code className="text-xs">Fixes #42</code>),
-                        move the card to this column and request a Copilot code review:
+                        move the card to this column. Copilot code review runs only for cards assigned to Copilot on move:
                     </p>
                 </div>
                 <select

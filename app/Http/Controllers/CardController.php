@@ -142,6 +142,16 @@ class CardController extends Controller
 
         $request->validate(['user_id' => ['required', 'exists:users,id']]);
 
+        $card->loadMissing('board');
+
+        $assignee = User::query()->findOrFail($request->user_id);
+
+        if (! $card->board->canAssignWorkTo($assignee)) {
+            return back()->withErrors([
+                'user_id' => 'That user cannot be assigned work on this board.',
+            ]);
+        }
+
         $card->assignments()->firstOrCreate([
             'user_id' => $request->user_id,
             'assigned_by' => $request->user()->id,

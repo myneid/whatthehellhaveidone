@@ -174,7 +174,9 @@ class ProcessGithubWebhook implements ShouldQueue
 
         $linkedCards->each(fn (GithubCardLink $link) => $this->moveCardToCopilotDoneList($link, $activityLog));
 
-        RequestGithubCopilotReview::dispatch($this->event->githubRepository, $pullNumber);
+        if ($linkedCards->contains(fn (GithubCardLink $link): bool => $link->request_copilot_review)) {
+            RequestGithubCopilotReview::dispatch($this->event->githubRepository, $pullNumber);
+        }
     }
 
     private function moveCardToCopilotDoneList(GithubCardLink $link, ActivityLogService $activityLog): void
