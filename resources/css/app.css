@@ -163,6 +163,61 @@
     }
 }
 
+@layer components {
+    .docs-prose > :not(.not-prose):not(.not-prose *) {
+        @apply text-foreground;
+    }
+
+    .docs-prose > :not(.not-prose) h1 {
+        @apply text-3xl font-black tracking-tight sm:text-4xl;
+    }
+
+    .docs-prose > :not(.not-prose) h2 {
+        @apply mt-10 mb-4 border-b-2 border-border pb-2 text-xl font-bold text-primary;
+    }
+
+    .docs-prose > :not(.not-prose) h3 {
+        @apply mt-6 mb-3 text-lg font-semibold;
+    }
+
+    .docs-prose > :not(.not-prose) p {
+        @apply mb-4 leading-relaxed text-muted-foreground;
+    }
+
+    .docs-prose > :not(.not-prose) ul,
+    .docs-prose > :not(.not-prose) ol {
+        @apply mb-4 space-y-2 pl-5 text-muted-foreground;
+    }
+
+    .docs-prose > :not(.not-prose) ul {
+        @apply list-disc;
+    }
+
+    .docs-prose > :not(.not-prose) ol {
+        @apply list-decimal;
+    }
+
+    .docs-prose > :not(.not-prose) li {
+        @apply leading-relaxed;
+    }
+
+    .docs-prose > :not(.not-prose) strong {
+        @apply font-semibold text-foreground;
+    }
+
+    .docs-prose > :not(.not-prose) a {
+        @apply font-medium text-primary transition-brand hover:text-primary/80 hover:underline;
+    }
+
+    .docs-prose > :not(.not-prose) code {
+        @apply rounded-md bg-muted px-1.5 py-0.5 font-mono text-sm text-foreground;
+    }
+
+    .docs-prose > :not(.not-prose) pre {
+        @apply my-4 overflow-x-auto rounded-xl border-2 border-border bg-muted p-4 font-mono text-sm shadow-brand-sm;
+    }
+}
+
 @layer utilities {
     .transition-brand {
         transition-property: color, background-color, border-color, box-shadow, transform,

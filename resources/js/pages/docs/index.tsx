@@ -1,5 +1,7 @@
 import { Head, Link } from '@inertiajs/react';
 import { BookOpen, Bot, Github, Kanban, MessageSquare, Upload, Zap } from 'lucide-react';
+import { Button } from '@/components/ui/button';
+import { Card, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import DocsLayout from '@/layouts/docs-layout';
 
 const topics = [
@@ -45,72 +47,101 @@ export default function DocsIndex() {
     return (
         <>
             <Head title="Documentation – What the HELL have I done">
-                <meta name="description" content="A full-featured project management platform with built-in AI integration via MCP. Manage projects, boards, and cards — and let your AI assistant do it for you." />
+                <meta
+                    name="description"
+                    content="A full-featured project management platform with built-in AI integration via MCP. Manage projects, boards, and cards — and let your AI assistant do it for you."
+                />
                 <meta property="og:type" content="website" />
                 <meta property="og:url" content="https://whatthehellhaveidone.net/docs" />
-                <meta property="og:title" content="Documentation – What the HELL have I done" />
-                <meta property="og:description" content="A full-featured project management platform with built-in AI integration via MCP. Manage projects, boards, and cards — and let your AI assistant do it for you." />
-                <meta property="og:image" content="https://whatthehellhaveidone.net/whatthehellhaveidone.png" />
+                <meta
+                    property="og:title"
+                    content="Documentation – What the HELL have I done"
+                />
+                <meta
+                    property="og:description"
+                    content="A full-featured project management platform with built-in AI integration via MCP. Manage projects, boards, and cards — and let your AI assistant do it for you."
+                />
+                <meta
+                    property="og:image"
+                    content="https://whatthehellhaveidone.net/whatthehellhaveidone.png"
+                />
                 <meta name="twitter:card" content="summary_large_image" />
-                <meta name="twitter:title" content="Documentation – What the HELL have I done" />
-                <meta name="twitter:description" content="A full-featured project management platform with built-in AI integration via MCP. Manage projects, boards, and cards — and let your AI assistant do it for you." />
-                <meta name="twitter:image" content="https://whatthehellhaveidone.net/whatthehellhaveidone.png" />
+                <meta
+                    name="twitter:title"
+                    content="Documentation – What the HELL have I done"
+                />
+                <meta
+                    name="twitter:description"
+                    content="A full-featured project management platform with built-in AI integration via MCP. Manage projects, boards, and cards — and let your AI assistant do it for you."
+                />
+                <meta
+                    name="twitter:image"
+                    content="https://whatthehellhaveidone.net/whatthehellhaveidone.png"
+                />
             </Head>
 
-            <div className="space-y-10 not-prose">
-                <div>
-                    <div className="flex items-center gap-2 text-sm text-muted-foreground mb-3">
-                        <BookOpen className="h-4 w-4" />
+            <div className="not-prose space-y-10">
+                <header className="space-y-4 border-b-2 border-border pb-8">
+                    <div className="flex items-center gap-2 text-sm font-semibold text-primary">
+                        <BookOpen className="size-4" />
                         <span>Documentation</span>
                     </div>
-                    <h1 className="text-3xl font-bold tracking-tight">What the HELL have I done?</h1>
-                    <p className="mt-3 text-lg text-muted-foreground max-w-2xl">
-                        A full-featured project management platform with built-in AI integration via the Model Context Protocol (MCP).
-                        Manage projects, boards, and cards — and let your AI assistant do it for you.
-                    </p>
-                    <div className="mt-6 flex gap-3">
-                        <Link
-                            href="/docs/getting-started"
-                            className="inline-flex items-center gap-2 rounded-lg bg-primary px-4 py-2 text-sm font-medium text-primary-foreground hover:bg-primary/90"
-                        >
-                            Quick Start →
-                        </Link>
-                        <Link
-                            href="/docs/mcp-setup"
-                            className="inline-flex items-center gap-2 rounded-lg border px-4 py-2 text-sm font-medium hover:bg-muted"
-                        >
-                            <Bot className="h-4 w-4" />
-                            MCP Setup
-                        </Link>
+                    <div className="space-y-3">
+                        <h1 className="text-3xl font-black tracking-tight sm:text-4xl">
+                            What the <span className="text-primary">HELL</span> have I done?
+                        </h1>
+                        <p className="max-w-2xl text-lg text-muted-foreground">
+                            A full-featured project management platform with built-in AI integration
+                            via the Model Context Protocol (MCP). Manage projects, boards, and
+                            cards — and let your AI assistant do it for you.
+                        </p>
                     </div>
-                </div>
+                    <div className="flex flex-wrap gap-3">
+                        <Button asChild>
+                            <Link href="/docs/getting-started">Quick Start →</Link>
+                        </Button>
+                        <Button variant="outline" asChild>
+                            <Link href="/docs/mcp-setup">
+                                <Bot className="size-4" />
+                                MCP Setup
+                            </Link>
+                        </Button>
+                    </div>
+                </header>
 
                 <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
                     {topics.map((topic) => (
-                        <Link
-                            key={topic.href}
-                            href={topic.href}
-                            className="group rounded-xl border p-5 hover:border-primary/50 hover:bg-muted/30 transition-colors"
-                        >
-                            <topic.icon className="mb-3 h-5 w-5 text-primary" />
-                            <h3 className="font-semibold text-foreground group-hover:text-primary transition-colors">
-                                {topic.title}
-                            </h3>
-                            <p className="mt-1 text-sm text-muted-foreground">{topic.description}</p>
+                        <Link key={topic.href} href={topic.href} className="group block">
+                            <Card className="h-full hover:-translate-y-0.5 hover:border-primary hover:shadow-brand">
+                                <CardHeader className="gap-3">
+                                    <topic.icon className="size-5 text-primary transition-brand group-hover:scale-110" />
+                                    <CardTitle className="transition-brand group-hover:text-primary">
+                                        {topic.title}
+                                    </CardTitle>
+                                    <CardDescription>{topic.description}</CardDescription>
+                                </CardHeader>
+                            </Card>
                         </Link>
                     ))}
                 </div>
 
-                <div className="rounded-xl border bg-muted/30 p-6">
-                    <h2 className="font-semibold mb-2">Hosted Version</h2>
-                    <p className="text-sm text-muted-foreground">
-                        Use the hosted version at{' '}
-                        <a href="https://whatthehellhaveidone.net" className="text-primary underline" target="_blank" rel="noopener noreferrer">
-                            whatthehellhaveidone.net
-                        </a>
-                        {' '}or self-host — it's open source under the Unlicense.
-                    </p>
-                </div>
+                <Card className="border-primary/20 bg-primary/5">
+                    <CardHeader>
+                        <CardTitle>Hosted version</CardTitle>
+                        <CardDescription>
+                            Use the hosted version at{' '}
+                            <a
+                                href="https://whatthehellhaveidone.net"
+                                className="font-medium text-primary transition-brand hover:underline"
+                                target="_blank"
+                                rel="noopener noreferrer"
+                            >
+                                whatthehellhaveidone.net
+                            </a>{' '}
+                            or self-host — it&apos;s open source under the Unlicense.
+                        </CardDescription>
+                    </CardHeader>
+                </Card>
             </div>
         </>
     );
