@@ -77,7 +77,7 @@ class GithubController extends Controller
         return response()->json(['accounts' => $accounts]);
     }
 
-    public function connectRepository(Request $request, Board $board): RedirectResponse
+    public function connectRepository(Request $request, Board $board, GitHubService $github): RedirectResponse
     {
         $this->authorize('update', $board);
 
@@ -93,12 +93,52 @@ class GithubController extends Controller
             'sync_direction' => $request->sync_direction ?? 'two_way',
         ]);
 
-        return back()->with('success', 'Repository connected.');
+        $repository = $board->githubRepositories()->find($request->github_repository_id);
+
+        if ($repository) {
+            try {
+                $account = $github->getAccountForRepo($repository);
+                $github->ensureRepositoryWebhook(
+                    $account,
+                    $repository,
+                    route('webhooks.github'),
+                );
+            } catch (RuntimeException $e) {
+                return back()->withErrors([
+                    'github_repository_id' => "Repository connected, but webhook setup failed: {$e->getMessage()}",
+                ]);
+            }
+        }
+
+        return back()->with('success', 'Repository connected and GitHub webhook registered.');
     }
 
-    public function disconnectRepository(Request $request, Board $board, BoardGithubRepository $boardGithubRepository): RedirectResponse
-    {
+    public function disconnectRepository(
+        Request $request,
+        Board $board,
+        BoardGithubRepository $boardGithubRepository,
+        GitHubService $github,
+    ): RedirectResponse {
         $this->authorize('update', $board);
+
+        $repository = $boardGithubRepository->githubRepository;
+
+        if ($repository && $repository->webhook_id) {
+            $stillLinked = BoardGithubRepository::query()
+                ->where('github_repository_id', '=', $repository->id)
+                ->where('board_id', '!=', $board->id)
+                ->exists();
+
+            if (! $stillLinked) {
+                try {
+                    $account = $github->getAccountForRepo($repository);
+                    $github->deleteRepositoryWebhook($account, $repository);
+                } catch (RuntimeException) {
+                    // Allow disconnect even if GitHub cleanup fails.
+                }
+            }
+        }
+
         $boardGithubRepository->delete();
 
         return back();

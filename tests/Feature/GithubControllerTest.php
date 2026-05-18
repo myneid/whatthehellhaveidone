@@ -1,6 +1,7 @@
 <?php
 
 use App\Models\Board;
+use App\Models\BoardGithubRepository;
 use App\Models\BoardList;
 use App\Models\Card;
 use App\Models\GithubAccount;
@@ -91,6 +92,62 @@ it('assigns a linked issue to the current GitHub Copilot coding agent', function
             && $request['assignees'] === ['copilot-swe-agent[bot]']
             && $request['agent_assignment']['target_repo'] === 'octo-org/octo-repo';
     });
+});
+
+it('registers a github webhook when connecting a repository to a board', function (): void {
+    Http::fake([
+        'https://api.github.com/repos/octo-org/octo-repo/hooks' => Http::response([
+            'id' => 424242,
+            'active' => true,
+        ], 201),
+    ]);
+
+    /** @var User $user */
+    $user = User::factory()->create();
+
+    $board = Board::create([
+        'owner_id' => $user->id,
+        'name' => 'Roadmap',
+        'slug' => 'roadmap-webhook-connect',
+        'visibility' => 'team',
+    ]);
+
+    $account = GithubAccount::create([
+        'user_id' => $user->id,
+        'github_user_id' => '12345',
+        'username' => 'octocat',
+        'encrypted_access_token' => Crypt::encryptString('github-user-token'),
+        'scopes' => ['repo'],
+    ]);
+
+    $repository = GithubRepository::create([
+        'github_account_id' => $account->id,
+        'github_repo_id' => '98765',
+        'owner' => 'octo-org',
+        'name' => 'octo-repo',
+        'full_name' => 'octo-org/octo-repo',
+        'private' => true,
+        'html_url' => 'https://github.com/octo-org/octo-repo',
+    ]);
+
+    actingAs($user)
+        ->post(route('github.connect-repository', $board), [
+            'github_repository_id' => $repository->id,
+            'sync_direction' => 'two_way',
+        ])
+        ->assertRedirect()
+        ->assertSessionHas('success');
+
+    expect($repository->fresh())
+        ->webhook_id->toBe('424242')
+        ->webhook_secret->not->toBeNull();
+
+    Http::assertSent(function ($request): bool {
+        return $request->url() === 'https://api.github.com/repos/octo-org/octo-repo/hooks'
+            && $request['events'] === ['issues', 'pull_request', 'ping'];
+    });
+
+    expect(BoardGithubRepository::query()->where('board_id', $board->id)->where('github_repository_id', $repository->id)->exists())->toBeTrue();
 });
 
 it('shows an error toast when assigning a card without a linked GitHub issue', function (): void {

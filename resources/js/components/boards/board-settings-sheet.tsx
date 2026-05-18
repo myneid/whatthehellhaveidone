@@ -113,9 +113,10 @@ function GitHubSection({ board, githubAccounts }: { board: Board; githubAccounts
         <div className="space-y-4">
             <div className="space-y-2 rounded-md border p-3">
                 <div>
-                    <p className="text-xs font-medium uppercase text-muted-foreground">Copilot Completion</p>
+                    <p className="text-xs font-medium uppercase text-muted-foreground">Pull request automation</p>
                     <p className="mt-1 text-sm text-muted-foreground">
-                        When GitHub Copilot opens a reviewable pull request for a linked issue, move the card to:
+                        When a pull request references a linked issue (for example <code className="text-xs">Fixes #42</code>),
+                        move the card to this column and request a Copilot code review:
                     </p>
                 </div>
                 <select
