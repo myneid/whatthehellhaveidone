@@ -1,5 +1,26 @@
 import { Head, Link } from '@inertiajs/react';
+import { Bot, GitBranch, ListChecks, User } from 'lucide-react';
+import { DocsCallout, DocsTable } from '@/components/docs/docs-table';
 import DocsLayout from '@/layouts/docs-layout';
+
+const workflowSteps = [
+    {
+        step: 'Move to In Progress',
+        detail: 'Creates a linked GitHub issue and prompts for who should work on it',
+    },
+    {
+        step: 'Assign on move',
+        detail: 'Choose GitHub Copilot or a board team member',
+    },
+    {
+        step: 'Open a pull request',
+        detail: 'Card moves to Review when the PR references the issue',
+    },
+    {
+        step: 'Copilot review',
+        detail: 'Requested automatically only if the card was assigned to Copilot on move',
+    },
+];
 
 export default function DocsGitHubWorkflow() {
     return (
@@ -10,102 +31,107 @@ export default function DocsGitHubWorkflow() {
 
             <p>
                 This page summarizes the GitHub-connected sprint workflow: issue creation on move,
-                assign-on-move (Copilot or team member), and automatic Review column + Copilot PR review.
+                assign-on-move (Copilot or team member), and automatic Review column movement with
+                optional Copilot PR review.
             </p>
 
-            <p className="text-sm text-muted-foreground">
+            <DocsCallout>
                 The same content lives in the repo as{' '}
-                <code>GITHUB-BOARD-WORKFLOW.md</code> for sharing outside the app.
-            </p>
+                <code className="rounded bg-muted px-1.5 py-0.5 font-mono text-xs text-foreground">
+                    GITHUB-BOARD-WORKFLOW.md
+                </code>{' '}
+                for sharing outside the app.
+            </DocsCallout>
 
             <h2>What we built</h2>
-            <table>
-                <thead>
-                    <tr>
-                        <th>Step</th>
-                        <th>What happens</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    <tr>
-                        <td>Move to In Progress</td>
-                        <td>Creates a linked GitHub issue and prompts for who should work on it</td>
-                    </tr>
-                    <tr>
-                        <td>Assign on move</td>
-                        <td>Choose GitHub Copilot or a board team member</td>
-                    </tr>
-                    <tr>
-                        <td>Open a pull request</td>
-                        <td>Card moves to Review when the PR references the issue</td>
-                    </tr>
-                    <tr>
-                        <td>Copilot review</td>
-                        <td>Requested automatically only if the card was assigned to Copilot on move</td>
-                    </tr>
-                </tbody>
-            </table>
+
+            <DocsTable
+                headers={['Step', 'What happens']}
+                rows={workflowSteps.map((row) => [row.step, row.detail])}
+            />
 
             <h2>One-time board setup</h2>
             <ol>
                 <li>
-                    <Link href="/settings/integrations">Settings → Integrations</Link> — connect GitHub.
+                    <Link href="/settings/integrations">Settings → Integrations</Link> — connect
+                    GitHub.
                 </li>
-                <li>Board <strong>Settings</strong> → connect the repository.</li>
-                <li>In Progress column (⋯) → <strong>Create GitHub issue</strong>.</li>
-                <li>Board settings → <strong>Pull request automation</strong> → target <strong>Review</strong>.</li>
+                <li>
+                    Board <strong>Settings</strong> → connect the repository.
+                </li>
+                <li>
+                    In Progress column (<span className="font-mono text-xs">⋯</span>) →{' '}
+                    <strong>Create GitHub issue</strong>.
+                </li>
+                <li>
+                    Board settings → <strong>Pull request automation</strong> → target{' '}
+                    <strong>Review</strong>.
+                </li>
                 <li>Add board members (non-viewer) for the team picker.</li>
             </ol>
 
             <h2>Per card</h2>
-            <ol>
-                <li>Move the card to In Progress.</li>
-                <li>Choose Copilot, a team member, or skip.</li>
-                <li>Open a PR with <code>Fixes #123</code> (or <code>#123</code> in title/body).</li>
-                <li>Card moves to Review; Copilot review only if you chose Copilot on move.</li>
-            </ol>
+            <div className="not-prose my-6 grid gap-3 sm:grid-cols-2">
+                {[
+                    {
+                        icon: ListChecks,
+                        title: 'Move to In Progress',
+                        body: 'Drag the card or use the move controls.',
+                    },
+                    {
+                        icon: Bot,
+                        title: 'Choose who works on it',
+                        body: 'Copilot, a team member, or skip for now.',
+                    },
+                    {
+                        icon: GitBranch,
+                        title: 'Open a PR',
+                        body: 'Use Fixes #123 or #123 in the title or body.',
+                    },
+                    {
+                        icon: User,
+                        title: 'Review column',
+                        body: 'Card moves automatically; Copilot review only if you picked Copilot.',
+                    },
+                ].map((item) => (
+                    <div
+                        key={item.title}
+                        className="flex gap-3 rounded-lg border bg-card p-4"
+                    >
+                        <item.icon className="mt-0.5 h-5 w-5 shrink-0 text-primary" />
+                        <div>
+                            <p className="font-medium text-foreground">{item.title}</p>
+                            <p className="mt-1 text-sm text-muted-foreground">{item.body}</p>
+                        </div>
+                    </div>
+                ))}
+            </div>
 
             <h2>Copilot vs team member</h2>
-            <table>
-                <thead>
-                    <tr>
-                        <th></th>
-                        <th>GitHub Copilot</th>
-                        <th>Team member</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    <tr>
-                        <td>Board assignee</td>
-                        <td>Cleared</td>
-                        <td>Set on the card</td>
-                    </tr>
-                    <tr>
-                        <td>GitHub issue assignee</td>
-                        <td>Copilot agent</td>
-                        <td>Not set by the app</td>
-                    </tr>
-                    <tr>
-                        <td>Auto Copilot PR review</td>
-                        <td>Yes</td>
-                        <td>No</td>
-                    </tr>
-                    <tr>
-                        <td>Moves to Review on PR</td>
-                        <td>Yes</td>
-                        <td>Yes</td>
-                    </tr>
-                </tbody>
-            </table>
+
+            <DocsTable
+                headers={['', 'GitHub Copilot', 'Team member']}
+                rows={[
+                    ['Board assignee', 'Cleared', 'Set on the card'],
+                    ['GitHub issue assignee', 'Copilot agent', 'Not set by the app'],
+                    ['Auto Copilot PR review', 'Yes', 'No'],
+                    ['Moves to Review on PR', 'Yes', 'Yes'],
+                ]}
+            />
 
             <h2>Local testing</h2>
-            <p>GitHub webhooks need HTTPS. Run <code>php artisan queue:work</code>, tunnel the app, set <code>APP_URL</code>, reconnect the repo.</p>
             <p>
-                Details: <Link href="/docs/github">GitHub Integration docs →</Link>
+                GitHub webhooks require HTTPS. Run <code>php artisan queue:work</code>, tunnel the
+                app, set <code>APP_URL</code>, then reconnect the repository in board settings.
+            </p>
+            <p>
+                <Link href="/docs/github" className="font-medium text-primary hover:underline">
+                    GitHub Integration docs →
+                </Link>
             </p>
 
             <h2>Not included yet</h2>
-            <ul>
+            <ul className="text-muted-foreground">
                 <li>Human as GitHub issue assignee</li>
                 <li>Project invitees who are not board members</li>
                 <li>Live board refresh when webhooks move cards</li>
