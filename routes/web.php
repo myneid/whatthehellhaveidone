@@ -29,6 +29,8 @@ Route::inertia('/', 'welcome', [
     'canRegister' => Features::enabled(Features::registration()),
 ])->name('home');
 
+Route::inertia('/style', 'style')->name('style');
+
 // Documentation (public)
 Route::prefix('docs')->name('docs.')->group(function () {
     Route::inertia('/', 'docs/index')->name('index');
