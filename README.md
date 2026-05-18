@@ -27,6 +27,7 @@ Want to skip the setup? The hosted version is live at **[https://whatthehellhave
 - **Kanban Boards** — Drag-and-drop cards across customisable lists. Priorities, due dates, labels, assignees, checklists, comments, and file attachments.
 - **Projects** — Group boards under projects. Invite team members with role-based access (owner / admin / member / viewer).
 - **GitHub Sync** — Connect repositories to boards. Import issues as cards, create GitHub issues from cards, and stay in sync via webhooks. See [GITHUB-BOARD-WORKFLOW.md](GITHUB-BOARD-WORKFLOW.md) for the In Progress → assign → PR → Review flow.
+- **Demo data** — `php artisan migrate:fresh --seed` loads sample projects/boards for `test@example.com`. See [DEMO-DATA.md](DEMO-DATA.md).
 - **Discord Notifications** — Fire webhook messages to Discord on card creation, moves, and due-date events.
 - **Work Log** — Every card action is automatically logged. Add manual entries with `#project` hashtag routing, filter by date/source, and export to CSV or JSON.
 - **Document Repository** — Write project docs in Markdown, organise them in folders, and surface them on demand.

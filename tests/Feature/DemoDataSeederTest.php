@@ -10,7 +10,7 @@ use Illuminate\Foundation\Testing\RefreshDatabase;
 
 uses(RefreshDatabase::class);
 
-it('seeds demo projects with boards, lists, labels, and cards for hectordelangel', function (): void {
+it('seeds demo projects with boards, lists, labels, and cards for the demo user', function (): void {
     $user = User::factory()->create(['email' => DemoDataSeeder::DEMO_USER_EMAIL]);
     User::factory()->create(['email' => 'other@example.com']);
 
@@ -38,7 +38,7 @@ it('is idempotent when run multiple times', function (): void {
         ->and(Card::count())->toBe(9);
 });
 
-it('does nothing when hectordelangel account does not exist', function (): void {
+it('does nothing when the demo user account does not exist', function (): void {
     User::factory()->create(['email' => 'other@example.com']);
 
     $this->seed(DemoDataSeeder::class);

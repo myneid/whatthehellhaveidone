@@ -11,7 +11,7 @@ use Illuminate\Database\Seeder;
 
 class DemoDataSeeder extends Seeder
 {
-    public const DEMO_USER_EMAIL = 'hectordelangel@gmail.com';
+    public const DEMO_USER_EMAIL = 'test@example.com';
 
     /** @var list<string> */
     private const DEFAULT_LISTS = ['Backlog', 'To Do', 'In Progress', 'Review', 'Done'];
