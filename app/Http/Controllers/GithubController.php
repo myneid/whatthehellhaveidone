@@ -266,8 +266,6 @@ class GithubController extends Controller
             return back();
         }
 
-        $card->assignees()->detach();
-
         try {
             $repo = $link->githubRepository;
             $account = $github->getAccountForRepo($repo);
@@ -279,6 +277,7 @@ class GithubController extends Controller
         }
 
         $link->update(['request_copilot_review' => true]);
+        $card->assignees()->detach();
 
         Inertia::flash('toast', ['type' => 'success', 'message' => 'Work assigned to GitHub Copilot.']);
 

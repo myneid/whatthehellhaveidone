@@ -5,6 +5,7 @@ use App\Models\BoardList;
 use App\Models\BoardMember;
 use App\Models\Card;
 use App\Models\GithubAccount;
+use App\Models\GithubCardLink;
 use App\Models\GithubRepository;
 use App\Models\User;
 use Illuminate\Foundation\Testing\RefreshDatabase;
@@ -137,6 +138,52 @@ it('assigns work to copilot and enables copilot review', function (): void {
         return $request->url() === 'https://api.github.com/repos/octo-org/octo-repo/issues/12/assignees'
             && $request['assignees'] === ['copilot-swe-agent[bot]'];
     });
+});
+
+it('keeps card assignees when copilot assignment fails', function (): void {
+    Http::fake([
+        'https://api.github.com/repos/octo-org/octo-repo/issues/12/assignees' => Http::response([
+            'message' => 'Validation Failed',
+        ], 422),
+    ]);
+
+    /** @var User $owner */
+    $owner = User::factory()->create();
+    $member = User::factory()->create(['name' => 'Taylor']);
+
+    [$board, $card, $repository] = createBoardWithGithubLink($owner);
+
+    BoardMember::create([
+        'board_id' => $board->id,
+        'user_id' => $member->id,
+        'role' => 'member',
+    ]);
+
+    $card->assignees()->attach($member->id, ['assigned_by' => $owner->id]);
+
+    GithubCardLink::create([
+        'card_id' => $card->id,
+        'github_repository_id' => $repository->id,
+        'github_issue_id' => '999',
+        'issue_number' => 12,
+        'issue_url' => 'https://github.com/octo-org/octo-repo/issues/12',
+        'issue_state' => 'open',
+        'request_copilot_review' => false,
+        'last_synced_source' => 'board',
+        'last_synced_at' => now(),
+    ]);
+
+    actingAs($owner)
+        ->post(route('github.assign-work', $card), [
+            'mode' => 'copilot',
+        ])
+        ->assertRedirect();
+
+    $card->refresh();
+
+    expect($card->assignees)->toHaveCount(1)
+        ->and($card->assignees->first()?->id)->toBe($member->id)
+        ->and($card->githubLink?->request_copilot_review)->toBeFalse();
 });
 
 it('rejects assigning work to a user who is not on the board', function (): void {
