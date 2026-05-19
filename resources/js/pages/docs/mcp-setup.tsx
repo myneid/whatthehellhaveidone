@@ -1,34 +1,26 @@
 import { Head, Link } from '@inertiajs/react';
 import {
-    BookOpen,
     Bot,
     FileText,
     FolderKanban,
-    Github,
     Globe,
-    Key,
     KanbanSquare,
-    Lock,
+    Key,
     MessageSquare,
     Monitor,
-    Shield,
     Terminal,
-    Upload,
     Wrench,
 } from 'lucide-react';
 import { DocsCodeBlock } from '@/components/docs/docs-code-block';
 import { DocsCodeCallout } from '@/components/docs/docs-code-callout';
 import { DocsCompactSteps } from '@/components/docs/docs-compact-steps';
 import { DocsConceptCard } from '@/components/docs/docs-concept-card';
-import { DocsCtaCard } from '@/components/docs/docs-cta-card';
 import { DocsExternalLink } from '@/components/docs/docs-external-link';
 import { DocsFeatureGrid } from '@/components/docs/docs-feature-grid';
 import { DocsHero } from '@/components/docs/docs-hero';
 import { DocsHierarchyDiagram } from '@/components/docs/docs-hierarchy-diagram';
 import { DocsNextSteps } from '@/components/docs/docs-next-steps';
 import { DocsPageSection } from '@/components/docs/docs-page-section';
-import { DocsTipList } from '@/components/docs/docs-tip-list';
-import { DocsToolsTable } from '@/components/docs/docs-tools-table';
 import { Button } from '@/components/ui/button';
 import DocsLayout from '@/layouts/docs-layout';
 
@@ -36,8 +28,8 @@ const MCP_URL = 'https://whatthehellhaveidone.net/mcp/whhid';
 
 const stats = [
     { label: 'Setup', value: '3 steps' },
-    { label: 'Tools', value: '11' },
     { label: 'Transport', value: 'HTTP' },
+    { label: 'Auth', value: 'Bearer' },
 ];
 
 const capabilities = [
@@ -60,41 +52,6 @@ const capabilities = [
         icon: FileText,
         title: 'Documents',
         description: 'List and read project documents so your assistant has full context.',
-    },
-];
-
-const mcpTools = [
-    { name: 'list_projects', description: 'List all your projects' },
-    { name: 'get_board', description: 'Get a board with its lists and cards' },
-    { name: 'list_cards', description: 'List cards in a board (filterable by list, priority)' },
-    { name: 'get_card', description: 'Get full card details including comments and checklists' },
-    { name: 'create_card', description: 'Create a new card in a list' },
-    { name: 'move_card', description: 'Move a card to a different list' },
-    { name: 'create_work_log_entry', description: 'Log work with hashtag-based project tagging' },
-    { name: 'update_work_log_entry', description: 'Edit an existing work log entry' },
-    { name: 'get_daily_work_log', description: "Retrieve today's (or any date's) work log" },
-    { name: 'list_documents', description: 'List documents in a project' },
-    { name: 'get_document', description: "Read a project document's full content" },
-];
-
-const examplePrompts = [
-    {
-        title: 'Review a board',
-        description: '&ldquo;Show me all open cards in the API board&rdquo;',
-    },
-    {
-        title: 'Create a card',
-        description:
-            '&ldquo;Create a card titled Fix login bug in the To Do list on my main board&rdquo;',
-    },
-    {
-        title: 'Log work',
-        description:
-            '&ldquo;Log that I spent 2 hours fixing the auth issue #backend&rdquo;',
-    },
-    {
-        title: 'Daily recap',
-        description: '&ldquo;What did I work on today?&rdquo;',
     },
 ];
 
@@ -141,7 +98,7 @@ export default function DocsMcpSetup() {
                                 <Link href="/mcp-tokens">Create MCP token</Link>
                             </Button>
                             <Button variant="outline" asChild>
-                                <Link href="/docs/work-log">Work Log</Link>
+                                <Link href="/docs/mcp-tools">Available tools</Link>
                             </Button>
                         </>
                     }
@@ -297,65 +254,25 @@ export default function DocsMcpSetup() {
                     </div>
                 </DocsPageSection>
 
-                <DocsPageSection
-                    icon={Wrench}
-                    title="Available tools"
-                    description="Eleven tools registered on the WHHID MCP server."
-                >
-                    <DocsToolsTable tools={mcpTools} />
-                </DocsPageSection>
-
-                <DocsPageSection
-                    icon={MessageSquare}
-                    title="Example prompts"
-                    description="Once connected, try asking:"
-                >
-                    <DocsTipList tips={examplePrompts} />
-                </DocsPageSection>
-
-                <DocsPageSection icon={Shield} title="Security">
-                    <DocsConceptCard icon={Lock} title="Treat tokens like passwords">
-                        <p>
-                            Each token grants full access to your account&apos;s data. If a token
-                            is compromised, revoke it immediately from{' '}
-                            <Link href="/mcp-tokens" className="hover-docs-link">
-                                Settings → MCP Tokens
-                            </Link>
-                            .
-                        </p>
-                        <p>
-                            Tokens do not expire automatically — revoke them manually when no
-                            longer needed.
-                        </p>
-                    </DocsConceptCard>
-                </DocsPageSection>
-
-                <DocsCtaCard
-                    title="Ready to connect?"
-                    description="Create a token, drop it into your AI client, and start managing boards from the chat."
-                    actionLabel="Create MCP token"
-                    actionHref="/mcp-tokens"
-                />
-
                 <DocsNextSteps
                     steps={[
+                        {
+                            title: 'Available Tools',
+                            description: 'Full tool reference, example prompts, and security notes.',
+                            href: '/docs/mcp-tools',
+                            icon: Wrench,
+                        },
                         {
                             title: 'Work Log',
                             description: 'Log and query work via hashtags and MCP tools.',
                             href: '/docs/work-log',
-                            icon: BookOpen,
+                            icon: MessageSquare,
                         },
                         {
                             title: 'Projects & Boards',
                             description: 'Learn how boards, lists, and cards work.',
                             href: '/docs/boards',
                             icon: FolderKanban,
-                        },
-                        {
-                            title: 'GitHub integration',
-                            description: 'Sync issues with board cards both ways.',
-                            href: '/docs/github',
-                            icon: Github,
                         },
                     ]}
                 />

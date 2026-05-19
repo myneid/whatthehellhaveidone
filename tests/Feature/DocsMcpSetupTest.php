@@ -12,8 +12,14 @@ test('mcp setup docs page has a branded title', function () {
         ->assertSee('MCP Setup – Docs', false);
 });
 
-test('mcp tools docs route renders the mcp setup page', function () {
+test('mcp tools docs page is publicly accessible', function () {
     $this->get('/docs/mcp-tools')
         ->assertOk()
-        ->assertInertia(fn ($page) => $page->component('docs/mcp-setup'));
+        ->assertInertia(fn ($page) => $page->component('docs/mcp-tools'));
+});
+
+test('mcp tools docs page has a branded title', function () {
+    $this->get('/docs/mcp-tools')
+        ->assertOk()
+        ->assertSee('MCP Tools – Docs', false);
 });

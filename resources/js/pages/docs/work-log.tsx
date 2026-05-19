@@ -131,8 +131,8 @@ export default function DocsWorkLog() {
                                 description: (
                                     <>
                                         Enter minutes in the dialog, or use{' '}
-                                        <Link href="/docs/mcp-setup" className="hover-docs-link">
-                                            MCP
+                                        <Link href="/docs/mcp-tools" className="hover-docs-link">
+                                            MCP tools
                                         </Link>{' '}
                                         for <code>started_at</code> /{' '}
                                         <code>ended_at</code> timestamps.
@@ -168,8 +168,8 @@ export default function DocsWorkLog() {
                             Tools like <code>create_work_log_entry</code> and{' '}
                             <code>get_daily_work_log</code> let assistants log and query on
                             your behalf. See{' '}
-                            <Link href="/docs/mcp-setup" className="hover-docs-link">
-                                MCP Setup
+                            <Link href="/docs/mcp-tools" className="hover-docs-link">
+                                MCP Tools
                             </Link>
                             .
                         </p>
