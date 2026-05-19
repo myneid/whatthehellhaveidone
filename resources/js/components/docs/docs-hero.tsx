@@ -1,5 +1,4 @@
-import type { LucideIcon } from 'lucide-react';
-import type { ReactNode } from 'react';
+import type { ComponentType, ReactNode } from 'react';
 import { DocsStatBar } from '@/components/docs/docs-stat-bar';
 
 type DocsStat = {
@@ -9,7 +8,7 @@ type DocsStat = {
 
 type DocsHeroProps = {
     eyebrow: string;
-    eyebrowIcon?: LucideIcon;
+    eyebrowIcon?: ComponentType<{ className?: string }>;
     title: string;
     description: string;
     actions?: ReactNode;
