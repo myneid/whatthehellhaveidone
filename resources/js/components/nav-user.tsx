@@ -5,54 +5,48 @@ import {
     DropdownMenuContent,
     DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
-import {
-    SidebarMenu,
-    SidebarMenuButton,
-    SidebarMenuItem,
-    useSidebar,
-} from '@/components/ui/sidebar';
-import { UserInfo } from '@/components/user-info';
+import { useSidebar } from '@/components/ui/sidebar';
 import { UserMenuContent } from '@/components/user-menu-content';
+import { useInitials } from '@/hooks/use-initials';
 import { useIsMobile } from '@/hooks/use-mobile';
 
 export function NavUser() {
     const { auth } = usePage().props;
     const { state } = useSidebar();
     const isMobile = useIsMobile();
+    const getInitials = useInitials();
 
     if (!auth.user) {
         return null;
     }
 
     return (
-        <SidebarMenu>
-            <SidebarMenuItem>
-                <DropdownMenu>
-                    <DropdownMenuTrigger asChild>
-                        <SidebarMenuButton
-                            size="lg"
-                            className="group text-sidebar-accent-foreground data-[state=open]:bg-sidebar-accent"
-                            data-test="sidebar-menu-button"
-                        >
-                            <UserInfo user={auth.user} />
-                            <ChevronsUpDown className="ml-auto size-4" />
-                        </SidebarMenuButton>
-                    </DropdownMenuTrigger>
-                    <DropdownMenuContent
-                        className="w-(--radix-dropdown-menu-trigger-width) min-w-56 rounded-lg"
-                        align="end"
-                        side={
-                            isMobile
-                                ? 'bottom'
-                                : state === 'collapsed'
-                                  ? 'left'
-                                  : 'bottom'
-                        }
-                    >
-                        <UserMenuContent user={auth.user} />
-                    </DropdownMenuContent>
-                </DropdownMenu>
-            </SidebarMenuItem>
-        </SidebarMenu>
+        <DropdownMenu>
+            <DropdownMenuTrigger asChild>
+                <button
+                    type="button"
+                    className="sb-user-row"
+                    data-test="sidebar-menu-button"
+                >
+                    <div className="sb-avatar">{getInitials(auth.user.name)}</div>
+                    <div className="min-w-0 flex-1">
+                        <span className="block truncate text-[12px] font-medium text-sidebar-foreground">
+                            {auth.user.name}
+                        </span>
+                        <span className="block truncate font-mono text-[10px] text-sidebar-muted">
+                            {auth.user.email.split('@')[0]}
+                        </span>
+                    </div>
+                    <ChevronsUpDown className="size-3.5 shrink-0 text-sidebar-muted" strokeWidth={1.5} />
+                </button>
+            </DropdownMenuTrigger>
+            <DropdownMenuContent
+                className="min-w-56 w-(--radix-dropdown-menu-trigger-width) rounded-lg"
+                align="end"
+                side={isMobile ? 'bottom' : state === 'collapsed' ? 'left' : 'bottom'}
+            >
+                <UserMenuContent user={auth.user} />
+            </DropdownMenuContent>
+        </DropdownMenu>
     );
 }

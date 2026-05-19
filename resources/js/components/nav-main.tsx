@@ -1,130 +1,168 @@
 import { Link } from '@inertiajs/react';
-import { ChevronRight, FileText, FolderOpen, KanbanSquare } from 'lucide-react';
-import { Collapsible, CollapsibleContent, CollapsibleTrigger } from '@/components/ui/collapsible';
 import {
-    SidebarGroup,
-    SidebarGroupLabel,
-    SidebarMenu,
-    SidebarMenuButton,
-    SidebarMenuItem,
-    SidebarMenuSub,
-    SidebarMenuSubButton,
-    SidebarMenuSubItem,
-} from '@/components/ui/sidebar';
+    ClipboardList,
+    Columns3,
+    FileText,
+    KanbanSquare,
+    LayoutGrid,
+} from 'lucide-react';
+import { useEffect, useState } from 'react';
 import { useCurrentUrl } from '@/hooks/use-current-url';
-import { dashboard } from '@/routes';
+import { cn } from '@/lib/utils';
 import type { NavItem, SidebarNavigation, SidebarProjectNavItem } from '@/types';
 
-function ProjectMenuItem({ project }: { project: SidebarProjectNavItem }) {
-    const { isCurrentUrl } = useCurrentUrl();
-
-    const isProjectActive = isCurrentUrl(project.href)
-        || isCurrentUrl(project.documentsHref)
-        || project.boards.some((board) => isCurrentUrl(board.href));
-
+function projectIsActive(
+    project: SidebarProjectNavItem,
+    isCurrentUrl: (url: NonNullable<NavItem['href']>) => boolean,
+): boolean {
     return (
-        <Collapsible asChild defaultOpen={isProjectActive}>
-            <SidebarMenuItem>
-                <CollapsibleTrigger asChild>
-                    <SidebarMenuButton isActive={isProjectActive} tooltip={{ children: project.name }}>
-                        <FolderOpen />
-                        <span>{project.name}</span>
-                        <ChevronRight className="ml-auto transition-transform group-data-[state=open]/collapsible:rotate-90" />
-                    </SidebarMenuButton>
-                </CollapsibleTrigger>
-
-                <CollapsibleContent>
-                    <SidebarMenuSub>
-                        <SidebarMenuSubItem>
-                            <SidebarMenuSubButton asChild isActive={isCurrentUrl(project.href)}>
-                                <Link href={project.href} prefetch>
-                                    <span>Overview</span>
-                                </Link>
-                            </SidebarMenuSubButton>
-                        </SidebarMenuSubItem>
-
-                        <SidebarMenuSubItem>
-                            <SidebarMenuSubButton asChild isActive={isCurrentUrl(project.documentsHref)}>
-                                <Link href={project.documentsHref} prefetch>
-                                    <FileText className="h-3.5 w-3.5" />
-                                    <span>Documents</span>
-                                </Link>
-                            </SidebarMenuSubButton>
-                        </SidebarMenuSubItem>
-
-                        {project.boards.map((board) => (
-                            <SidebarMenuSubItem key={board.id}>
-                                <SidebarMenuSubButton asChild isActive={isCurrentUrl(board.href)}>
-                                    <Link href={board.href} prefetch>
-                                        <span>{board.name}</span>
-                                    </Link>
-                                </SidebarMenuSubButton>
-                            </SidebarMenuSubItem>
-                        ))}
-                    </SidebarMenuSub>
-                </CollapsibleContent>
-            </SidebarMenuItem>
-        </Collapsible>
+        isCurrentUrl(project.href)
+        || isCurrentUrl(project.documentsHref)
+        || project.boards.some((board) => isCurrentUrl(board.href))
     );
 }
 
-export function NavMain({ items = [], navigation }: { items: NavItem[]; navigation?: SidebarNavigation }) {
+function projectChildCount(project: SidebarProjectNavItem): number {
+    return project.boards.length + 2;
+}
+
+function ProjectNavItem({
+    project,
+    isOpen,
+    onToggle,
+}: {
+    project: SidebarProjectNavItem;
+    isOpen: boolean;
+    onToggle: () => void;
+}) {
     const { isCurrentUrl } = useCurrentUrl();
-    const mainHref = dashboard();
+    const isActive = projectIsActive(project, isCurrentUrl);
 
     return (
-        <SidebarGroup className="px-2 py-0">
-            <SidebarGroupLabel>Platform</SidebarGroupLabel>
-            <SidebarMenu>
-                {items.map((item) => (
-                    <SidebarMenuItem key={item.title}>
-                        <SidebarMenuButton
-                            asChild
-                            isActive={isCurrentUrl(item.href)}
-                            tooltip={{ children: item.title }}
-                        >
-                            <Link href={item.href} prefetch>
-                                {item.icon && <item.icon />}
-                                <span>{item.title}</span>
-                            </Link>
-                        </SidebarMenuButton>
-                    </SidebarMenuItem>
-                ))}
-            </SidebarMenu>
+        <div>
+            <button
+                type="button"
+                className={cn(
+                    'sb-proj-row',
+                    (isOpen || isActive) && 'open',
+                    isActive && 'active',
+                )}
+                onClick={onToggle}
+                aria-expanded={isOpen}
+            >
+                <span className="sb-proj-toggle" aria-hidden>
+                    ›
+                </span>
+                <span className="sb-proj-pip" />
+                <span className="min-w-0 flex-1 truncate text-left">{project.name}</span>
+                <span className="sb-proj-meta">{projectChildCount(project)}</span>
+            </button>
 
-            <SidebarGroupLabel className="mt-3">Boards &amp; Projects</SidebarGroupLabel>
-            <SidebarMenu>
-                <SidebarMenuItem>
-                    <SidebarMenuButton
-                        asChild
-                        isActive={isCurrentUrl(mainHref)}
-                        tooltip={{ children: 'Main' }}
+            {isOpen && (
+                <div className="sb-subtree">
+                    <Link
+                        href={project.href}
+                        prefetch
+                        className={cn('sb-sub-row', isCurrentUrl(project.href) && 'active')}
                     >
-                        <Link href={mainHref} prefetch>
-                            <KanbanSquare />
-                            <span>Main</span>
+                        <LayoutGrid className="sb-icon" strokeWidth={1.5} aria-hidden />
+                        <span>Overview</span>
+                    </Link>
+
+                    <Link
+                        href={project.documentsHref}
+                        prefetch
+                        className={cn('sb-sub-row', isCurrentUrl(project.documentsHref) && 'active')}
+                    >
+                        <FileText className="sb-icon" strokeWidth={1.5} aria-hidden />
+                        <span>Documents</span>
+                    </Link>
+
+                    {project.boards.map((board) => (
+                        <Link
+                            key={board.id}
+                            href={board.href}
+                            prefetch
+                            className={cn('sb-sub-row', isCurrentUrl(board.href) && 'active')}
+                        >
+                            <Columns3 className="sb-icon" strokeWidth={1.5} aria-hidden />
+                            <span className="truncate">{board.name}</span>
                         </Link>
-                    </SidebarMenuButton>
-                </SidebarMenuItem>
+                    ))}
+                </div>
+            )}
+        </div>
+    );
+}
 
-                {navigation?.standaloneBoards.map((board) => (
-                    <SidebarMenuItem key={board.id}>
-                        <SidebarMenuSub>
-                            <SidebarMenuSubItem>
-                                <SidebarMenuSubButton asChild isActive={isCurrentUrl(board.href)}>
-                                    <Link href={board.href} prefetch>
-                                        <span>{board.name}</span>
-                                    </Link>
-                                </SidebarMenuSubButton>
-                            </SidebarMenuSubItem>
-                        </SidebarMenuSub>
-                    </SidebarMenuItem>
-                ))}
+export function NavMain({
+    items = [],
+    navigation,
+}: {
+    items: NavItem[];
+    navigation?: SidebarNavigation;
+}) {
+    const { isCurrentUrl, currentUrl } = useCurrentUrl();
+    const [openProjectId, setOpenProjectId] = useState<number | null>(null);
 
-                {navigation?.projects.map((project) => (
-                    <ProjectMenuItem key={project.id} project={project} />
-                ))}
-            </SidebarMenu>
-        </SidebarGroup>
+    useEffect(() => {
+        const activeProject = navigation?.projects.find((project) =>
+            projectIsActive(project, isCurrentUrl),
+        );
+
+        if (activeProject) {
+            setOpenProjectId(activeProject.id);
+        }
+    }, [navigation?.projects, currentUrl, isCurrentUrl]);
+
+    return (
+        <>
+            <p className="sb-section-label">Platform</p>
+            {items.map((item) => {
+                const active = isCurrentUrl(item.href);
+                const Icon = item.title === 'Work Log' ? ClipboardList : LayoutGrid;
+
+                return (
+                    <Link
+                        key={item.title}
+                        href={item.href}
+                        prefetch
+                        className={cn('sb-nav-row', active && 'active')}
+                    >
+                        <Icon className="sb-icon" strokeWidth={1.5} aria-hidden />
+                        <span className="flex-1 pl-1.5">{item.title}</span>
+                    </Link>
+                );
+            })}
+
+            <hr className="sb-divider" />
+
+            <p className="sb-section-label">Projects</p>
+
+            {navigation?.standaloneBoards.map((board) => (
+                <Link
+                    key={board.id}
+                    href={board.href}
+                    prefetch
+                    className={cn('sb-nav-row', isCurrentUrl(board.href) && 'active')}
+                >
+                    <KanbanSquare className="sb-icon" strokeWidth={1.5} aria-hidden />
+                    <span className="flex-1 truncate pl-1.5">{board.name}</span>
+                </Link>
+            ))}
+
+            {navigation?.projects.map((project) => (
+                <ProjectNavItem
+                    key={project.id}
+                    project={project}
+                    isOpen={openProjectId === project.id}
+                    onToggle={() =>
+                        setOpenProjectId((current) =>
+                            current === project.id ? null : project.id,
+                        )
+                    }
+                />
+            ))}
+        </>
     );
 }
