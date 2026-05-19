@@ -783,6 +783,34 @@
     .group-data-\[collapsible\=icon\]\/sidebar-wrapper .sb-proj-pip {
         @apply mx-0;
     }
+
+    /* ── Board cards (Trello-style grab) ─────────────── */
+    .board-card {
+        @apply cursor-grab select-none touch-none;
+        transition:
+            transform 120ms var(--ease-smooth),
+            box-shadow 120ms var(--ease-smooth),
+            opacity 120ms ease;
+    }
+
+    .board-card:active:not(.board-card--dragging) {
+        transform: scale(0.985);
+        box-shadow: inset 0 2px 6px oklch(0.2 0.04 45 / 0.1);
+    }
+
+    .board-card--dragging {
+        @apply opacity-25;
+    }
+
+    .board-card--pending {
+        transform: scale(0.985);
+        box-shadow: inset 0 2px 6px oklch(0.2 0.04 45 / 0.12);
+    }
+
+    .board-card-overlay {
+        @apply cursor-grabbing shadow-2xl ring-1 ring-black/5;
+        transform: scale(1.03) rotate(1deg);
+    }
 }
 
 @layer utilities {

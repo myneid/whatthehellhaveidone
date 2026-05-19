@@ -2,6 +2,7 @@ import {
     DndContext,
     DragOverlay,
     PointerSensor,
+    TouchSensor,
     closestCenter,
     useSensor,
     useSensors,
@@ -21,7 +22,7 @@ import {
 import { CSS } from '@dnd-kit/utilities';
 import { Head, Link, router, useForm } from '@inertiajs/react';
 import { GripVertical, Paperclip, Plus, Settings, Trash2, X } from 'lucide-react';
-import { useCallback, useMemo, useState } from 'react';
+import { useCallback, useMemo, useRef, useState, type RefObject } from 'react';
 import { BoardSettingsSheet } from '@/components/boards/board-settings-sheet';
 import { CardModal } from '@/components/boards/card-modal';
 import {
@@ -43,6 +44,7 @@ import {
     SelectValue,
 } from '@/components/ui/select';
 import { dashboard } from '@/routes';
+import { cn } from '@/lib/utils';
 import * as boardRoutes from '@/routes/boards';
 import * as boardListRoutes from '@/routes/boards/lists';
 import * as cardRoutes from '@/routes/cards';
@@ -243,9 +245,10 @@ function AddListForm({ board, onDone }: { board: Board; onDone: () => void }) {
 type SortableCardProps = {
     card: Card;
     onOpen: (card: Card) => void;
+    ignoreClickRef: RefObject<boolean>;
 };
 
-function SortableCard({ card, onOpen }: SortableCardProps) {
+function SortableCard({ card, onOpen, ignoreClickRef }: SortableCardProps) {
     const {
         attributes,
         listeners,
@@ -261,26 +264,29 @@ function SortableCard({ card, onOpen }: SortableCardProps) {
     const style = {
         transform: CSS.Transform.toString(transform),
         transition,
-        opacity: isDragging ? 0.4 : 1,
     };
 
     return (
         <div
             ref={setNodeRef}
             style={style}
-            className={`group cursor-pointer rounded-md border border-l-4 bg-card p-2 shadow-sm transition-shadow hover:shadow-md ${PRIORITY_COLORS[card.priority ?? 'none']}`}
-            onClick={() => onOpen(card)}
+            {...attributes}
+            {...listeners}
+            className={cn(
+                'board-card group rounded-md border border-l-4 bg-card p-2 shadow-sm hover:shadow-md',
+                PRIORITY_COLORS[card.priority ?? 'none'],
+                isDragging && 'board-card--dragging',
+            )}
+            onClick={() => {
+                if (ignoreClickRef.current) {
+                    return;
+                }
+
+                onOpen(card);
+            }}
         >
             <div className="flex items-start justify-between gap-1">
                 <span className="text-sm leading-snug">{card.title}</span>
-                <button
-                    {...attributes}
-                    {...listeners}
-                    className="shrink-0 cursor-grab text-muted-foreground opacity-0 group-hover:opacity-100"
-                    onClick={(e) => e.stopPropagation()}
-                >
-                    <GripVertical className="h-4 w-4" />
-                </button>
             </div>
 
             {card.labels && card.labels.length > 0 && (
@@ -374,9 +380,15 @@ type ListColumnProps = {
     list: BoardList;
     onOpenCard: (card: Card) => void;
     onDeleteList: (list: BoardList) => void;
+    ignoreCardClickRef: RefObject<boolean>;
 };
 
-function ListColumn({ list, onOpenCard, onDeleteList }: ListColumnProps) {
+function ListColumn({
+    list,
+    onOpenCard,
+    onDeleteList,
+    ignoreCardClickRef,
+}: ListColumnProps) {
     const [addingCard, setAddingCard] = useState(false);
     const cardIds = useMemo(
         () => (list.cards ?? []).map((c) => `card-${c.id}`),
@@ -504,6 +516,7 @@ function ListColumn({ list, onOpenCard, onDeleteList }: ListColumnProps) {
                             key={card.id}
                             card={card}
                             onOpen={onOpenCard}
+                            ignoreClickRef={ignoreCardClickRef}
                         />
                     ))}
                 </div>
@@ -533,8 +546,13 @@ function ListColumn({ list, onOpenCard, onDeleteList }: ListColumnProps) {
 
 function CardOverlay({ card }: { card: Card }) {
     return (
-        <div className="w-72 cursor-grabbing rounded-md border bg-card p-2 shadow-xl">
-            <span className="text-sm">{card.title}</span>
+        <div
+            className={cn(
+                'board-card-overlay w-72 rounded-md border border-l-4 bg-card p-2',
+                PRIORITY_COLORS[card.priority ?? 'none'],
+            )}
+        >
+            <span className="text-sm leading-snug">{card.title}</span>
         </div>
     );
 }
@@ -595,6 +613,7 @@ export default function BoardShow({
     const [showSettings, setShowSettings] = useState(false);
     const [pendingWorkAssignmentCardId, setPendingWorkAssignmentCardId] =
         useState<number | null>(null);
+    const ignoreCardClickRef = useRef(false);
     const lists =
         listsState.signature === boardListSignature
             ? listsState.items
@@ -635,7 +654,18 @@ export default function BoardShow({
     );
 
     const sensors = useSensors(
-        useSensor(PointerSensor, { activationConstraint: { distance: 5 } }),
+        useSensor(PointerSensor, {
+            activationConstraint: {
+                delay: 175,
+                tolerance: 6,
+            },
+        }),
+        useSensor(TouchSensor, {
+            activationConstraint: {
+                delay: 200,
+                tolerance: 8,
+            },
+        }),
     );
 
     const reloadBoardAfterMove = useCallback(() => {
@@ -689,6 +719,8 @@ export default function BoardShow({
         if (event.active.data.current?.type === 'list') {
             return;
         }
+
+        ignoreCardClickRef.current = true;
 
         const found = findCard(String(event.active.id));
 
@@ -820,6 +852,10 @@ export default function BoardShow({
 
     function onDragEnd(event: DragEndEvent) {
         setActiveCard(null);
+
+        window.setTimeout(() => {
+            ignoreCardClickRef.current = false;
+        }, 50);
 
         if (event.active.data.current?.type === 'list') {
             const overId = event.over?.id;
@@ -1038,6 +1074,7 @@ export default function BoardShow({
                                         list={list}
                                         onOpenCard={openCard}
                                         onDeleteList={deleteList}
+                                        ignoreCardClickRef={ignoreCardClickRef}
                                     />
                                 ))}
 
