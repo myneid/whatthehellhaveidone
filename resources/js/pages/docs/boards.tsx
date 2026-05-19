@@ -23,11 +23,12 @@ import {
     Users,
 } from 'lucide-react';
 import { DocsConceptCard } from '@/components/docs/docs-concept-card';
+import { DocsCtaCard } from '@/components/docs/docs-cta-card';
 import { DocsFeatureGrid } from '@/components/docs/docs-feature-grid';
 import { DocsHero } from '@/components/docs/docs-hero';
 import { DocsHierarchyDiagram } from '@/components/docs/docs-hierarchy-diagram';
 import { DocsNextSteps } from '@/components/docs/docs-next-steps';
-import { DocsSectionHeader } from '@/components/docs/docs-section-header';
+import { DocsPageSection } from '@/components/docs/docs-page-section';
 import { DocsTipList } from '@/components/docs/docs-tip-list';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
@@ -129,12 +130,11 @@ export default function DocsBoards() {
                     }
                 />
 
-                <section className="space-y-4">
-                    <DocsSectionHeader
+                <DocsPageSection
                         icon={Layers}
                         title="How it fits together"
                         description="Four nested levels — from team container down to individual tasks."
-                    />
+                >
                     <DocsHierarchyDiagram
                         levels={[
                             {
@@ -159,14 +159,13 @@ export default function DocsBoards() {
                             },
                         ]}
                     />
-                </section>
+                </DocsPageSection>
 
-                <section className="space-y-4">
-                    <DocsSectionHeader
-                        icon={FolderKanban}
-                        title="Projects & boards"
-                        description="The two containers that organize your work."
-                    />
+                <DocsPageSection
+                    icon={FolderKanban}
+                    title="Projects & boards"
+                    description="The two containers that organize your work."
+                >
                     <div className="grid gap-4 lg:grid-cols-2">
                         <DocsConceptCard icon={FolderKanban} title="Projects">
                             <p>
@@ -203,14 +202,13 @@ export default function DocsBoards() {
                             </p>
                         </DocsConceptCard>
                     </div>
-                </section>
+                </DocsPageSection>
 
-                <section className="space-y-4">
-                    <DocsSectionHeader
-                        icon={Eye}
-                        title="Board visibility"
-                        description="Control who can see each board."
-                    />
+                <DocsPageSection
+                    icon={Eye}
+                    title="Board visibility"
+                    description="Control who can see each board."
+                >
                     <div className="grid gap-3 sm:grid-cols-3">
                         {visibilityOptions.map((option) => (
                             <Card
@@ -233,14 +231,13 @@ export default function DocsBoards() {
                             </Card>
                         ))}
                     </div>
-                </section>
+                </DocsPageSection>
 
-                <section className="space-y-4">
-                    <DocsSectionHeader
-                        icon={Columns3}
-                        title="Lists & cards"
-                        description="Columns hold your tasks — drag cards between them to update status."
-                    />
+                <DocsPageSection
+                    icon={Columns3}
+                    title="Lists & cards"
+                    description="Columns hold your tasks — drag cards between them to update status."
+                >
                     <div className="grid gap-4 lg:grid-cols-2">
                         <DocsConceptCard icon={Columns3} title="Lists">
                             <p>
@@ -264,23 +261,21 @@ export default function DocsBoards() {
                             </p>
                         </DocsConceptCard>
                     </div>
-                </section>
+                </DocsPageSection>
 
-                <section className="space-y-4">
-                    <DocsSectionHeader
-                        icon={LayoutGrid}
-                        title="Everything on a card"
-                        description="Nine fields to track work from idea to done."
-                    />
+                <DocsPageSection
+                    icon={LayoutGrid}
+                    title="Everything on a card"
+                    description="Nine fields to track work from idea to done."
+                >
                     <DocsFeatureGrid features={cardFields} columns={3} />
-                </section>
+                </DocsPageSection>
 
-                <section className="space-y-4">
-                    <DocsSectionHeader
-                        icon={Tag}
-                        title="Labels & archiving"
-                        description="Organize with tags and clean up without losing data."
-                    />
+                <DocsPageSection
+                    icon={Tag}
+                    title="Labels & archiving"
+                    description="Organize with tags and clean up without losing data."
+                >
                     <div className="grid gap-4 lg:grid-cols-2">
                         <DocsConceptCard icon={Tag} title="Labels">
                             <p>
@@ -301,14 +296,13 @@ export default function DocsBoards() {
                             </p>
                         </DocsConceptCard>
                     </div>
-                </section>
+                </DocsPageSection>
 
-                <section className="space-y-4">
-                    <DocsSectionHeader
-                        icon={GripVertical}
-                        title="Keyboard & drag tips"
-                        description="Small shortcuts that speed up everyday board work."
-                    />
+                <DocsPageSection
+                    icon={GripVertical}
+                    title="Keyboard & drag tips"
+                    description="Small shortcuts that speed up everyday board work."
+                >
                     <DocsTipList
                         tips={[
                             {
@@ -335,24 +329,14 @@ export default function DocsBoards() {
                             },
                         ]}
                     />
-                </section>
+                </DocsPageSection>
 
-                <Card className="border-border bg-muted/30">
-                    <CardContent className="flex flex-col gap-4 px-6 py-6 sm:flex-row sm:items-center sm:justify-between">
-                        <div>
-                            <p className="font-semibold text-foreground">
-                                Ready to build your first board?
-                            </p>
-                            <p className="mt-1 text-sm text-muted-foreground">
-                                Head to the dashboard and create a project — or jump straight to a
-                                standalone board.
-                            </p>
-                        </div>
-                        <Button variant="brand" asChild className="shrink-0">
-                            <Link href="/dashboard">Go to dashboard</Link>
-                        </Button>
-                    </CardContent>
-                </Card>
+                <DocsCtaCard
+                    title="Ready to build your first board?"
+                    description="Head to the dashboard and create a project — or jump straight to a standalone board."
+                    actionLabel="Go to dashboard"
+                    actionHref="/dashboard"
+                />
 
                 <DocsNextSteps
                     steps={[

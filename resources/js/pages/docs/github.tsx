@@ -17,14 +17,15 @@ import {
     Webhook,
 } from 'lucide-react';
 import { DocsCodeBlock } from '@/components/docs/docs-code-block';
+import { DocsCompactSteps } from '@/components/docs/docs-compact-steps';
 import { DocsConceptCard } from '@/components/docs/docs-concept-card';
+import { DocsCtaCard } from '@/components/docs/docs-cta-card';
 import { DocsExternalLink } from '@/components/docs/docs-external-link';
 import { DocsFeatureGrid } from '@/components/docs/docs-feature-grid';
 import { DocsHero } from '@/components/docs/docs-hero';
 import { DocsHierarchyDiagram } from '@/components/docs/docs-hierarchy-diagram';
 import { DocsNextSteps } from '@/components/docs/docs-next-steps';
-import { DocsSectionHeader } from '@/components/docs/docs-section-header';
-import { DocsStepCard } from '@/components/docs/docs-step-card';
+import { DocsPageSection } from '@/components/docs/docs-page-section';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
 import DocsLayout from '@/layouts/docs-layout';
@@ -92,21 +93,19 @@ export default function DocsGitHub() {
                     }
                 />
 
-                <section className="space-y-4">
-                    <DocsSectionHeader
-                        icon={Github}
-                        title="What you can do"
-                        description="Three ways GitHub and your boards stay connected."
-                    />
+                <DocsPageSection
+                    icon={Github}
+                    title="What you can do"
+                    description="Three ways GitHub and your boards stay connected."
+                >
                     <DocsFeatureGrid features={capabilities} columns={3} />
-                </section>
+                </DocsPageSection>
 
-                <section className="space-y-4">
-                    <DocsSectionHeader
-                        icon={Link2}
-                        title="How it connects"
-                        description="From your GitHub account down to individual card ↔ issue links."
-                    />
+                <DocsPageSection
+                    icon={Link2}
+                    title="How it connects"
+                    description="From your GitHub account down to individual card ↔ issue links."
+                >
                     <DocsHierarchyDiagram
                         levels={[
                             {
@@ -131,7 +130,7 @@ export default function DocsGitHub() {
                             },
                         ]}
                     />
-                </section>
+                </DocsPageSection>
 
                 <Card className="border-border bg-muted/30">
                     <CardContent className="flex gap-4 px-6 py-5">
@@ -157,140 +156,158 @@ export default function DocsGitHub() {
                     </CardContent>
                 </Card>
 
-                <section className="space-y-4">
-                    <DocsSectionHeader
-                        icon={Server}
-                        title="Self-hosting — GitHub OAuth App"
-                        description="Required once per server before anyone can connect a GitHub account."
-                    />
-
-                    <DocsStepCard step={1} title="Create an OAuth App" icon={Github}>
-                        <p>
-                            <DocsExternalLink href="https://github.com/settings/applications/new">
-                                Create a new OAuth App
-                            </DocsExternalLink>{' '}
-                            on GitHub, or browse from{' '}
-                            <DocsExternalLink href="https://github.com/settings/developers">
-                                Developer settings → OAuth Apps
-                            </DocsExternalLink>
-                            .
-                        </p>
-                        <p>
-                            For the full walkthrough, see{' '}
-                            <DocsExternalLink href="https://docs.github.com/en/apps/oauth-apps/building-oauth-apps/creating-an-oauth-app">
-                                GitHub&apos;s OAuth app guide
-                            </DocsExternalLink>
-                            .
-                        </p>
-                    </DocsStepCard>
-
-                    <DocsStepCard step={2} title="Set the callback URL" icon={Globe}>
-                        <p>
-                            Set the <strong>Authorization callback URL</strong> to:
-                        </p>
-                        <DocsCodeBlock>
-                            {`https://your-domain.com/github/callback`}
-                        </DocsCodeBlock>
-                    </DocsStepCard>
-
-                    <DocsStepCard step={3} title="Copy credentials" icon={Key}>
-                        <p>
-                            Copy the <strong>Client ID</strong> and generate a{' '}
-                            <strong>Client Secret</strong> from the OAuth app settings page.
-                        </p>
-                    </DocsStepCard>
-
-                    <DocsStepCard step={4} title="Add to your .env" icon={Settings}>
-                        <p>Add the credentials to your environment file:</p>
-                        <DocsCodeBlock>
-                            {`GITHUB_CLIENT_ID=your_client_id
+                <DocsPageSection
+                    icon={Server}
+                    title="Self-hosting — GitHub OAuth App"
+                    description="Required once per server before anyone can connect a GitHub account."
+                >
+                    <DocsCompactSteps
+                        steps={[
+                            {
+                                title: 'Create an OAuth App',
+                                description: (
+                                    <>
+                                        <DocsExternalLink href="https://github.com/settings/applications/new">
+                                            Create a new OAuth App
+                                        </DocsExternalLink>{' '}
+                                        on GitHub, or browse{' '}
+                                        <DocsExternalLink href="https://github.com/settings/developers">
+                                            Developer settings → OAuth Apps
+                                        </DocsExternalLink>
+                                        . See{' '}
+                                        <DocsExternalLink href="https://docs.github.com/en/apps/oauth-apps/building-oauth-apps/creating-an-oauth-app">
+                                            GitHub&apos;s OAuth app guide
+                                        </DocsExternalLink>
+                                        .
+                                    </>
+                                ),
+                            },
+                            {
+                                title: 'Set the callback URL',
+                                description: (
+                                    <>
+                                        Set <strong>Authorization callback URL</strong> to:
+                                        <DocsCodeBlock>
+                                            {`https://your-domain.com/github/callback`}
+                                        </DocsCodeBlock>
+                                    </>
+                                ),
+                            },
+                            {
+                                title: 'Copy credentials',
+                                description: (
+                                    <>
+                                        Copy the <strong>Client ID</strong> and generate a{' '}
+                                        <strong>Client Secret</strong>.
+                                    </>
+                                ),
+                            },
+                            {
+                                title: 'Add to your .env',
+                                description: (
+                                    <>
+                                        Add credentials to your environment file:
+                                        <DocsCodeBlock>
+                                            {`GITHUB_CLIENT_ID=your_client_id
 GITHUB_CLIENT_SECRET=your_client_secret
 GITHUB_REDIRECT_URL=https://your-domain.com/github/callback`}
-                        </DocsCodeBlock>
-                    </DocsStepCard>
-
-                    <DocsStepCard step={5} title="Reload config" icon={RefreshCw} isLast>
-                        <p>
-                            Run <code>php artisan config:clear</code> to pick up the new
-                            environment variables.
-                        </p>
-                    </DocsStepCard>
-                </section>
-
-                <section className="space-y-4">
-                    <DocsSectionHeader
-                        icon={Github}
-                        title="Connect your GitHub account"
-                        description="Link one or more GitHub accounts to your user profile."
+                                        </DocsCodeBlock>
+                                    </>
+                                ),
+                            },
+                            {
+                                title: 'Reload config',
+                                description: (
+                                    <>
+                                        Run <code>php artisan config:clear</code> to pick up
+                                        the new variables.
+                                    </>
+                                ),
+                            },
+                        ]}
                     />
+                </DocsPageSection>
 
-                    <DocsStepCard step={1} title="Open Integrations" icon={Settings}>
-                        <p>
-                            Go to{' '}
-                            <Link href="/settings/integrations">
-                                Settings → Integrations
-                            </Link>
-                            .
-                        </p>
-                    </DocsStepCard>
-
-                    <DocsStepCard step={2} title="Authorize on GitHub" icon={Key}>
-                        <p>
-                            Click <strong>Connect GitHub Account</strong> and authorize the
-                            app on GitHub — you&apos;ll be redirected back automatically.
-                        </p>
-                    </DocsStepCard>
-
-                    <DocsStepCard
-                        step={3}
-                        title="Add more accounts if needed"
-                        icon={PlusCircle}
-                        isLast
-                        highlights={['Multiple accounts']}
-                    >
-                        <p>
-                            You can connect multiple GitHub accounts from the same
-                            integrations page — useful if you work across personal and org
-                            repos.
-                        </p>
-                    </DocsStepCard>
-                </section>
-
-                <section className="space-y-4">
-                    <DocsSectionHeader
-                        icon={Link2}
-                        title="Link a repository to a board"
-                        description="Choose which repo syncs with which board."
+                <DocsPageSection
+                    icon={Github}
+                    title="Connect your GitHub account"
+                    description="Link one or more GitHub accounts to your user profile."
+                >
+                    <DocsCompactSteps
+                        steps={[
+                            {
+                                title: 'Open Integrations',
+                                description: (
+                                    <>
+                                        Go to{' '}
+                                        <Link href="/settings/integrations">
+                                            Settings → Integrations
+                                        </Link>
+                                        .
+                                    </>
+                                ),
+                            },
+                            {
+                                title: 'Authorize on GitHub',
+                                description: (
+                                    <>
+                                        Click <strong>Connect GitHub Account</strong> and
+                                        authorize — you&apos;ll be redirected back automatically.
+                                    </>
+                                ),
+                            },
+                            {
+                                title: 'Add more accounts (optional)',
+                                description:
+                                    'Connect multiple GitHub accounts from the same page — useful across personal and org repos.',
+                            },
+                        ]}
                     />
+                </DocsPageSection>
 
-                    <DocsStepCard step={1} title="Open board settings" icon={Settings}>
-                        <p>
-                            From the <Link href="/dashboard">dashboard</Link>, open a board
-                            and click <strong>Settings</strong> in the top-right corner.
-                        </p>
-                    </DocsStepCard>
-
-                    <DocsStepCard step={2} title="Select a repository" icon={Github}>
-                        <p>
-                            Under <strong>GitHub Integration</strong>, pick a repository from
-                            the dropdown.
-                        </p>
-                    </DocsStepCard>
-
-                    <DocsStepCard step={3} title="Connect" icon={Link2} isLast>
-                        <p>
-                            Click <strong>Connect Repository</strong>. The board is now
-                            linked and ready to import or sync issues.
-                        </p>
-                    </DocsStepCard>
-                </section>
-
-                <section className="space-y-4">
-                    <DocsSectionHeader
-                        icon={RefreshCw}
-                        title="Working with issues"
-                        description="Import existing issues or create new ones from cards."
+                <DocsPageSection
+                    icon={Link2}
+                    title="Link a repository to a board"
+                    description="Choose which repo syncs with which board."
+                >
+                    <DocsCompactSteps
+                        steps={[
+                            {
+                                title: 'Open board settings',
+                                description: (
+                                    <>
+                                        From the <Link href="/dashboard">dashboard</Link>, open
+                                        a board and click <strong>Settings</strong>.
+                                    </>
+                                ),
+                            },
+                            {
+                                title: 'Select a repository',
+                                description: (
+                                    <>
+                                        Under <strong>GitHub Integration</strong>, pick a
+                                        repository from the dropdown.
+                                    </>
+                                ),
+                            },
+                            {
+                                title: 'Connect',
+                                description: (
+                                    <>
+                                        Click <strong>Connect Repository</strong> — the board is
+                                        ready to import or sync issues.
+                                    </>
+                                ),
+                            },
+                        ]}
                     />
+                </DocsPageSection>
+
+                <DocsPageSection
+                    icon={RefreshCw}
+                    title="Working with issues"
+                    description="Import existing issues or create new ones from cards."
+                >
                     <div className="grid gap-4 lg:grid-cols-2">
                         <DocsConceptCard icon={Download} title="Import GitHub issues as cards">
                             <p>
@@ -315,14 +332,13 @@ GITHUB_REDIRECT_URL=https://your-domain.com/github/callback`}
                             </p>
                         </DocsConceptCard>
                     </div>
-                </section>
+                </DocsPageSection>
 
-                <section className="space-y-4">
-                    <DocsSectionHeader
-                        icon={ArrowLeftRight}
-                        title="Sync direction"
-                        description="Choose how tightly GitHub and your board stay coupled."
-                    />
+                <DocsPageSection
+                    icon={ArrowLeftRight}
+                    title="Sync direction"
+                    description="Choose how tightly GitHub and your board stay coupled."
+                >
                     <div className="grid gap-3 sm:grid-cols-2">
                         {syncModes.map((mode) => (
                             <Card
@@ -374,24 +390,14 @@ GITHUB_REDIRECT_URL=https://your-domain.com/github/callback`}
                             </div>
                         </CardContent>
                     </Card>
-                </section>
+                </DocsPageSection>
 
-                <Card className="border-border bg-muted/30">
-                    <CardContent className="flex flex-col gap-4 px-6 py-6 sm:flex-row sm:items-center sm:justify-between">
-                        <div>
-                            <p className="font-semibold text-foreground">
-                                Ready to connect?
-                            </p>
-                            <p className="mt-1 text-sm text-muted-foreground">
-                                Link your GitHub account, pick a repo, and import your open
-                                issues in under a minute.
-                            </p>
-                        </div>
-                        <Button variant="brand" asChild className="shrink-0">
-                            <Link href="/settings/integrations">Open integrations</Link>
-                        </Button>
-                    </CardContent>
-                </Card>
+                <DocsCtaCard
+                    title="Ready to connect?"
+                    description="Link your GitHub account, pick a repo, and import your open issues in under a minute."
+                    actionLabel="Open integrations"
+                    actionHref="/settings/integrations"
+                />
 
                 <DocsNextSteps
                     steps={[

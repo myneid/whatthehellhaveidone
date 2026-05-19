@@ -15,14 +15,15 @@ import {
     Trash2,
     Webhook,
 } from 'lucide-react';
+import { DocsCompactSteps } from '@/components/docs/docs-compact-steps';
 import { DocsConceptCard } from '@/components/docs/docs-concept-card';
+import { DocsCtaCard } from '@/components/docs/docs-cta-card';
 import { DocsExternalLink } from '@/components/docs/docs-external-link';
 import { DocsFeatureGrid } from '@/components/docs/docs-feature-grid';
 import { DocsHero } from '@/components/docs/docs-hero';
 import { DocsHierarchyDiagram } from '@/components/docs/docs-hierarchy-diagram';
 import { DocsNextSteps } from '@/components/docs/docs-next-steps';
-import { DocsSectionHeader } from '@/components/docs/docs-section-header';
-import { DocsStepCard } from '@/components/docs/docs-step-card';
+import { DocsPageSection } from '@/components/docs/docs-page-section';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
 import DocsLayout from '@/layouts/docs-layout';
@@ -87,21 +88,19 @@ export default function DocsDiscord() {
                     }
                 />
 
-                <section className="space-y-4">
-                    <DocsSectionHeader
-                        icon={Bell}
-                        title="What gets notified"
-                        description="Rich embed messages from WHHID bot — with board name, list, and a link to the card."
-                    />
+                <DocsPageSection
+                    icon={Bell}
+                    title="What gets notified"
+                    description="Rich embed messages from WHHID bot — with board name, list, and a link to the card."
+                >
                     <DocsFeatureGrid features={notifications} columns={2} />
-                </section>
+                </DocsPageSection>
 
-                <section className="space-y-4">
-                    <DocsSectionHeader
-                        icon={Webhook}
-                        title="How it connects"
-                        description="Each board gets its own webhook pointing at a Discord channel."
-                    />
+                <DocsPageSection
+                    icon={Webhook}
+                    title="How it connects"
+                    description="Each board gets its own webhook pointing at a Discord channel."
+                >
                     <DocsHierarchyDiagram
                         levels={[
                             {
@@ -126,7 +125,7 @@ export default function DocsDiscord() {
                             },
                         ]}
                     />
-                </section>
+                </DocsPageSection>
 
                 <Card className="border-border bg-muted/30">
                     <CardContent className="flex gap-4 px-6 py-5">
@@ -147,90 +146,103 @@ export default function DocsDiscord() {
                     </CardContent>
                 </Card>
 
-                <section className="space-y-4">
-                    <DocsSectionHeader
-                        icon={Webhook}
-                        title="Create a Discord webhook"
-                        description="Set this up once in Discord — takes about a minute."
+                <DocsPageSection
+                    icon={Webhook}
+                    title="Create a Discord webhook"
+                    description="Set this up once in Discord — takes about a minute."
+                >
+                    <DocsCompactSteps
+                        steps={[
+                            {
+                                title: 'Open channel settings',
+                                description: (
+                                    <>
+                                        In Discord, right-click the channel and choose{' '}
+                                        <strong>Edit Channel</strong>.
+                                    </>
+                                ),
+                            },
+                            {
+                                title: 'Create the webhook',
+                                description: (
+                                    <>
+                                        Go to <strong>Integrations → Webhooks → New Webhook</strong>.
+                                        See{' '}
+                                        <DocsExternalLink href="https://support.discord.com/hc/en-us/articles/228383668-Intro-to-Webhooks">
+                                            Discord&apos;s webhook guide
+                                        </DocsExternalLink>{' '}
+                                        or the{' '}
+                                        <DocsExternalLink href="https://discord.com/developers/docs/resources/webhook">
+                                            API reference
+                                        </DocsExternalLink>
+                                        .
+                                    </>
+                                ),
+                            },
+                            {
+                                title: 'Copy the webhook URL',
+                                description: (
+                                    <>
+                                        Copy <code>https://discord.com/api/webhooks/…</code> and
+                                        paste it into{' '}
+                                        <Link href="/docs/boards" className="hover-docs-link">
+                                            board settings
+                                        </Link>
+                                        .
+                                    </>
+                                ),
+                            },
+                        ]}
                     />
+                </DocsPageSection>
 
-                    <DocsStepCard step={1} title="Open channel settings" icon={Hash}>
-                        <p>
-                            In Discord, right-click the channel you want to notify and choose{' '}
-                            <strong>Edit Channel</strong>.
-                        </p>
-                    </DocsStepCard>
-
-                    <DocsStepCard step={2} title="Create the webhook" icon={Webhook}>
-                        <p>
-                            Go to <strong>Integrations → Webhooks → New Webhook</strong>. Give
-                            it a name that matches the channel (e.g.{' '}
-                            <code>#dev-updates</code>).
-                        </p>
-                        <p>
-                            See{' '}
-                            <DocsExternalLink href="https://support.discord.com/hc/en-us/articles/228383668-Intro-to-Webhooks">
-                                Discord&apos;s webhook guide
-                            </DocsExternalLink>{' '}
-                            for screenshots and setup steps, or the{' '}
-                            <DocsExternalLink href="https://discord.com/developers/docs/resources/webhook">
-                                webhook API reference
-                            </DocsExternalLink>{' '}
-                            for technical details.
-                        </p>
-                    </DocsStepCard>
-
-                    <DocsStepCard step={3} title="Copy the webhook URL" icon={Settings} isLast>
-                        <p>
-                            Copy the full <strong>Webhook URL</strong> — it looks like{' '}
-                            <code>https://discord.com/api/webhooks/…</code>. You&apos;ll paste
-                            this into{' '}
-                            <Link href="/docs/boards" className="hover-docs-link">
-                                board settings
-                            </Link>{' '}
-                            next.
-                        </p>
-                    </DocsStepCard>
-                </section>
-
-                <section className="space-y-4">
-                    <DocsSectionHeader
-                        icon={Settings}
-                        title="Add the webhook to a board"
-                        description="Connect Discord from any board you manage."
+                <DocsPageSection
+                    icon={Settings}
+                    title="Add the webhook to a board"
+                    description="Connect Discord from any board you manage."
+                >
+                    <DocsCompactSteps
+                        steps={[
+                            {
+                                title: 'Open board settings',
+                                description: (
+                                    <>
+                                        From the <Link href="/dashboard">dashboard</Link>, open
+                                        a{' '}
+                                        <Link href="/docs/boards" className="hover-docs-link">
+                                            board
+                                        </Link>{' '}
+                                        and click <strong>Settings</strong>.
+                                    </>
+                                ),
+                            },
+                            {
+                                title: 'Enter webhook details',
+                                description: (
+                                    <>
+                                        Under <strong>Discord Webhook</strong>, enter a name and
+                                        paste the URL.
+                                    </>
+                                ),
+                            },
+                            {
+                                title: 'Save',
+                                description: (
+                                    <>
+                                        Click <strong>Save Webhook</strong>. The URL is encrypted
+                                        — you won&apos;t see it again after saving.
+                                    </>
+                                ),
+                            },
+                        ]}
                     />
+                </DocsPageSection>
 
-                    <DocsStepCard step={1} title="Open board settings" icon={Settings}>
-                        <p>
-                            From the <Link href="/dashboard">dashboard</Link>, open a{' '}
-                            <Link href="/docs/boards" className="hover-docs-link">
-                                board
-                            </Link>{' '}
-                            and click <strong>Settings</strong> in the top-right corner.
-                        </p>
-                    </DocsStepCard>
-
-                    <DocsStepCard step={2} title="Enter webhook details" icon={Webhook}>
-                        <p>
-                            Scroll to <strong>Discord Webhook</strong>. Enter a display name
-                            (e.g. <code>#dev-updates</code>) and paste the webhook URL.
-                        </p>
-                    </DocsStepCard>
-
-                    <DocsStepCard step={3} title="Save" icon={Send} isLast>
-                        <p>
-                            Click <strong>Save Webhook</strong>. The URL is encrypted and
-                            stored securely — you won&apos;t see it again after saving.
-                        </p>
-                    </DocsStepCard>
-                </section>
-
-                <section className="space-y-4">
-                    <DocsSectionHeader
-                        icon={Send}
-                        title="Test & manage"
-                        description="Confirm delivery, then tweak or remove as needed."
-                    />
+                <DocsPageSection
+                    icon={Send}
+                    title="Test & manage"
+                    description="Confirm delivery, then tweak or remove as needed."
+                >
                     <div className="grid gap-4 lg:grid-cols-2">
                         <DocsConceptCard icon={Send} title="Test the webhook">
                             <p>
@@ -258,13 +270,9 @@ export default function DocsDiscord() {
                             </p>
                         </DocsConceptCard>
                     </div>
-                </section>
+                </DocsPageSection>
 
-                <section className="space-y-4">
-                    <DocsSectionHeader
-                        icon={Bell}
-                        title="Notification events"
-                    />
+                <DocsPageSection icon={Bell} title="Notification events">
                     <p className="text-sm text-muted-foreground">
                         These events are enabled by default — customize them in{' '}
                         <Link href="/docs/boards" className="hover-docs-link">
@@ -301,27 +309,22 @@ export default function DocsDiscord() {
                         </Link>{' '}
                         as they become available.
                     </p>
-                </section>
+                </DocsPageSection>
 
-                <Card className="border-border bg-muted/30">
-                    <CardContent className="flex flex-col gap-4 px-6 py-6 sm:flex-row sm:items-center sm:justify-between">
-                        <div>
-                            <p className="font-semibold text-foreground">
-                                Ready to wire up Discord?
-                            </p>
-                            <p className="mt-1 text-sm text-muted-foreground">
-                                Create a webhook in Discord, then paste it into any{' '}
-                                <Link href="/docs/boards" className="hover-docs-link">
-                                    board&apos;s settings
-                                </Link>
-                                .
-                            </p>
-                        </div>
-                        <Button variant="brand" asChild className="shrink-0">
-                            <Link href="/dashboard">Go to dashboard</Link>
-                        </Button>
-                    </CardContent>
-                </Card>
+                <DocsCtaCard
+                    title="Ready to wire up Discord?"
+                    description={
+                        <>
+                            Create a webhook in Discord, then paste it into any{' '}
+                            <Link href="/docs/boards" className="hover-docs-link">
+                                board&apos;s settings
+                            </Link>
+                            .
+                        </>
+                    }
+                    actionLabel="Go to dashboard"
+                    actionHref="/dashboard"
+                />
 
                 <DocsNextSteps
                     steps={[

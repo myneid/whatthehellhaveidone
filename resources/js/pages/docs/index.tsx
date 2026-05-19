@@ -98,7 +98,7 @@ export default function DocsIndex() {
                         </p>
                     </div>
                     <div className="flex flex-wrap gap-3">
-                        <Button asChild>
+                        <Button variant="brand" asChild>
                             <Link href="/docs/getting-started">Quick Start →</Link>
                         </Button>
                         <Button variant="outline" asChild>

@@ -22,14 +22,15 @@ import {
     UserX,
 } from 'lucide-react';
 import { DocsCodeBlock } from '@/components/docs/docs-code-block';
+import { DocsCompactSteps } from '@/components/docs/docs-compact-steps';
+import { DocsCtaCard } from '@/components/docs/docs-cta-card';
 import { DocsExternalLink } from '@/components/docs/docs-external-link';
 import { DocsFeatureGrid } from '@/components/docs/docs-feature-grid';
 import { DocsHero } from '@/components/docs/docs-hero';
 import { DocsHierarchyDiagram } from '@/components/docs/docs-hierarchy-diagram';
 import { DocsIncludedExcluded } from '@/components/docs/docs-included-excluded';
 import { DocsNextSteps } from '@/components/docs/docs-next-steps';
-import { DocsSectionHeader } from '@/components/docs/docs-section-header';
-import { DocsStepCard } from '@/components/docs/docs-step-card';
+import { DocsPageSection } from '@/components/docs/docs-page-section';
 import { DocsTipList } from '@/components/docs/docs-tip-list';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
@@ -139,21 +140,19 @@ export default function DocsTrelloImport() {
                     }
                 />
 
-                <section className="space-y-4">
-                    <DocsSectionHeader
-                        icon={Download}
-                        title="What comes over"
-                        description="Four data types transfer from your Trello JSON export."
-                    />
+                <DocsPageSection
+                    icon={Download}
+                    title="What comes over"
+                    description="Four data types transfer from your Trello JSON export."
+                >
                     <DocsFeatureGrid features={importedHighlights} columns={2} />
-                </section>
+                </DocsPageSection>
 
-                <section className="space-y-4">
-                    <DocsSectionHeader
-                        icon={Upload}
-                        title="How it works"
-                        description="Export from Trello, upload to a board, and let the queue do the rest."
-                    />
+                <DocsPageSection
+                    icon={Upload}
+                    title="How it works"
+                    description="Export from Trello, upload to a board, and let the queue do the rest."
+                >
                     <DocsHierarchyDiagram
                         levels={[
                             {
@@ -178,92 +177,92 @@ export default function DocsTrelloImport() {
                             },
                         ]}
                     />
-                </section>
+                </DocsPageSection>
 
-                <section className="space-y-4">
-                    <DocsSectionHeader
-                        icon={Download}
-                        title="Export from Trello"
-                        description="Download a JSON snapshot of your board first."
+                <DocsPageSection
+                    icon={Download}
+                    title="Export from Trello"
+                    description="Download a JSON snapshot of your board first."
+                >
+                    <DocsCompactSteps
+                        steps={[
+                            {
+                                title: 'Open your Trello board',
+                                description:
+                                    'In Trello, open the board you want to migrate.',
+                            },
+                            {
+                                title: 'Open the export menu',
+                                description: (
+                                    <>
+                                        Click <strong>Show Menu → More → Print and Export</strong>.
+                                        See{' '}
+                                        <DocsExternalLink href="https://support.atlassian.com/trello/docs/exporting-data-from-trello/">
+                                            Atlassian&apos;s export guide
+                                        </DocsExternalLink>
+                                        .
+                                    </>
+                                ),
+                            },
+                            {
+                                title: 'Save the JSON file',
+                                description: (
+                                    <>
+                                        Choose <strong>Export as JSON</strong>. Keep the file
+                                        under <strong>10 MB</strong>.
+                                    </>
+                                ),
+                            },
+                        ]}
                     />
+                </DocsPageSection>
 
-                    <DocsStepCard step={1} title="Open your Trello board" icon={LayoutGrid}>
-                        <p>
-                            In Trello, open the board you want to migrate. You need board
-                            access to export its data.
-                        </p>
-                    </DocsStepCard>
-
-                    <DocsStepCard step={2} title="Open the export menu" icon={Settings}>
-                        <p>
-                            Click <strong>Show Menu</strong> → <strong>More</strong> →{' '}
-                            <strong>Print and Export</strong>.
-                        </p>
-                        <p>
-                            See{' '}
-                            <DocsExternalLink href="https://support.atlassian.com/trello/docs/exporting-data-from-trello/">
-                                Atlassian&apos;s export guide
-                            </DocsExternalLink>{' '}
-                            for screenshots and account requirements.
-                        </p>
-                    </DocsStepCard>
-
-                    <DocsStepCard step={3} title="Save the JSON file" icon={FileJson} isLast>
-                        <p>
-                            Choose <strong>Export as JSON</strong> and save the{' '}
-                            <code>.json</code> file to your computer. Keep it under{' '}
-                            <strong>10 MB</strong>.
-                        </p>
-                    </DocsStepCard>
-                </section>
-
-                <section className="space-y-4">
-                    <DocsSectionHeader
-                        icon={Upload}
-                        title="Import into a board"
-                        description="Upload the export from any board you manage."
+                <DocsPageSection
+                    icon={Upload}
+                    title="Import into a board"
+                    description="Upload the export from any board you manage."
+                >
+                    <DocsCompactSteps
+                        steps={[
+                            {
+                                title: 'Open or create a board',
+                                description: (
+                                    <>
+                                        From the <Link href="/dashboard">dashboard</Link>, open
+                                        a{' '}
+                                        <Link href="/docs/boards" className="hover-docs-link">
+                                            board
+                                        </Link>{' '}
+                                        or create a new one.
+                                    </>
+                                ),
+                            },
+                            {
+                                title: 'Open board settings',
+                                description: (
+                                    <>
+                                        Click <strong>Settings</strong>, then scroll to{' '}
+                                        <strong>Import from Trello</strong>.
+                                    </>
+                                ),
+                            },
+                            {
+                                title: 'Upload and import',
+                                description: (
+                                    <>
+                                        Select your <code>.json</code> file and click{' '}
+                                        <strong>Import Board</strong>.
+                                    </>
+                                ),
+                            },
+                            {
+                                title: 'Watch the status page',
+                                description:
+                                    'The page auto-refreshes until complete — a summary shows lists, labels, and cards imported.',
+                            },
+                        ]}
                     />
-
-                    <DocsStepCard step={1} title="Open or create a board" icon={FolderKanban}>
-                        <p>
-                            From the <Link href="/dashboard">dashboard</Link>, open an
-                            existing{' '}
-                            <Link href="/docs/boards" className="hover-docs-link">
-                                board
-                            </Link>{' '}
-                            or create a new one for the import.
-                        </p>
-                    </DocsStepCard>
-
-                    <DocsStepCard step={2} title="Open board settings" icon={Settings}>
-                        <p>
-                            Click <strong>Settings</strong> in the board header, then scroll
-                            to <strong>Import from Trello</strong>.
-                        </p>
-                    </DocsStepCard>
-
-                    <DocsStepCard step={3} title="Select your JSON file" icon={FileJson}>
-                        <p>
-                            Click the upload area and choose your exported{' '}
-                            <code>.json</code> file.
-                        </p>
-                    </DocsStepCard>
-
-                    <DocsStepCard step={4} title="Start the import" icon={Upload}>
-                        <p>
-                            Click <strong>Import Board</strong>. The file is validated and
-                            queued for processing.
-                        </p>
-                    </DocsStepCard>
-
-                    <DocsStepCard step={5} title="Watch the status page" icon={Clock} isLast>
-                        <p>
-                            You&apos;ll land on a status page that auto-refreshes every few
-                            seconds until the import completes or fails. When done, a summary
-                            shows how many lists, labels, and cards were imported.
-                        </p>
-                    </DocsStepCard>
-                </section>
+                </DocsPageSection>
 
                 <Card className="border-border bg-muted/30">
                     <CardContent className="flex gap-4 px-6 py-5">
@@ -283,21 +282,19 @@ export default function DocsTrelloImport() {
                     </CardContent>
                 </Card>
 
-                <section className="space-y-4">
-                    <DocsSectionHeader
-                        icon={CheckSquare}
-                        title="Import coverage"
-                        description="Know exactly what transfers and what stays behind."
-                    />
+                <DocsPageSection
+                    icon={CheckSquare}
+                    title="Import coverage"
+                    description="Know exactly what transfers and what stays behind."
+                >
                     <DocsIncludedExcluded included={included} excluded={excluded} />
-                </section>
+                </DocsPageSection>
 
-                <section className="space-y-4">
-                    <DocsSectionHeader
-                        icon={AlertTriangle}
-                        title="Troubleshooting"
-                        description="Common issues and how to fix them."
-                    />
+                <DocsPageSection
+                    icon={AlertTriangle}
+                    title="Troubleshooting"
+                    description="Common issues and how to fix them."
+                >
                     <DocsTipList
                         tips={[
                             {
@@ -332,40 +329,34 @@ export default function DocsTrelloImport() {
                             },
                         ]}
                     />
-                </section>
+                </DocsPageSection>
 
-                <section className="space-y-4">
-                    <DocsSectionHeader
-                        icon={Settings}
-                        title="Self-hosting — queue worker"
-                        description="Required for Trello imports (and other background jobs) on your own server."
-                    />
+                <DocsPageSection
+                    icon={Settings}
+                    title="Self-hosting — queue worker"
+                    description="Required for Trello imports (and other background jobs) on your own server."
+                >
                     <DocsCodeBlock>{`php artisan queue:work`}</DocsCodeBlock>
                     <p className="text-sm text-muted-foreground">
                         Run this in a terminal or process manager (Supervisor, systemd, Laravel
                         Horizon) so imports process after upload.
                     </p>
-                </section>
+                </DocsPageSection>
 
-                <Card className="border-border bg-muted/30">
-                    <CardContent className="flex flex-col gap-4 px-6 py-6 sm:flex-row sm:items-center sm:justify-between">
-                        <div>
-                            <p className="font-semibold text-foreground">
-                                Ready to migrate?
-                            </p>
-                            <p className="mt-1 text-sm text-muted-foreground">
-                                Export JSON from Trello, then upload it from any{' '}
-                                <Link href="/docs/boards" className="hover-docs-link">
-                                    board&apos;s settings
-                                </Link>
-                                .
-                            </p>
-                        </div>
-                        <Button variant="brand" asChild className="shrink-0">
-                            <Link href="/dashboard">Go to dashboard</Link>
-                        </Button>
-                    </CardContent>
-                </Card>
+                <DocsCtaCard
+                    title="Ready to migrate?"
+                    description={
+                        <>
+                            Export JSON from Trello, then upload it from any{' '}
+                            <Link href="/docs/boards" className="hover-docs-link">
+                                board&apos;s settings
+                            </Link>
+                            .
+                        </>
+                    }
+                    actionLabel="Go to dashboard"
+                    actionHref="/dashboard"
+                />
 
                 <DocsNextSteps
                     steps={[

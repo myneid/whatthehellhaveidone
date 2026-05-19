@@ -11,11 +11,12 @@ import {
     UserPlus,
     Users,
 } from 'lucide-react';
+import { DocsCtaCard } from '@/components/docs/docs-cta-card';
 import { DocsHero } from '@/components/docs/docs-hero';
 import { DocsNextSteps } from '@/components/docs/docs-next-steps';
+import { DocsPageSection } from '@/components/docs/docs-page-section';
 import { DocsStepCard } from '@/components/docs/docs-step-card';
 import { Button } from '@/components/ui/button';
-import { Card, CardContent } from '@/components/ui/card';
 import DocsLayout from '@/layouts/docs-layout';
 
 const stats = [
@@ -48,12 +49,11 @@ export default function DocsGettingStarted() {
                     }
                 />
 
-                <section className="space-y-2">
-                    <div className="mb-6 flex items-center gap-2 text-sm text-muted-foreground">
-                        <Clock className="size-4" />
-                        <span>Follow the timeline — top to bottom</span>
-                    </div>
-
+                <DocsPageSection
+                    icon={Clock}
+                    title="Follow the steps"
+                    description="Top to bottom — about ten minutes to a working board."
+                >
                     <DocsStepCard step={1} title="Create an account" icon={UserPlus}>
                         <p>
                             Register at <Link href="/register">/register</Link>. If your admin
@@ -93,11 +93,7 @@ export default function DocsGettingStarted() {
                         step={4}
                         title="Add lists and cards"
                         icon={ListTodo}
-                        highlights={[
-                            'Drag & drop',
-                            'Checklists',
-                            'GitHub issues',
-                        ]}
+                        highlights={['Drag & drop', 'Checklists', 'GitHub issues']}
                     >
                         <p>
                             Use <strong>+ Add list</strong> for columns like To Do, In Progress,
@@ -126,21 +122,14 @@ export default function DocsGettingStarted() {
                             <strong>Settings</strong> sheet.
                         </p>
                     </DocsStepCard>
-                </section>
+                </DocsPageSection>
 
-                <Card className="border-border bg-muted/30">
-                    <CardContent className="flex flex-col gap-4 px-6 py-6 sm:flex-row sm:items-center sm:justify-between">
-                        <div>
-                            <p className="font-semibold text-foreground">Ready to go?</p>
-                            <p className="mt-1 text-sm text-muted-foreground">
-                                Create your account and land on the dashboard in under a minute.
-                            </p>
-                        </div>
-                        <Button variant="brand" asChild className="shrink-0">
-                            <Link href="/register">Start for free</Link>
-                        </Button>
-                    </CardContent>
-                </Card>
+                <DocsCtaCard
+                    title="Ready to go?"
+                    description="Create your account and land on the dashboard in under a minute."
+                    actionLabel="Start for free"
+                    actionHref="/register"
+                />
 
                 <DocsNextSteps
                     steps={[
