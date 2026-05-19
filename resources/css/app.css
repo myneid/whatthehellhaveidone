@@ -76,6 +76,8 @@
     --shadow-brand-lg: 4px 4px 0 var(--brand-ink);
     --shadow-brand-hover:
         2px 2px 0 var(--brand-ink), 0 8px 24px -6px oklch(0.2 0.04 45 / 0.18);
+    --shadow-brand-yellow-hover:
+        2px 2px 0 var(--brand-yellow), 0 8px 24px -6px oklch(0.82 0.17 88 / 0.28);
 
     --ease-smooth: cubic-bezier(0.22, 1, 0.36, 1);
     --ease-brand: cubic-bezier(0.22, 1, 0.36, 1);
@@ -181,6 +183,8 @@
 
     --shadow-brand-hover:
         2px 2px 0 var(--brand-cream), 0 8px 28px -6px oklch(0 0 0 / 0.45);
+    --shadow-brand-yellow-hover:
+        2px 2px 0 var(--brand-yellow), 0 8px 28px -6px oklch(0.78 0.15 88 / 0.22);
 }
 
 @layer base {
@@ -412,6 +416,10 @@
         box-shadow: var(--shadow-brand-hover);
     }
 
+    .shadow-brand-yellow-hover {
+        box-shadow: var(--shadow-brand-yellow-hover);
+    }
+
     .btn-smooth {
         transition-property: transform, box-shadow, color, background-color, border-color, opacity;
         transition-duration: var(--duration-smooth);
@@ -421,6 +429,10 @@
     .btn-smooth:hover {
         transform: translateY(-1px);
         box-shadow: var(--shadow-brand-hover);
+    }
+
+    .btn-smooth.btn-brand:hover {
+        box-shadow: var(--shadow-brand-yellow-hover);
     }
 
     .btn-smooth:active {
