@@ -7,6 +7,7 @@ use App\Models\Card;
 use App\Models\GithubCardLink;
 use App\Models\GithubWebhookEvent;
 use App\Services\ActivityLogService;
+use App\Services\GithubPullRequestIssueMatcher;
 use Illuminate\Contracts\Queue\ShouldQueue;
 use Illuminate\Foundation\Queue\Queueable;
 use Throwable;
@@ -15,16 +16,16 @@ class ProcessGithubWebhook implements ShouldQueue
 {
     use Queueable;
 
-    private const COPILOT_AGENT_LOGIN = 'copilot-swe-agent[bot]';
-
     public function __construct(public readonly GithubWebhookEvent $event) {}
 
-    public function handle(ActivityLogService $activityLog): void
-    {
+    public function handle(
+        ActivityLogService $activityLog,
+        GithubPullRequestIssueMatcher $issueMatcher,
+    ): void {
         try {
             match ($this->event->event_type) {
                 'issues' => $this->handleIssueEvent($this->event->payload),
-                'pull_request' => $this->handlePullRequestEvent($this->event->payload, $activityLog),
+                'pull_request' => $this->handlePullRequestEvent($this->event->payload, $activityLog, $issueMatcher),
                 default => null,
             };
 
@@ -130,8 +131,11 @@ class ProcessGithubWebhook implements ShouldQueue
         }
     }
 
-    private function handlePullRequestEvent(array $payload, ActivityLogService $activityLog): void
-    {
+    private function handlePullRequestEvent(
+        array $payload,
+        ActivityLogService $activityLog,
+        GithubPullRequestIssueMatcher $issueMatcher,
+    ): void {
         $action = $payload['action'] ?? null;
         $pullRequest = $payload['pull_request'] ?? null;
 
@@ -147,45 +151,32 @@ class ProcessGithubWebhook implements ShouldQueue
             return;
         }
 
-        if (($pullRequest['user']['login'] ?? null) !== self::COPILOT_AGENT_LOGIN) {
+        $pullNumber = (int) ($pullRequest['number'] ?? 0);
+        if ($pullNumber <= 0) {
             return;
         }
 
-        $issueNumbers = $this->extractReferencedIssueNumbers($pullRequest['body'] ?? '');
+        $issueNumbers = $issueMatcher->extractIssueNumbers($pullRequest);
 
         if ($issueNumbers === []) {
             return;
         }
 
-        GithubCardLink::query()
+        $linkedCards = GithubCardLink::query()
             ->where('github_repository_id', '=', $this->event->github_repository_id)
             ->with('card.board.copilotDoneList')
             ->get()
-            ->filter(fn (GithubCardLink $link): bool => in_array($link->issue_number, $issueNumbers, true))
-            ->each(fn (GithubCardLink $link) => $this->moveCardToCopilotDoneList($link, $activityLog));
-    }
+            ->filter(fn (GithubCardLink $link): bool => in_array($link->issue_number, $issueNumbers, true));
 
-    /**
-     * @return array<int, int>
-     */
-    private function extractReferencedIssueNumbers(string $body): array
-    {
-        if ($body === '') {
-            return [];
+        if ($linkedCards->isEmpty()) {
+            return;
         }
 
-        preg_match_all(
-            '/\b(?:close[sd]?|fix(?:e[sd])?|resolve[sd]?)\s+(?:[A-Za-z0-9_.-]+\/[A-Za-z0-9_.-]+)?#(\d+)\b/i',
-            $body,
-            $matches,
-        );
+        $linkedCards->each(fn (GithubCardLink $link) => $this->moveCardToCopilotDoneList($link, $activityLog));
 
-        return collect($matches[1] ?? [])
-            ->map(fn (string $number): int => (int) $number)
-            ->filter(fn (int $number): bool => $number > 0)
-            ->unique()
-            ->values()
-            ->all();
+        if ($linkedCards->contains(fn (GithubCardLink $link): bool => $link->request_copilot_review)) {
+            RequestGithubCopilotReview::dispatch($this->event->githubRepository, $pullNumber);
+        }
     }
 
     private function moveCardToCopilotDoneList(GithubCardLink $link, ActivityLogService $activityLog): void
@@ -219,9 +210,9 @@ class ProcessGithubWebhook implements ShouldQueue
             'card_moved',
             old: ['list_id' => $oldListId],
             new: ['list_id' => $targetList->id, 'position' => $nextPosition],
-            metadata: ['source' => 'github_copilot_done'],
+            metadata: ['source' => 'github_pull_request'],
         );
 
-        event(new CardMoved($card, $oldListId, actorName: 'GitHub Copilot'));
+        event(new CardMoved($card, $oldListId, actorName: 'GitHub'));
     }
 }

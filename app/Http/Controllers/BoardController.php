@@ -92,9 +92,19 @@ class BoardController extends Controller
             ->with('repositories')
             ->get();
 
+        $assignableMembers = $board->assignableUsers()
+            ->map(fn ($user) => [
+                'id' => $user->id,
+                'name' => $user->name,
+                'avatar' => $user->avatar,
+            ])
+            ->values()
+            ->all();
+
         return Inertia::render('boards/show', [
             'board' => $board,
             'githubAccounts' => $githubAccounts,
+            'assignableMembers' => $assignableMembers,
         ]);
     }
 

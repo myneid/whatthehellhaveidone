@@ -8,6 +8,7 @@ use Illuminate\Http\Client\PendingRequest;
 use Illuminate\Http\Client\Response;
 use Illuminate\Support\Facades\Crypt;
 use Illuminate\Support\Facades\Http;
+use Illuminate\Support\Str;
 use RuntimeException;
 
 class GitHubService
@@ -15,6 +16,11 @@ class GitHubService
     private const API_BASE = 'https://api.github.com';
 
     private const COPILOT_AGENT_ASSIGNEE = 'copilot-swe-agent[bot]';
+
+    private const COPILOT_PR_REVIEWER = 'copilot-pull-request-reviewer[bot]';
+
+    /** @var list<string> */
+    private const REPOSITORY_WEBHOOK_EVENTS = ['issues', 'pull_request', 'ping'];
 
     public function clientFor(GithubAccount $account): PendingRequest
     {
@@ -119,6 +125,69 @@ class GitHubService
         $this->assertOk($response, "assign issue #{$number} to Copilot");
 
         return $response->json();
+    }
+
+    public function requestCopilotCodeReview(GithubAccount $account, GithubRepository $repo, int $pullNumber): array
+    {
+        $response = $this->clientFor($account)
+            ->post("/repos/{$repo->full_name}/pulls/{$pullNumber}/requested_reviewers", [
+                'reviewers' => [self::COPILOT_PR_REVIEWER],
+            ]);
+
+        $this->assertOk($response, "request Copilot review on PR #{$pullNumber}");
+
+        return $response->json();
+    }
+
+    public function ensureRepositoryWebhook(GithubAccount $account, GithubRepository $repo, string $webhookUrl): GithubRepository
+    {
+        if ($repo->webhook_id && $repo->webhook_secret) {
+            return $repo;
+        }
+
+        $secret = Str::random(40);
+
+        $response = $this->clientFor($account)
+            ->post("/repos/{$repo->full_name}/hooks", [
+                'name' => 'web',
+                'active' => true,
+                'events' => self::REPOSITORY_WEBHOOK_EVENTS,
+                'config' => [
+                    'url' => $webhookUrl,
+                    'content_type' => 'json',
+                    'secret' => $secret,
+                ],
+            ]);
+
+        $this->assertOk($response, "register webhook for {$repo->full_name}");
+
+        $hook = $response->json();
+
+        $repo->update([
+            'webhook_id' => (string) ($hook['id'] ?? ''),
+            'webhook_secret' => $secret,
+        ]);
+
+        return $repo->fresh();
+    }
+
+    public function deleteRepositoryWebhook(GithubAccount $account, GithubRepository $repo): void
+    {
+        if (! $repo->webhook_id) {
+            return;
+        }
+
+        $response = $this->clientFor($account)
+            ->delete("/repos/{$repo->full_name}/hooks/{$repo->webhook_id}");
+
+        if ($response->status() !== 404) {
+            $this->assertOk($response, "delete webhook for {$repo->full_name}");
+        }
+
+        $repo->update([
+            'webhook_id' => null,
+            'webhook_secret' => null,
+        ]);
     }
 
     public function getAccountForRepo(GithubRepository $repo): GithubAccount

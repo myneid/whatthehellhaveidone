@@ -7,12 +7,10 @@ import {
     FolderKanban,
     Github,
     Globe,
-    Key,
     Link2,
     PlusCircle,
     RefreshCw,
     Server,
-    Settings,
     Upload,
     Webhook,
 } from 'lucide-react';
@@ -40,17 +38,20 @@ const capabilities = [
     {
         icon: Download,
         title: 'Import issues',
-        description: 'Pull open GitHub issues into your board as cards in one click.',
+        description:
+            'Pull open GitHub issues into your board as cards in one click.',
     },
     {
         icon: PlusCircle,
         title: 'Create from cards',
-        description: 'Open a card and spin up a new GitHub issue or link an existing one.',
+        description:
+            'Open a card and spin up a new GitHub issue or link an existing one.',
     },
     {
         icon: ArrowLeftRight,
         title: 'Bi-directional sync',
-        description: 'Keep issue status and card position aligned across both systems.',
+        description:
+            'Keep issue status and card position aligned across both systems.',
     },
 ];
 
@@ -84,10 +85,14 @@ export default function DocsGitHub() {
                     actions={
                         <>
                             <Button variant="brand" asChild>
-                                <Link href="/settings/integrations">Connect GitHub</Link>
+                                <Link href="/settings/integrations">
+                                    Connect GitHub
+                                </Link>
                             </Button>
                             <Button variant="outline" asChild>
-                                <Link href="/docs/boards">Projects & Boards</Link>
+                                <Link href="/docs/boards">
+                                    Projects & Boards
+                                </Link>
                             </Button>
                         </>
                     }
@@ -146,8 +151,12 @@ export default function DocsGitHub() {
                                 <DocsExternalLink href="https://whatthehellhaveidone.net">
                                     whatthehellhaveidone.net
                                 </DocsExternalLink>
-                                . Skip the self-hosting setup below and jump straight to{' '}
-                                <Link href="/settings/integrations" className="hover-docs-link">
+                                . Skip the self-hosting setup below and jump
+                                straight to{' '}
+                                <Link
+                                    href="/settings/integrations"
+                                    className="hover-docs-link"
+                                >
                                     Connect your account
                                 </Link>
                                 .
@@ -186,7 +195,11 @@ export default function DocsGitHub() {
                                 title: 'Set the callback URL',
                                 description: (
                                     <>
-                                        Set <strong>Authorization callback URL</strong> to:
+                                        Set{' '}
+                                        <strong>
+                                            Authorization callback URL
+                                        </strong>{' '}
+                                        to:
                                         <DocsCodeBlock>
                                             {`https://your-domain.com/github/callback`}
                                         </DocsCodeBlock>
@@ -197,7 +210,8 @@ export default function DocsGitHub() {
                                 title: 'Copy credentials',
                                 description: (
                                     <>
-                                        Copy the <strong>Client ID</strong> and generate a{' '}
+                                        Copy the <strong>Client ID</strong> and
+                                        generate a{' '}
                                         <strong>Client Secret</strong>.
                                     </>
                                 ),
@@ -206,7 +220,8 @@ export default function DocsGitHub() {
                                 title: 'Add to your .env',
                                 description: (
                                     <>
-                                        Add credentials to your environment file:
+                                        Add credentials to your environment
+                                        file:
                                         <DocsCodeBlock>
                                             {`GITHUB_CLIENT_ID=your_client_id
 GITHUB_CLIENT_SECRET=your_client_secret
@@ -219,8 +234,9 @@ GITHUB_REDIRECT_URL=https://your-domain.com/github/callback`}
                                 title: 'Reload config',
                                 description: (
                                     <>
-                                        Run <code>php artisan config:clear</code> to pick up
-                                        the new variables.
+                                        Run{' '}
+                                        <code>php artisan config:clear</code> to
+                                        pick up the new variables.
                                     </>
                                 ),
                             },
@@ -251,8 +267,10 @@ GITHUB_REDIRECT_URL=https://your-domain.com/github/callback`}
                                 title: 'Authorize on GitHub',
                                 description: (
                                     <>
-                                        Click <strong>Connect GitHub Account</strong> and
-                                        authorize — you&apos;ll be redirected back automatically.
+                                        Click{' '}
+                                        <strong>Connect GitHub Account</strong>{' '}
+                                        and authorize — you&apos;ll be
+                                        redirected back automatically.
                                     </>
                                 ),
                             },
@@ -276,8 +294,10 @@ GITHUB_REDIRECT_URL=https://your-domain.com/github/callback`}
                                 title: 'Open board settings',
                                 description: (
                                     <>
-                                        From the <Link href="/dashboard">dashboard</Link>, open
-                                        a board and click <strong>Settings</strong>.
+                                        From the{' '}
+                                        <Link href="/dashboard">dashboard</Link>
+                                        , open a board and click{' '}
+                                        <strong>Settings</strong>.
                                     </>
                                 ),
                             },
@@ -285,8 +305,9 @@ GITHUB_REDIRECT_URL=https://your-domain.com/github/callback`}
                                 title: 'Select a repository',
                                 description: (
                                     <>
-                                        Under <strong>GitHub Integration</strong>, pick a
-                                        repository from the dropdown.
+                                        Under{' '}
+                                        <strong>GitHub Integration</strong>,
+                                        pick a repository from the dropdown.
                                     </>
                                 ),
                             },
@@ -294,8 +315,10 @@ GITHUB_REDIRECT_URL=https://your-domain.com/github/callback`}
                                 title: 'Connect',
                                 description: (
                                     <>
-                                        Click <strong>Connect Repository</strong> — the board is
-                                        ready to import or sync issues.
+                                        Click{' '}
+                                        <strong>Connect Repository</strong> —
+                                        the board is ready to import or sync
+                                        issues.
                                     </>
                                 ),
                             },
@@ -309,29 +332,109 @@ GITHUB_REDIRECT_URL=https://your-domain.com/github/callback`}
                     description="Import existing issues or create new ones from cards."
                 >
                     <div className="grid gap-4 lg:grid-cols-2">
-                        <DocsConceptCard icon={Download} title="Import GitHub issues as cards">
+                        <DocsConceptCard
+                            icon={Download}
+                            title="Import GitHub issues as cards"
+                        >
                             <p>
                                 Once a repository is connected, click the{' '}
-                                <strong>refresh icon</strong> next to the repo name in board
-                                settings.
+                                <strong>refresh icon</strong> next to the repo
+                                name in board settings.
                             </p>
                             <p>
-                                Open issues are imported as cards in the first list of the
-                                board — ready to drag through your workflow.
+                                Open issues are imported as cards in the first
+                                list of the board — ready to drag through your
+                                workflow.
                             </p>
                         </DocsConceptCard>
 
-                        <DocsConceptCard icon={PlusCircle} title="Create a GitHub issue from a card">
+                        <DocsConceptCard
+                            icon={PlusCircle}
+                            title="Create a GitHub issue from a card"
+                        >
                             <p>
-                                Open any card and use the <strong>GitHub panel</strong> to
-                                create a new issue or link to an existing one.
+                                Open any card and use the{' '}
+                                <strong>GitHub panel</strong> to create a new
+                                issue or link to an existing one.
                             </p>
                             <p>
-                                The card stays linked so status changes can sync in both
-                                directions when webhooks are configured.
+                                The card stays linked so status changes can sync
+                                in both directions when webhooks are configured.
                             </p>
                         </DocsConceptCard>
                     </div>
+                </DocsPageSection>
+
+                <DocsPageSection
+                    icon={ArrowLeftRight}
+                    title="Workflow automation"
+                    description="Turn card moves and pull requests into a lightweight GitHub delivery flow."
+                >
+                    <p className="text-sm leading-relaxed text-muted-foreground">
+                        <Link
+                            href="/docs/github-workflow"
+                            className="hover-docs-link"
+                        >
+                            Read the full GitHub + board workflow guide →
+                        </Link>
+                    </p>
+
+                    <DocsCompactSteps
+                        steps={[
+                            {
+                                title: 'Create issues when work starts',
+                                description: (
+                                    <>
+                                        On a column menu (<code>⋯</code>),
+                                        enable{' '}
+                                        <strong>Create GitHub issue</strong> on
+                                        your <strong>In Progress</strong>{' '}
+                                        column. Moving a card there creates a
+                                        linked issue when the board has a
+                                        connected repository.
+                                    </>
+                                ),
+                            },
+                            {
+                                title: 'Choose who works on it',
+                                description: (
+                                    <>
+                                        After the move, assign the card to{' '}
+                                        <strong>GitHub Copilot</strong> or a{' '}
+                                        <strong>team member</strong>. Team
+                                        members stay assigned on the board only;
+                                        auto Copilot review is skipped for them.
+                                    </>
+                                ),
+                            },
+                            {
+                                title: 'Move pull requests into review automatically',
+                                description: (
+                                    <>
+                                        In board settings, choose which column
+                                        receives cards when a linked pull
+                                        request opens. New boards default this
+                                        to <strong>Review</strong>.
+                                    </>
+                                ),
+                            },
+                        ]}
+                    />
+
+                    <Card className="border-border bg-muted/20">
+                        <CardContent className="px-4 py-5 sm:px-6">
+                            <p className="font-semibold text-foreground">
+                                Reference the issue in your pull request
+                            </p>
+                            <p className="mt-2 text-sm leading-relaxed text-muted-foreground">
+                                Mention the linked issue in the PR title or body
+                                with <code>Fixes #12</code> or <code>#12</code>.
+                                The app moves the card automatically, and
+                                Copilot review is requested only when the card
+                                was assigned to Copilot on move.
+                            </p>
+                        </CardContent>
+                    </Card>
                 </DocsPageSection>
 
                 <DocsPageSection
@@ -373,20 +476,60 @@ GITHUB_REDIRECT_URL=https://your-domain.com/github/callback`}
                                         Webhook setup (two-way sync)
                                     </p>
                                     <p className="text-sm leading-relaxed text-muted-foreground">
-                                        For GitHub → board updates, add a repository webhook
-                                        with this payload URL:
+                                        For GitHub → board updates, add a
+                                        repository webhook with this payload
+                                        URL:
                                     </p>
                                 </div>
                                 <DocsCodeBlock>
                                     {`https://your-domain.com/webhooks/github`}
                                 </DocsCodeBlock>
                                 <p className="text-sm leading-relaxed text-muted-foreground">
+                                    Connecting a repository registers this
+                                    webhook for <code>issues</code> and{' '}
+                                    <code>pull_request</code> events. GitHub
+                                    must be able to reach your app over HTTPS.
+                                </p>
+                                <p className="text-sm leading-relaxed text-muted-foreground">
                                     See{' '}
                                     <DocsExternalLink href="https://docs.github.com/en/webhooks/about-webhooks">
                                         GitHub&apos;s webhook documentation
                                     </DocsExternalLink>{' '}
-                                    for event types, secrets, and delivery settings.
+                                    for event types, secrets, and delivery
+                                    settings.
                                 </p>
+                                <div className="space-y-2">
+                                    <p className="font-medium text-foreground">
+                                        Local testing checklist
+                                    </p>
+                                    <ol className="list-decimal space-y-2 pl-5 text-sm leading-relaxed text-muted-foreground">
+                                        <li>
+                                            Set <code>APP_URL</code> to your
+                                            public tunnel URL, not{' '}
+                                            <code>localhost</code>.
+                                        </li>
+                                        <li>
+                                            Expose the app over HTTPS with a
+                                            tunnel such as{' '}
+                                            <code>
+                                                ngrok http
+                                                https://whatthehellhaveidone.test
+                                            </code>{' '}
+                                            or Herd Share.
+                                        </li>
+                                        <li>
+                                            Run{' '}
+                                            <code>php artisan queue:work</code>{' '}
+                                            so webhook jobs can process
+                                            deliveries.
+                                        </li>
+                                        <li>
+                                            Reconnect the repository in board
+                                            settings so GitHub picks up the
+                                            refreshed webhook URL.
+                                        </li>
+                                    </ol>
+                                </div>
                             </div>
                         </CardContent>
                     </Card>
@@ -403,19 +546,22 @@ GITHUB_REDIRECT_URL=https://your-domain.com/github/callback`}
                     steps={[
                         {
                             title: 'Projects & Boards',
-                            description: 'Learn how boards, lists, and cards work.',
+                            description:
+                                'Learn how boards, lists, and cards work.',
                             href: '/docs/boards',
                             icon: FolderKanban,
                         },
                         {
                             title: 'Connect an AI assistant',
-                            description: 'Manage cards from Claude or ChatGPT via MCP.',
+                            description:
+                                'Manage cards from Claude or ChatGPT via MCP.',
                             href: '/docs/mcp-setup',
                             icon: Bot,
                         },
                         {
                             title: 'Import from Trello',
-                            description: 'Migrate existing boards in one click.',
+                            description:
+                                'Migrate existing boards in one click.',
                             href: '/docs/trello-import',
                             icon: Upload,
                         },
