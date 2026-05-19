@@ -2,32 +2,24 @@ import { Head, Link } from '@inertiajs/react';
 import {
     Bot,
     BookOpen,
-    CalendarRange,
-    Clock,
     Download,
-    Filter,
     FolderKanban,
     Hash,
-    History,
     NotebookPen,
-    PenLine,
-    Search,
     Sparkles,
-    Tag,
     Timer,
     Upload,
 } from 'lucide-react';
-import { DocsCodeBlock } from '@/components/docs/docs-code-block';
+import { DocsCodeCallout } from '@/components/docs/docs-code-callout';
+import { DocsCompactSteps } from '@/components/docs/docs-compact-steps';
 import { DocsConceptCard } from '@/components/docs/docs-concept-card';
+import { DocsCtaCard } from '@/components/docs/docs-cta-card';
 import { DocsFeatureGrid } from '@/components/docs/docs-feature-grid';
 import { DocsHero } from '@/components/docs/docs-hero';
-import { DocsHierarchyDiagram } from '@/components/docs/docs-hierarchy-diagram';
 import { DocsNextSteps } from '@/components/docs/docs-next-steps';
-import { DocsSectionHeader } from '@/components/docs/docs-section-header';
-import { DocsStepCard } from '@/components/docs/docs-step-card';
+import { DocsPageSection } from '@/components/docs/docs-page-section';
 import { DocsTipList } from '@/components/docs/docs-tip-list';
 import { Button } from '@/components/ui/button';
-import { Card, CardContent } from '@/components/ui/card';
 import DocsLayout from '@/layouts/docs-layout';
 
 const stats = [
@@ -36,69 +28,41 @@ const stats = [
     { label: 'Export', value: 'CSV/JSON' },
 ];
 
-const capabilities = [
+const highlights = [
     {
         icon: NotebookPen,
-        title: 'Personal journal',
-        description: 'Capture what you worked on in plain text — your timeline across the workspace.',
+        title: 'Manual entries',
+        description: 'Write what you did — optional minutes tracked in the New Entry dialog.',
     },
     {
         icon: Hash,
         title: 'Hashtag linking',
-        description: 'Tag entries with #project-alias to associate work with a project automatically.',
-    },
-    {
-        icon: Timer,
-        title: 'Time tracking',
-        description: 'Optional duration on manual entries, or started/ended timestamps via API and MCP.',
+        description: '#project-alias tags auto-link entries to the matching project.',
     },
     {
         icon: Sparkles,
-        title: 'Automatic entries',
-        description: 'Card moves and creates can log themselves — no extra typing required.',
-    },
-];
-
-const filterOptions = [
-    {
-        icon: Search,
-        title: 'Search',
-        description: 'Filter entries by text in the body.',
+        title: 'Auto from boards',
+        description: 'Card creates and moves log themselves, linked to project and card.',
     },
     {
-        icon: CalendarRange,
-        title: 'Date range',
-        description: 'Narrow to a from/to date — also applies to exports.',
-    },
-    {
-        icon: Tag,
-        title: 'Source',
-        description: 'Manual, API, card activity, GitHub, and other entry sources.',
-    },
-    {
-        icon: Download,
-        title: 'Export',
-        description: 'Download filtered entries as CSV or JSON for reports and time tools.',
+        icon: Timer,
+        title: 'API & MCP',
+        description: 'AI assistants can log time, query history, and set precise durations.',
     },
 ];
 
 const mcpExamples = [
     {
-        title: 'Log time with a project tag',
+        title: 'Log with a tag',
         description: (
             <>
-                &ldquo;Log 2 hours of backend work on the auth system{' '}
-                <code>#myproject</code>&rdquo;
+                &ldquo;Log 2 hours on auth #myproject&rdquo;
             </>
         ),
     },
     {
         title: 'Review today',
         description: '&ldquo;What did I work on today?&rdquo;',
-    },
-    {
-        title: 'Pull a specific day',
-        description: '&ldquo;Show my work log for last Monday&rdquo;',
     },
 ];
 
@@ -112,7 +76,7 @@ export default function DocsWorkLog() {
                     eyebrow="Productivity"
                     eyebrowIcon={BookOpen}
                     title="Work Log"
-                    description="A journal for tracking what you've worked on — link entries to projects with hashtags, filter your history, and export for reports."
+                    description="Track what you've worked on — tag projects with hashtags, filter your history, and export to CSV or JSON."
                     stats={stats}
                     actions={
                         <>
@@ -126,179 +90,106 @@ export default function DocsWorkLog() {
                     }
                 />
 
-                <section className="space-y-4">
-                    <DocsSectionHeader
-                        icon={BookOpen}
-                        title="What it does"
-                        description="Four ways the work log helps you stay on top of activity."
-                    />
-                    <DocsFeatureGrid features={capabilities} columns={2} />
-                </section>
+                <DocsPageSection
+                    icon={BookOpen}
+                    title="At a glance"
+                    description="Four ways entries land in your timeline."
+                >
+                    <DocsFeatureGrid features={highlights} columns={2} />
+                </DocsPageSection>
 
-                <section className="space-y-4">
-                    <DocsSectionHeader
-                        icon={Hash}
-                        title="How entries connect"
-                        description="From a line of text to project context on your timeline."
-                    />
-                    <DocsHierarchyDiagram
-                        levels={[
+                <DocsPageSection
+                    icon={NotebookPen}
+                    title="Quick start"
+                    description="Three steps to your first entry."
+                >
+                    <DocsCompactSteps
+                        steps={[
                             {
-                                icon: PenLine,
-                                label: 'Entry',
-                                description: 'What you did',
+                                title: 'Open Work Log',
+                                description: (
+                                    <>
+                                        From the nav or{' '}
+                                        <Link href="/work-log" className="hover-docs-link">
+                                            /work-log
+                                        </Link>
+                                        , click <strong>New Entry</strong>.
+                                    </>
+                                ),
                             },
                             {
-                                icon: Hash,
-                                label: 'Hashtag',
-                                description: '#project-alias',
+                                title: 'Write and tag',
+                                description: (
+                                    <>
+                                        Describe the work. Add a hashtag like{' '}
+                                        <code>#client-portal</code> to link a project.
+                                    </>
+                                ),
                             },
                             {
-                                icon: FolderKanban,
-                                label: 'Project',
-                                description: 'Auto-linked',
-                            },
-                            {
-                                icon: History,
-                                label: 'Timeline',
-                                description: 'Filter & export',
+                                title: 'Optional: time spent',
+                                description: (
+                                    <>
+                                        Enter minutes in the dialog, or use{' '}
+                                        <Link href="/docs/mcp-setup" className="hover-docs-link">
+                                            MCP
+                                        </Link>{' '}
+                                        for <code>started_at</code> /{' '}
+                                        <code>ended_at</code> timestamps.
+                                    </>
+                                ),
                             },
                         ]}
                     />
-                </section>
+                </DocsPageSection>
 
-                <section className="space-y-4">
-                    <DocsSectionHeader
-                        icon={NotebookPen}
-                        title="Creating entries"
-                        description="Write entries from the app or let your AI assistant log for you."
-                    />
-
-                    <DocsStepCard step={1} title="Open Work Log" icon={BookOpen}>
-                        <p>
-                            Click <strong>Work Log</strong> in the main navigation, or go
-                            directly to{' '}
-                            <Link href="/work-log" className="hover-docs-link">
-                                /work-log
-                            </Link>
-                            .
-                        </p>
-                    </DocsStepCard>
-
-                    <DocsStepCard step={2} title="Write a new entry" icon={PenLine}>
-                        <p>
-                            Click <strong>New Entry</strong> and describe what you did. Use
-                            hashtags like <code>#client-portal</code> to link the entry to a
-                            project.
-                        </p>
-                    </DocsStepCard>
-
-                    <DocsStepCard step={3} title="Add time (optional)" icon={Timer} isLast>
-                        <p>
-                            Enter <strong>Time spent (minutes)</strong> on manual entries to
-                            track duration. For precise start/end times, use the{' '}
-                            <Link href="/docs/mcp-setup" className="hover-docs-link">
-                                MCP server
-                            </Link>{' '}
-                            or API with <code>started_at</code> and <code>ended_at</code>.
-                        </p>
-                    </DocsStepCard>
-                </section>
-
-                <section className="space-y-4">
-                    <DocsSectionHeader
-                        icon={Hash}
-                        title="Hashtag linking"
-                        description="Associate entries with projects using #tags in the body."
-                    />
-                    <DocsCodeBlock>
-                        {`Fixed the login redirect bug #client-portal`}
-                    </DocsCodeBlock>
-                    <p className="text-sm leading-relaxed text-muted-foreground">
-                        Hashtags are matched against{' '}
-                        <strong>project aliases</strong> configured on each project. When a
-                        match is found, the entry is linked to that project automatically. See{' '}
+                <DocsPageSection icon={Hash} title="Hashtag linking">
+                    <DocsCodeCallout code="Fixed the login redirect bug #client-portal">
+                        Tags match <strong>project aliases</strong> on each project — when
+                        found, the entry links automatically. See{' '}
                         <Link href="/docs/boards" className="hover-docs-link">
                             Projects & Boards
                         </Link>{' '}
-                        for how projects are organized.
-                    </p>
-                </section>
+                        for project setup.
+                    </DocsCodeCallout>
+                </DocsPageSection>
 
                 <div className="grid gap-4 lg:grid-cols-2">
-                    <DocsConceptCard icon={Clock} title="Time tracking">
+                    <DocsConceptCard icon={Download} title="Filter & export">
                         <p>
-                            Manual entries support a duration in minutes from the New Entry
-                            dialog.
-                        </p>
-                        <p>
-                            MCP and API entries can also set{' '}
-                            <code>started_at</code>, <code>ended_at</code>, or{' '}
-                            <code>duration_seconds</code> for finer-grained tracking.
+                            Search entries, filter by date range or source (manual, API, card
+                            activity, GitHub), then download as <strong>CSV</strong> or{' '}
+                            <strong>JSON</strong> — date filters apply to exports.
                         </p>
                     </DocsConceptCard>
 
-                    <DocsConceptCard icon={Sparkles} title="Automatic card activity">
+                    <DocsConceptCard icon={Bot} title="MCP & AI">
                         <p>
-                            When you create or move cards on a{' '}
-                            <Link href="/docs/boards" className="hover-docs-link">
-                                board
+                            Tools like <code>create_work_log_entry</code> and{' '}
+                            <code>get_daily_work_log</code> let assistants log and query on
+                            your behalf. See{' '}
+                            <Link href="/docs/mcp-setup" className="hover-docs-link">
+                                MCP Setup
                             </Link>
-                            , the system can log entries on your behalf — linked to the
-                            project, board, and card.
-                        </p>
-                        <p>
-                            These appear alongside manual entries and are filterable by source.
+                            .
                         </p>
                     </DocsConceptCard>
                 </div>
 
-                <section className="space-y-4">
-                    <DocsSectionHeader
-                        icon={Filter}
-                        title="Filtering and export"
-                        description="Find what you need, then pull it out for reporting."
-                    />
-                    <DocsFeatureGrid features={filterOptions} columns={2} />
-                    <p className="text-sm text-muted-foreground">
-                        Use the <strong>CSV</strong> or <strong>JSON</strong> buttons on the
-                        Work Log page to export entries — date filters apply to the download.
-                    </p>
-                </section>
-
-                <section className="space-y-4">
-                    <DocsSectionHeader
-                        icon={Bot}
-                        title="Using the MCP server"
-                        description="Let your AI assistant log and query work on your behalf."
-                    />
+                <DocsPageSection
+                    icon={Bot}
+                    title="Example prompts"
+                    description="Once MCP is connected, try asking:"
+                >
                     <DocsTipList tips={mcpExamples} />
-                    <p className="text-sm text-muted-foreground">
-                        Set up MCP in{' '}
-                        <Link href="/docs/mcp-setup" className="hover-docs-link">
-                            MCP Setup
-                        </Link>{' '}
-                        to enable tools like <code>create_work_log_entry</code> and{' '}
-                        <code>get_daily_work_log</code>.
-                    </p>
-                </section>
+                </DocsPageSection>
 
-                <Card className="border-border bg-muted/30">
-                    <CardContent className="flex flex-col gap-4 px-6 py-6 sm:flex-row sm:items-center sm:justify-between">
-                        <div>
-                            <p className="font-semibold text-foreground">
-                                Start logging today
-                            </p>
-                            <p className="mt-1 text-sm text-muted-foreground">
-                                Open the Work Log, write your first entry, and tag it with a
-                                project hashtag.
-                            </p>
-                        </div>
-                        <Button variant="brand" asChild className="shrink-0">
-                            <Link href="/work-log">Open Work Log</Link>
-                        </Button>
-                    </CardContent>
-                </Card>
+                <DocsCtaCard
+                    title="Start logging today"
+                    description="Open the Work Log, write your first entry, and tag it with a project hashtag."
+                    actionLabel="Open Work Log"
+                    actionHref="/work-log"
+                />
 
                 <DocsNextSteps
                     steps={[
