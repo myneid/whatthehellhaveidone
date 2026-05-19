@@ -1,0 +1,301 @@
+import { Head, Link } from '@inertiajs/react';
+import { Palette, Sparkles } from 'lucide-react';
+import type { ReactNode } from 'react';
+import { Badge } from '@/components/ui/badge';
+import { Button } from '@/components/ui/button';
+import {
+    Card,
+    CardContent,
+    CardDescription,
+    CardFooter,
+    CardHeader,
+    CardTitle,
+} from '@/components/ui/card';
+import { Input } from '@/components/ui/input';
+import { Label } from '@/components/ui/label';
+import { login, register } from '@/routes';
+
+const brandColors = [
+    {
+        name: 'HELL Red',
+        token: 'brand-red',
+        role: 'CTAs, step badges, brand accents',
+        className: 'bg-brand-red',
+        textClass: 'text-brand-cream',
+    },
+    {
+        name: 'DONE Yellow',
+        token: 'brand-yellow',
+        role: 'Secondary actions, highlights',
+        className: 'bg-brand-yellow',
+        textClass: 'text-brand-ink',
+    },
+    {
+        name: 'Cream',
+        token: 'brand-cream',
+        role: 'Page backgrounds, light surfaces',
+        className: 'bg-brand-cream border-2 border-border',
+        textClass: 'text-brand-ink',
+    },
+    {
+        name: 'Ink',
+        token: 'brand-ink',
+        role: 'Text, outlines, comic shadows, primary UI',
+        className: 'bg-brand-ink',
+        textClass: 'text-brand-cream',
+    },
+];
+
+const semanticColors = [
+    { name: 'Primary (Ink)', className: 'bg-primary', text: 'text-primary-foreground' },
+    { name: 'Brand CTA', className: 'bg-brand-red', text: 'text-brand-cream' },
+    { name: 'Secondary', className: 'bg-secondary', text: 'text-secondary-foreground' },
+    { name: 'Accent', className: 'bg-accent', text: 'text-accent-foreground' },
+    { name: 'Muted', className: 'bg-muted', text: 'text-muted-foreground' },
+    { name: 'Destructive', className: 'bg-destructive', text: 'text-destructive-foreground' },
+];
+
+function Section({
+    title,
+    description,
+    children,
+}: {
+    title: string;
+    description?: string;
+    children: ReactNode;
+}) {
+    return (
+        <section className="space-y-4">
+            <div>
+                <h2 className="text-xl font-bold tracking-tight">{title}</h2>
+                {description && (
+                    <p className="mt-1 text-sm text-muted-foreground">{description}</p>
+                )}
+            </div>
+            {children}
+        </section>
+    );
+}
+
+function Swatch({
+    name,
+    token,
+    role,
+    className,
+    textClass,
+}: {
+    name: string;
+    token: string;
+    role: string;
+    className: string;
+    textClass: string;
+}) {
+    return (
+        <div className="overflow-hidden rounded-2xl border-2 border-border shadow-brand-sm transition-brand hover:-translate-y-0.5 hover:border-brand-red/40 hover:shadow-brand">
+            <div className={`flex h-24 items-end p-4 ${className}`}>
+                <span className={`text-sm font-bold ${textClass}`}>{name}</span>
+            </div>
+            <div className="space-y-1 bg-card p-4">
+                <p className="font-mono text-xs text-muted-foreground">{token}</p>
+                <p className="text-sm text-muted-foreground">{role}</p>
+            </div>
+        </div>
+    );
+}
+
+export default function StyleGuide() {
+    return (
+        <>
+            <Head title="Style Guide – What the HELL have I done" />
+
+            <div className="min-h-screen bg-background">
+                <header className="sticky top-0 z-10 border-b-2 border-border bg-background/95 backdrop-blur">
+                    <div className="mx-auto flex max-w-5xl items-center gap-4 px-6 py-4">
+                        <Link href="/" className="shrink-0">
+                            <img
+                                src="/whatthehellhaveidone.png"
+                                alt="What the HELL have i DONE"
+                                className="h-14 w-auto"
+                            />
+                        </Link>
+                        <div className="hidden sm:block">
+                            <p className="flex items-center gap-2 text-xs font-semibold uppercase tracking-wider text-muted-foreground">
+                                <Palette className="size-3.5" />
+                                Style Guide
+                            </p>
+                            <p className="text-sm text-muted-foreground">
+                                Brand colors wired into shadcn components
+                            </p>
+                        </div>
+                        <div className="ml-auto flex gap-2">
+                            <Button variant="outline" size="sm" asChild>
+                                <Link href={login()}>Sign in</Link>
+                            </Button>
+                            <Button variant="brand" size="sm" asChild>
+                                <Link href={register()}>Get started</Link>
+                            </Button>
+                        </div>
+                    </div>
+                </header>
+
+                <main className="mx-auto max-w-5xl space-y-12 px-6 py-10">
+                    <div className="space-y-3">
+                        <div className="inline-flex items-center gap-2 rounded-full border-2 border-brand-red/20 bg-brand-red/5 px-3 py-1 text-xs font-semibold text-brand-red">
+                            <Sparkles className="size-3.5" />
+                            Logo-driven branding
+                        </div>
+                        <h1 className="text-3xl font-black tracking-tight sm:text-4xl">
+                            What the <span className="text-brand-red">HELL</span> have i{' '}
+                            <span className="text-secondary-foreground bg-secondary px-2 rounded-lg shadow-brand-sm">
+                                DONE
+                            </span>
+                        </h1>
+                        <p className="max-w-2xl text-muted-foreground">
+                            Ink carries the UI. Red and yellow are accents — saved for CTAs, the
+                            HELL word, and hover moments. Cream backgrounds keep it readable.
+                        </p>
+                    </div>
+
+                    <Section
+                        title="Brand palette"
+                        description="Core colors from the logo. Primary (ink) for structure; brand-red for CTAs."
+                    >
+                        <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
+                            {brandColors.map((color) => (
+                                <Swatch key={color.token} {...color} />
+                            ))}
+                        </div>
+                    </Section>
+
+                    <Section
+                        title="Semantic tokens"
+                        description="shadcn maps these to component variants automatically."
+                    >
+                        <div className="flex flex-wrap gap-3">
+                            {semanticColors.map((color) => (
+                                <div
+                                    key={color.name}
+                                    className={`rounded-xl px-4 py-2 text-sm font-semibold shadow-brand-sm ${color.className} ${color.text}`}
+                                >
+                                    {color.name}
+                                </div>
+                            ))}
+                        </div>
+                    </Section>
+
+                    <Section
+                        title="Buttons"
+                        description="Default = ink. Brand = HELL red for CTAs. Outline hovers turn red."
+                    >
+                        <div className="flex flex-wrap gap-3">
+                            <Button>Default (Ink)</Button>
+                            <Button variant="brand">Brand (HELL)</Button>
+                            <Button variant="secondary">Secondary (DONE)</Button>
+                            <Button variant="outline">Outline</Button>
+                            <Button variant="ghost">Ghost</Button>
+                            <Button variant="destructive">Destructive</Button>
+                            <Button variant="link">Link style</Button>
+                        </div>
+                        <div className="flex flex-wrap gap-3">
+                            <Button size="sm">Small</Button>
+                            <Button size="default">Default</Button>
+                            <Button size="lg">Large</Button>
+                        </div>
+                    </Section>
+
+                    <Section title="Form controls">
+                        <div className="grid max-w-md gap-4">
+                            <div className="space-y-2">
+                                <Label htmlFor="demo-input">Card title</Label>
+                                <Input id="demo-input" placeholder="What did you just do?" />
+                            </div>
+                            <div className="space-y-2">
+                                <Label htmlFor="demo-input-focus">Focused state</Label>
+                                <Input
+                                    id="demo-input-focus"
+                                    defaultValue="Hover or tab to see the red ring"
+                                />
+                            </div>
+                        </div>
+                    </Section>
+
+                    <Section title="Badges">
+                        <div className="flex flex-wrap gap-2">
+                            <Badge>Primary</Badge>
+                            <Badge variant="secondary">Secondary</Badge>
+                            <Badge variant="outline">Outline</Badge>
+                            <Badge variant="destructive">Destructive</Badge>
+                        </div>
+                    </Section>
+
+                    <Section
+                        title="Cards & borders"
+                        description="Cards pick up a red border tint on hover."
+                    >
+                        <div className="grid gap-4 sm:grid-cols-2">
+                            <Card className="hover:-translate-y-0.5 hover:border-brand-red/40 hover:shadow-brand">
+                                <CardHeader>
+                                    <CardTitle>Move card to Done</CardTitle>
+                                    <CardDescription>
+                                        Hover this card — border shifts to HELL red.
+                                    </CardDescription>
+                                </CardHeader>
+                                <CardContent>
+                                    <p className="text-sm text-muted-foreground">
+                                        The comic shadow and warm cream background keep things
+                                        playful without losing readability.
+                                    </p>
+                                </CardContent>
+                                <CardFooter>
+                                    <Button variant="brand" size="sm">
+                                        Do the thing
+                                    </Button>
+                                </CardFooter>
+                            </Card>
+
+                            <Card className="border-secondary/50 bg-secondary/10 hover:-translate-y-0.5 hover:border-secondary hover:shadow-brand">
+                                <CardHeader>
+                                    <CardTitle className="text-secondary-foreground">
+                                        DONE column
+                                    </CardTitle>
+                                    <CardDescription>
+                                        Yellow accent surface for completed work.
+                                    </CardDescription>
+                                </CardHeader>
+                                <CardContent>
+                                    <p className="text-sm text-muted-foreground">
+                                        Use secondary tokens when you want the golden highlight
+                                        without a full button.
+                                    </p>
+                                </CardContent>
+                                <CardFooter>
+                                    <Button variant="secondary" size="sm">
+                                        Celebrate
+                                    </Button>
+                                </CardFooter>
+                            </Card>
+                        </div>
+                    </Section>
+
+                    <Section title="Typography">
+                        <div className="space-y-3 rounded-2xl border-2 border-border bg-card p-6 shadow-brand-sm">
+                            <p className="text-3xl font-black">Heading — bold & punchy</p>
+                            <p className="text-lg font-semibold text-foreground">
+                                Subheading in ink
+                            </p>
+                            <p className="text-base text-foreground">
+                                Body text on warm cream. Readable, not sterile.
+                            </p>
+                            <p className="text-sm text-muted-foreground">
+                                Muted text for descriptions and helper copy.
+                            </p>
+                            <a href="#" className="text-sm font-medium text-foreground transition-brand hover:text-brand-red hover:underline">
+                                Link — ink by default, red on hover
+                            </a>
+                        </div>
+                    </Section>
+                </main>
+            </div>
+        </>
+    );
+}

@@ -29,6 +29,8 @@ Route::inertia('/', 'welcome', [
     'canRegister' => Features::enabled(Features::registration()),
 ])->name('home');
 
+Route::inertia('/style', 'style')->name('style');
+
 // Documentation (public)
 Route::prefix('docs')->name('docs.')->group(function () {
     Route::inertia('/', 'docs/index')->name('index');
@@ -40,7 +42,7 @@ Route::prefix('docs')->name('docs.')->group(function () {
     Route::inertia('/trello-import', 'docs/trello-import')->name('trello-import');
     Route::inertia('/work-log', 'docs/work-log')->name('work-log');
     Route::inertia('/mcp-setup', 'docs/mcp-setup')->name('mcp-setup');
-    Route::inertia('/mcp-tools', 'docs/mcp-setup')->name('mcp-tools');
+    Route::inertia('/mcp-tools', 'docs/mcp-tools')->name('mcp-tools');
 });
 
 Route::middleware(['auth', 'verified'])->group(function () {

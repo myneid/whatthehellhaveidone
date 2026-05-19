@@ -1,70 +1,159 @@
 import { Head, Link } from '@inertiajs/react';
+import {
+    Bot,
+    Clock,
+    Github,
+    KanbanSquare,
+    Layers,
+    ListTodo,
+    Rocket,
+    Upload,
+    UserPlus,
+    Users,
+} from 'lucide-react';
+import { DocsCtaCard } from '@/components/docs/docs-cta-card';
+import { DocsHero } from '@/components/docs/docs-hero';
+import { DocsNextSteps } from '@/components/docs/docs-next-steps';
+import { DocsPageSection } from '@/components/docs/docs-page-section';
+import { DocsStepCard } from '@/components/docs/docs-step-card';
+import { Button } from '@/components/ui/button';
 import DocsLayout from '@/layouts/docs-layout';
+
+const stats = [
+    { label: 'Steps', value: '5' },
+    { label: 'Time', value: '~10 min' },
+    { label: 'Cost', value: 'Free' },
+];
 
 export default function DocsGettingStarted() {
     return (
         <>
             <Head title="Getting Started – Docs" />
 
-            <h1>Getting Started</h1>
+            <div className="not-prose space-y-12">
+                <DocsHero
+                    eyebrow="Quick Start Guide"
+                    eyebrowIcon={Rocket}
+                    title="Getting started"
+                    description="Go from zero to a working board in five steps — account, project, board, cards, and your team."
+                    stats={stats}
+                    actions={
+                        <>
+                            <Button variant="brand" asChild>
+                                <Link href="/register">Create account</Link>
+                            </Button>
+                            <Button variant="outline" asChild>
+                                <Link href="/docs">Back to docs</Link>
+                            </Button>
+                        </>
+                    }
+                />
 
-            <p>
-                This guide walks you through setting up your workspace: creating a project, adding a board, and inviting your team.
-            </p>
+                <DocsPageSection
+                    icon={Clock}
+                    title="Follow the steps"
+                    description="Top to bottom — about ten minutes to a working board."
+                >
+                    <DocsStepCard step={1} title="Create an account" icon={UserPlus} active>
+                        <p>
+                            Register at <Link href="/register">/register</Link>. If your admin
+                            already added you, just sign in with your existing account.
+                        </p>
+                    </DocsStepCard>
 
-            <h2>1. Create an Account</h2>
-            <p>
-                Register at <a href="/register">/register</a>. You can also sign in with an existing account if your admin has already added you.
-            </p>
+                    <DocsStepCard
+                        step={2}
+                        title="Create a project"
+                        icon={KanbanSquare}
+                        highlights={['Name', 'Accent color']}
+                    >
+                        <p>
+                            From the dashboard, click <strong>New Project</strong>. Projects group
+                            boards under one team or product area.
+                        </p>
+                    </DocsStepCard>
 
-            <h2>2. Create a Project</h2>
-            <p>
-                From the Dashboard, click <strong>New Project</strong>. A project is a container for boards — think of it as a team workspace or a product area.
-            </p>
-            <ul>
-                <li><strong>Name</strong> — the project's display name.</li>
-                <li><strong>Color</strong> — optional accent color shown on the dashboard.</li>
-            </ul>
+                    <DocsStepCard
+                        step={3}
+                        title="Create a board"
+                        icon={Layers}
+                        highlights={['private', 'team', 'public']}
+                    >
+                        <p>
+                            Inside a project, click <strong>New Board</strong> for a Kanban-style
+                            board. You can also create standalone boards from the dashboard.
+                        </p>
+                        <p>
+                            Pick a visibility level and optional background color for the board
+                            header.
+                        </p>
+                    </DocsStepCard>
 
-            <h2>3. Create a Board</h2>
-            <p>
-                Inside a project, click <strong>New Board</strong>. Boards are Kanban-style — they hold lists (columns) of cards.
-                You can also create standalone boards not attached to any project from the dashboard.
-            </p>
-            <ul>
-                <li><strong>Visibility</strong> — <code>private</code> (only you), <code>team</code> (project members), or <code>public</code> (anyone with the link).</li>
-                <li><strong>Background color</strong> — optional header accent.</li>
-            </ul>
+                    <DocsStepCard
+                        step={4}
+                        title="Add lists and cards"
+                        icon={ListTodo}
+                        highlights={['Drag & drop', 'Checklists', 'GitHub issues']}
+                    >
+                        <p>
+                            Use <strong>+ Add list</strong> for columns like To Do, In Progress,
+                            and Done. Click <strong>+ Add card</strong> inside a list to create
+                            tasks.
+                        </p>
+                        <p>
+                            Open any card to edit details, assign members, set due dates, add
+                            comments, and link GitHub issues. Drag cards between lists to update
+                            status.
+                        </p>
+                    </DocsStepCard>
 
-            <h2>4. Add Lists and Cards</h2>
-            <p>
-                Open a board and use <strong>+ Add list</strong> to create columns (e.g. "To Do", "In Progress", "Done").
-                Inside each list, click <strong>+ Add card</strong> to create a task.
-            </p>
-            <p>
-                Click any card to open the detail view where you can:
-            </p>
-            <ul>
-                <li>Edit the title and description</li>
-                <li>Assign members</li>
-                <li>Set a priority and due date</li>
-                <li>Add checklists, comments, and attachments</li>
-                <li>Link a GitHub issue</li>
-            </ul>
-            <p>Drag cards between lists to update their status.</p>
+                    <DocsStepCard
+                        step={5}
+                        title="Invite team members"
+                        icon={Users}
+                        isLast
+                    >
+                        <p>
+                            Open a project and go to the <strong>Members</strong> tab to invite by
+                            email or share an invitation link.
+                        </p>
+                        <p>
+                            Manage board-level access from the board&apos;s{' '}
+                            <strong>Settings</strong> sheet.
+                        </p>
+                    </DocsStepCard>
+                </DocsPageSection>
 
-            <h2>5. Invite Team Members</h2>
-            <p>
-                Open a project and go to the <strong>Members</strong> tab. You can add existing users by email or send an invitation link to people who haven't signed up yet.
-            </p>
-            <p>Board-level members can be managed from the board's <strong>Settings</strong> sheet.</p>
+                <DocsCtaCard
+                    title="Ready to go?"
+                    description="Create your account and land on the dashboard in under a minute."
+                    actionLabel="Start for free"
+                    actionHref="/register"
+                />
 
-            <h2>Next Steps</h2>
-            <ul>
-                <li><Link href="/docs/mcp-setup">Connect an AI assistant via MCP →</Link></li>
-                <li><Link href="/docs/github">Set up GitHub integration →</Link></li>
-                <li><Link href="/docs/trello-import">Import from Trello →</Link></li>
-            </ul>
+                <DocsNextSteps
+                    steps={[
+                        {
+                            title: 'Connect an AI assistant',
+                            description: 'Hook up Claude or ChatGPT via MCP.',
+                            href: '/docs/mcp-setup',
+                            icon: Bot,
+                        },
+                        {
+                            title: 'GitHub integration',
+                            description: 'Sync issues with board cards both ways.',
+                            href: '/docs/github',
+                            icon: Github,
+                        },
+                        {
+                            title: 'Import from Trello',
+                            description: 'Migrate existing boards in one click.',
+                            href: '/docs/trello-import',
+                            icon: Upload,
+                        },
+                    ]}
+                />
+            </div>
         </>
     );
 }

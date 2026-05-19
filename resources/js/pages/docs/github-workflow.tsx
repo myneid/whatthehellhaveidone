@@ -36,7 +36,7 @@ export default function DocsGitHubWorkflow() {
             </p>
 
             <DocsCallout>
-                The same content lives in the repo as{' '}
+                The same content also lives in the repository root as{' '}
                 <code className="rounded bg-muted px-1.5 py-0.5 font-mono text-xs text-foreground">
                     GITHUB-BOARD-WORKFLOW.md
                 </code>{' '}

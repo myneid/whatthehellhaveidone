@@ -1,7 +1,6 @@
 import { router } from '@inertiajs/react';
 import { Bot, User } from 'lucide-react';
 import { useState } from 'react';
-import { assignWork } from '@/actions/App/Http/Controllers/GithubController';
 import { Button } from '@/components/ui/button';
 import {
     Dialog,
@@ -12,6 +11,7 @@ import {
     DialogTitle,
 } from '@/components/ui/dialog';
 import type { Card } from '@/types/app';
+import { assignWork } from '@/actions/App/Http/Controllers/GithubController';
 
 export type AssignableMember = {
     id: number;
@@ -107,7 +107,8 @@ export function WorkAssigneeDialog({
                                     GitHub Copilot
                                 </span>
                                 <span className="block text-xs text-muted-foreground">
-                                    Assigns the linked issue to Copilot and enables automatic Copilot PR review.
+                                    Assigns the linked issue to GitHub Copilot and enables
+                                    automatic Copilot PR review.
                                 </span>
                             </span>
                         </label>

@@ -82,6 +82,10 @@
                     'title' => 'MCP Setup – What the HELL have I done',
                     'description' => 'Connect Claude, ChatGPT, or any MCP-compatible AI assistant to your boards, cards, and work log via the built-in MCP server.',
                 ],
+                'docs/mcp-tools' => [
+                    'title' => 'MCP Tools – What the HELL have I done',
+                    'description' => 'Reference for all eleven WHHID MCP tools — boards, cards, work log, and documents — plus example prompts and security notes.',
+                ],
             ];
 
             $meta = array_merge($defaultMeta, $pageMeta[$page['component']] ?? []);
