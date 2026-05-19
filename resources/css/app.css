@@ -431,7 +431,8 @@
         box-shadow: var(--shadow-brand-hover);
     }
 
-    .btn-smooth.btn-brand:hover {
+    .btn-smooth.btn-brand:hover,
+    .btn-smooth.btn-outline:hover {
         box-shadow: var(--shadow-brand-yellow-hover);
     }
 
