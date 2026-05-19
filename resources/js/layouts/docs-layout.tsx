@@ -1,6 +1,7 @@
 import { Link } from '@inertiajs/react';
 import { BookOpen, Menu } from 'lucide-react';
-import { useState, type PropsWithChildren } from 'react';
+import { useState } from 'react';
+import type { PropsWithChildren } from 'react';
 import { Button } from '@/components/ui/button';
 import {
     Sheet,
