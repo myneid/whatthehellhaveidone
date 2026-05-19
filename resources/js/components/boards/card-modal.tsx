@@ -60,10 +60,24 @@ function formatDate(dateStr: string | null): string {
         return '';
     }
 
-    return new Date(dateStr).toLocaleDateString(undefined, {
+    return new Date(dateStr).toLocaleDateString('en-US', {
         month: 'short',
         day: 'numeric',
         year: 'numeric',
+    });
+}
+
+function formatTimestamp(dateStr: string | null): string {
+    if (!dateStr) {
+        return '';
+    }
+
+    return new Date(dateStr).toLocaleString('en-US', {
+        month: 'short',
+        day: 'numeric',
+        year: 'numeric',
+        hour: 'numeric',
+        minute: '2-digit',
     });
 }
 
@@ -632,31 +646,45 @@ export function CardModal({
                         </DialogTitle>
                     )}
 
-                    <div className="mt-1 flex flex-wrap items-center gap-2 text-sm text-muted-foreground">
+                    <div className="mt-1 flex flex-wrap items-center gap-x-2 gap-y-1 text-sm text-muted-foreground">
                         {card.creator && (
                             <span>
                                 Created by <strong>{card.creator.name}</strong>
                             </span>
+                        )}
+                        {card.created_at && (
+                            <time
+                                dateTime={card.created_at}
+                                className="text-xs"
+                                title={card.created_at}
+                            >
+                                {formatTimestamp(card.created_at)}
+                            </time>
                         )}
                         {card.list && (
                             <span>
                                 in <strong>{card.list.name}</strong>
                             </span>
                         )}
-                        {card.priority && card.priority !== 'none' && (
-                            <span
-                                className={`rounded-full px-2 py-0.5 text-xs font-medium capitalize ${PRIORITY_COLORS[card.priority] ?? ''}`}
-                            >
-                                {card.priority}
-                            </span>
-                        )}
-                        {card.due_at && (
-                            <span className="flex items-center gap-1">
-                                <Calendar className="h-3 w-3" />
-                                {formatDate(card.due_at)}
-                            </span>
-                        )}
                     </div>
+
+                    {(card.priority && card.priority !== 'none') || card.due_at ? (
+                        <div className="mt-1.5 flex flex-wrap items-center gap-2">
+                            {card.priority && card.priority !== 'none' && (
+                                <span
+                                    className={`rounded-full px-2 py-0.5 text-xs font-medium capitalize ${PRIORITY_COLORS[card.priority] ?? ''}`}
+                                >
+                                    {card.priority}
+                                </span>
+                            )}
+                            {card.due_at && (
+                                <span className="flex items-center gap-1 text-xs text-muted-foreground">
+                                    <Calendar className="h-3 w-3" />
+                                    {formatDate(card.due_at)}
+                                </span>
+                            )}
+                        </div>
+                    ) : null}
                 </DialogHeader>
 
                 <div className="mt-2 space-y-6">
@@ -837,11 +865,15 @@ export function CardModal({
                                                 {comment.user?.name}
                                             </span>
                                             <div className="flex items-center gap-1">
-                                                <span className="text-xs text-muted-foreground">
-                                                    {new Date(
+                                                <time
+                                                    dateTime={comment.created_at}
+                                                    className="text-xs text-muted-foreground"
+                                                    title={comment.created_at}
+                                                >
+                                                    {formatTimestamp(
                                                         comment.created_at,
-                                                    ).toLocaleDateString()}
-                                                </span>
+                                                    )}
+                                                </time>
                                                 <button
                                                     onClick={() =>
                                                         deleteComment(
