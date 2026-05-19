@@ -10,7 +10,7 @@ export function DocsCodeBlock({ children, className }: DocsCodeBlockProps) {
     return (
         <pre
             className={cn(
-                'overflow-x-auto rounded-xl border border-border bg-muted/60 p-4 text-sm leading-relaxed font-mono text-foreground',
+                'overflow-x-auto rounded-2xl border border-docs-border bg-docs-surface-elevated p-4 text-sm leading-relaxed font-mono text-foreground backdrop-blur-xl',
                 className,
             )}
         >

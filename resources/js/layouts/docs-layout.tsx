@@ -47,10 +47,10 @@ function DocsNavLinks({ onNavigate }: { onNavigate?: () => void }) {
         <div className="space-y-6">
             {sections.map((section) => (
                 <div key={section.heading}>
-                    <p className="mb-2 text-xs font-bold uppercase tracking-wider text-muted-foreground">
+                    <p className="docs-eyebrow mb-3 text-[10px] text-muted-foreground">
                         {section.heading}
                     </p>
-                    <ul className="space-y-1">
+                    <ul className="space-y-0.5">
                         {section.items.map((item) => {
                             const active = isCurrentUrl(item.href);
 
@@ -60,10 +60,8 @@ function DocsNavLinks({ onNavigate }: { onNavigate?: () => void }) {
                                         href={item.href}
                                         onClick={onNavigate}
                                         className={cn(
-                                            'block rounded-xl border-2 px-3 py-2 text-sm font-medium transition-brand',
-                                            active
-                                                ? 'border-border bg-muted text-foreground shadow-brand-sm'
-                                                : 'border-transparent text-muted-foreground transition-brand hover:border-brand-yellow-text hover:bg-brand-yellow/10 hover:font-semibold hover:text-brand-yellow-text',
+                                            'docs-nav-item',
+                                            active && 'docs-nav-item-active',
                                         )}
                                     >
                                         {item.title}
@@ -82,9 +80,11 @@ export default function DocsLayout({ children }: PropsWithChildren) {
     const [mobileOpen, setMobileOpen] = useState(false);
 
     return (
-        <div className="min-h-screen bg-background">
-            <header className="sticky top-0 z-20 border-b-2 border-border bg-background/95 backdrop-blur">
-                <div className="mx-auto flex max-w-6xl items-center gap-4 px-4 py-3 sm:px-6">
+        <div className="docs-shell relative min-h-screen bg-background">
+            <div className="docs-ambient" aria-hidden />
+
+            <header className="docs-header-bar sticky top-0 z-20">
+                <div className="relative mx-auto flex max-w-6xl items-center gap-4 px-4 py-3 sm:px-6">
                     <Sheet open={mobileOpen} onOpenChange={setMobileOpen}>
                         <SheetTrigger asChild>
                             <Button variant="outline" size="icon" className="lg:hidden">
@@ -132,14 +132,14 @@ export default function DocsLayout({ children }: PropsWithChildren) {
                 </div>
             </header>
 
-            <div className="mx-auto flex max-w-6xl gap-0 px-4 py-8 sm:px-6 sm:py-10">
-                <aside className="hidden w-56 shrink-0 lg:block">
-                    <nav className="sticky top-24 pr-4">
+            <div className="relative z-10 mx-auto flex max-w-6xl gap-0 px-4 py-8 sm:px-6 sm:py-12">
+                <aside className="hidden w-52 shrink-0 lg:block">
+                    <nav className="docs-sidebar-panel sticky top-24 -ml-4 rounded-2xl py-4 pr-4 pl-4">
                         <DocsNavLinks />
                     </nav>
                 </aside>
 
-                <main className="min-w-0 flex-1 lg:pl-10">
+                <main className="min-w-0 flex-1 lg:pl-12">
                     <div className="docs-prose">{children}</div>
                 </main>
             </div>

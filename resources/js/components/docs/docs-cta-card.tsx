@@ -17,11 +17,11 @@ export function DocsCtaCard({
     actionHref,
 }: DocsCtaCardProps) {
     return (
-        <Card className="border-border bg-muted/30">
-            <CardContent className="flex flex-col gap-4 px-6 py-6 sm:flex-row sm:items-center sm:justify-between">
+        <Card className="docs-surface docs-surface-active !border-0 !py-0 !shadow-none">
+            <CardContent className="relative z-10 flex flex-col gap-4 px-6 py-7 sm:flex-row sm:items-center sm:justify-between">
                 <div>
-                    <p className="font-semibold text-foreground">{title}</p>
-                    <div className="mt-1 text-sm text-muted-foreground [&_a]:hover-docs-link [&_a]:font-medium [&_a]:text-foreground">
+                    <p className="text-lg font-semibold text-foreground">{title}</p>
+                    <div className="mt-1.5 text-sm leading-relaxed text-muted-foreground [&_a]:hover-docs-link [&_a]:font-medium [&_a]:text-foreground">
                         {description}
                     </div>
                 </div>

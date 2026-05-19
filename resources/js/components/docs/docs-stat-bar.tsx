@@ -11,17 +11,17 @@ type DocsStatBarProps = {
 export function DocsStatBar({ stats, className = '' }: DocsStatBarProps) {
     return (
         <dl
-            className={`grid w-full shrink-0 grid-cols-3 divide-x divide-border overflow-hidden rounded-xl border border-border bg-muted/20 ${className}`}
+            className={`docs-stat-bar grid w-full shrink-0 grid-cols-3 divide-x divide-docs-border overflow-hidden rounded-2xl ${className}`}
         >
             {stats.map((stat) => (
                 <div
                     key={stat.label}
-                    className="flex min-w-0 flex-col items-center justify-center px-3 py-4 sm:px-5"
+                    className="flex min-w-0 flex-col items-center justify-center px-3 py-5 sm:px-5"
                 >
-                    <dt className="whitespace-nowrap text-[11px] font-semibold uppercase tracking-wider text-muted-foreground">
+                    <dt className="whitespace-nowrap text-[10px] font-semibold uppercase tracking-[0.18em] text-muted-foreground">
                         {stat.label}
                     </dt>
-                    <dd className="mt-1.5 whitespace-nowrap text-lg font-bold tabular-nums text-foreground sm:text-xl">
+                    <dd className="mt-2 whitespace-nowrap text-lg font-bold tabular-nums text-foreground sm:text-xl">
                         {stat.value}
                     </dd>
                 </div>

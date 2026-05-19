@@ -24,10 +24,10 @@ export function DocsFeatureGrid({ features, columns = 3 }: DocsFeatureGridProps)
             {features.map((feature) => (
                 <Card
                     key={feature.title}
-                    className="hover-docs-interactive border-border bg-card/80"
+                    className="docs-surface docs-surface-hover-glow hover-docs-interactive !border-0 !py-0 !shadow-none"
                 >
-                    <CardContent className="flex gap-3 px-4 py-4">
-                        <div className="flex size-9 shrink-0 items-center justify-center rounded-lg border border-border bg-muted/40">
+                    <CardContent className="relative z-10 flex gap-3 px-4 py-4">
+                        <div className="flex size-10 shrink-0 items-center justify-center rounded-xl bg-docs-surface-elevated ring-1 ring-docs-border">
                             <feature.icon className="size-4 text-foreground" aria-hidden />
                         </div>
                         <div className="min-w-0 space-y-1">

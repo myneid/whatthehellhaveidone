@@ -19,21 +19,26 @@ export function DocsConceptCard({
     highlights = [],
 }: DocsConceptCardProps) {
     return (
-        <Card className={cn('hover-docs-interactive h-full', className)}>
+        <Card
+            className={cn(
+                'docs-surface docs-surface-hover-glow hover-docs-interactive h-full !border-0 !py-0 !shadow-none',
+                className,
+            )}
+        >
             <CardHeader className="gap-3 pb-3">
-                <div className="flex size-10 items-center justify-center rounded-xl border-2 border-border bg-muted/40">
+                <div className="flex size-11 items-center justify-center rounded-2xl bg-docs-surface-elevated ring-1 ring-docs-border">
                     <Icon className="size-5 text-foreground" aria-hidden />
                 </div>
                 <CardTitle className="text-lg">{title}</CardTitle>
             </CardHeader>
-            <CardContent className="space-y-4 text-sm leading-relaxed text-muted-foreground [&_a]:hover-docs-link [&_strong]:font-semibold [&_strong]:text-foreground [&_a]:font-medium [&_a]:text-foreground [&_li]:leading-relaxed [&_p]:leading-relaxed [&_ul]:space-y-1.5">
+            <CardContent className="relative z-10 space-y-4 text-sm leading-relaxed text-muted-foreground [&_a]:hover-docs-link [&_strong]:font-semibold [&_strong]:text-foreground [&_a]:font-medium [&_a]:text-foreground [&_li]:leading-relaxed [&_p]:leading-relaxed [&_ul]:space-y-1.5">
                 {children}
                 {highlights.length > 0 && (
                     <ul className="flex flex-wrap gap-2 pt-1">
                         {highlights.map((item) => (
                             <li
                                 key={item}
-                                className="rounded-full border border-border bg-muted/60 px-3 py-1 text-xs font-medium text-foreground"
+                                className="rounded-full bg-brand-accent/10 px-3 py-1 text-xs font-medium text-brand-accent"
                             >
                                 {item}
                             </li>

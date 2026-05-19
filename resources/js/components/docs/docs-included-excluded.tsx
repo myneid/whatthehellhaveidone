@@ -16,7 +16,7 @@ type DocsIncludedExcludedProps = {
 export function DocsIncludedExcluded({ included, excluded }: DocsIncludedExcludedProps) {
     return (
         <div className="grid gap-4 lg:grid-cols-2">
-            <Card className="border-border">
+            <Card className="docs-surface !border-0 !py-0 !shadow-none">
                 <CardHeader className="gap-2 pb-3">
                     <CardTitle className="flex items-center gap-2 text-lg">
                         <CheckCircle2 className="size-5 text-green-600 dark:text-green-500" />
@@ -27,7 +27,7 @@ export function DocsIncludedExcluded({ included, excluded }: DocsIncludedExclude
                     {included.map((item) => (
                         <div key={item.title} className="flex gap-3">
                             {item.icon && (
-                                <div className="flex size-9 shrink-0 items-center justify-center rounded-lg border border-border bg-muted/40">
+                                <div className="flex size-9 shrink-0 items-center justify-center rounded-xl bg-docs-surface-elevated ring-1 ring-docs-border">
                                     <item.icon className="size-4 text-foreground" aria-hidden />
                                 </div>
                             )}
@@ -46,7 +46,7 @@ export function DocsIncludedExcluded({ included, excluded }: DocsIncludedExclude
                 </CardContent>
             </Card>
 
-            <Card className="border-border">
+            <Card className="docs-surface !border-0 !py-0 !shadow-none">
                 <CardHeader className="gap-2 pb-3">
                     <CardTitle className="flex items-center gap-2 text-lg">
                         <XCircle className="size-5 text-muted-foreground" />
@@ -57,7 +57,7 @@ export function DocsIncludedExcluded({ included, excluded }: DocsIncludedExclude
                     {excluded.map((item) => (
                         <div key={item.title} className="flex gap-3">
                             {item.icon && (
-                                <div className="flex size-9 shrink-0 items-center justify-center rounded-lg border border-border bg-muted/40">
+                                <div className="flex size-9 shrink-0 items-center justify-center rounded-xl bg-docs-surface-elevated ring-1 ring-docs-border">
                                     <item.icon className="size-4 text-muted-foreground" aria-hidden />
                                 </div>
                             )}

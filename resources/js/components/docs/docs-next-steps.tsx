@@ -16,13 +16,13 @@ type DocsNextStepsProps = {
 
 export function DocsNextSteps({ steps }: DocsNextStepsProps) {
     return (
-        <section className="space-y-4 pt-4">
-            <h2 className="text-xl font-bold tracking-tight">Next steps</h2>
+        <section className="space-y-5 pt-6">
+            <h2 className="text-2xl font-bold tracking-tight">Next steps</h2>
             <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
                 {steps.map((step) => (
                     <Link key={step.href} href={step.href} className="group block">
-                        <Card className="hover-docs-interactive h-full">
-                            <CardHeader className="gap-3">
+                        <Card className="docs-surface docs-surface-hover-glow hover-docs-interactive h-full !border-0 !py-0 !shadow-none">
+                            <CardHeader className="relative z-10 gap-3">
                                 <div className="flex items-start justify-between gap-3">
                                     {step.icon && (
                                         <step.icon className="size-5 shrink-0 text-muted-foreground transition-brand group-hover:scale-110 group-hover-docs-accent" />

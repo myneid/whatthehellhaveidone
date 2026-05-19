@@ -54,7 +54,7 @@ export default function DocsGettingStarted() {
                     title="Follow the steps"
                     description="Top to bottom — about ten minutes to a working board."
                 >
-                    <DocsStepCard step={1} title="Create an account" icon={UserPlus}>
+                    <DocsStepCard step={1} title="Create an account" icon={UserPlus} active>
                         <p>
                             Register at <Link href="/register">/register</Link>. If your admin
                             already added you, just sign in with your existing account.

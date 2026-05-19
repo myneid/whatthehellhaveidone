@@ -9,7 +9,7 @@ type DocsStat = {
 type DocsHeroProps = {
     eyebrow: string;
     eyebrowIcon?: ComponentType<{ className?: string }>;
-    title: string;
+    title: ReactNode;
     description: string;
     actions?: ReactNode;
     stats?: DocsStat[];
@@ -24,25 +24,18 @@ export function DocsHero({
     stats,
 }: DocsHeroProps) {
     return (
-        <header className="overflow-hidden rounded-2xl border-2 border-border bg-card shadow-brand-sm">
-            <div className="border-b border-border bg-muted/30 px-6 py-3 sm:px-8">
-                <p className="flex items-center gap-2 text-sm font-semibold text-brand-yellow-text">
-                    {EyebrowIcon && <EyebrowIcon className="size-4" />}
-                    {eyebrow}
-                </p>
-            </div>
-
-            <div className="flex flex-col gap-8 px-6 py-8 sm:px-8 lg:flex-row lg:items-center lg:justify-between">
-                <div className="max-w-2xl space-y-4">
-                    <h1 className="text-3xl font-black tracking-tight sm:text-4xl">
-                        {title}
-                    </h1>
-                    <p className="text-lg leading-relaxed text-muted-foreground">
+        <header className="relative space-y-8 pb-4 pt-2 sm:pb-6">
+            <div className="flex flex-col gap-8 lg:flex-row lg:items-end lg:justify-between">
+                <div className="max-w-2xl space-y-5">
+                    <p className="docs-eyebrow">
+                        {EyebrowIcon && <EyebrowIcon className="size-3.5" />}
+                        {eyebrow}
+                    </p>
+                    <h1 className="text-4xl font-bold tracking-tight sm:text-5xl">{title}</h1>
+                    <p className="max-w-xl text-lg leading-relaxed text-muted-foreground">
                         {description}
                     </p>
-                    {actions && (
-                        <div className="flex flex-wrap gap-3 pt-1">{actions}</div>
-                    )}
+                    {actions && <div className="flex flex-wrap gap-3">{actions}</div>}
                 </div>
 
                 {stats && stats.length > 0 && (

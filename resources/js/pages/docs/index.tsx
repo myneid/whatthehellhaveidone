@@ -1,5 +1,6 @@
 import { Head, Link } from '@inertiajs/react';
 import { BookOpen, Bot, Github, Kanban, MessageSquare, Upload, Zap } from 'lucide-react';
+import { DocsHero } from '@/components/docs/docs-hero';
 import { Button } from '@/components/ui/button';
 import { Card, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import DocsLayout from '@/layouts/docs-layout';
@@ -80,41 +81,37 @@ export default function DocsIndex() {
                 />
             </Head>
 
-            <div className="not-prose space-y-10">
-                <header className="space-y-4 border-b-2 border-border pb-8">
-                    <div className="flex items-center gap-2 text-sm font-semibold text-brand-yellow-text">
-                        <BookOpen className="size-4" />
-                        <span>Documentation</span>
-                    </div>
-                    <div className="space-y-3">
-                        <h1 className="text-3xl font-black tracking-tight text-foreground sm:text-4xl">
+            <div className="not-prose space-y-12">
+                <DocsHero
+                    eyebrow="Documentation"
+                    eyebrowIcon={BookOpen}
+                    title={
+                        <>
                             What the <span className="text-brand-red">HELL</span> have i{' '}
                             <span className="text-brand-yellow-text">done</span>?
-                        </h1>
-                        <p className="max-w-2xl text-lg text-muted-foreground">
-                            A full-featured project management platform with built-in AI integration
-                            via the Model Context Protocol (MCP). Manage projects, boards, and
-                            cards — and let your AI assistant do it for you.
-                        </p>
-                    </div>
-                    <div className="flex flex-wrap gap-3">
-                        <Button variant="brand" asChild>
-                            <Link href="/docs/getting-started">Quick Start →</Link>
-                        </Button>
-                        <Button variant="outline" asChild>
-                            <Link href="/docs/mcp-setup">
-                                <Bot className="size-4" />
-                                MCP Setup
-                            </Link>
-                        </Button>
-                    </div>
-                </header>
+                        </>
+                    }
+                    description="A full-featured project management platform with built-in AI integration via the Model Context Protocol (MCP). Manage projects, boards, and cards — and let your AI assistant do it for you."
+                    actions={
+                        <>
+                            <Button variant="brand" asChild>
+                                <Link href="/docs/getting-started">Quick Start →</Link>
+                            </Button>
+                            <Button variant="outline" asChild>
+                                <Link href="/docs/mcp-setup">
+                                    <Bot className="size-4" />
+                                    MCP Setup
+                                </Link>
+                            </Button>
+                        </>
+                    }
+                />
 
-                <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+                <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
                     {topics.map((topic) => (
                         <Link key={topic.href} href={topic.href} className="group block">
-                            <Card className="hover-docs-interactive h-full">
-                                <CardHeader className="gap-3">
+                            <Card className="docs-surface docs-surface-hover-glow hover-docs-interactive h-full !border-0 !py-0 !shadow-none">
+                                <CardHeader className="relative z-10 gap-3">
                                     <topic.icon className="size-5 text-muted-foreground transition-brand group-hover:scale-110 group-hover-docs-accent" />
                                     <CardTitle className="transition-brand group-hover-docs-bold">
                                         {topic.title}
@@ -126,7 +123,7 @@ export default function DocsIndex() {
                     ))}
                 </div>
 
-                <Card className="border-border bg-muted/40">
+                <Card className="docs-surface !border-0 !py-0 !shadow-none">
                     <CardHeader>
                         <CardTitle>Hosted version</CardTitle>
                         <CardDescription>

@@ -12,13 +12,13 @@ export function DocsSectionHeader({
     description,
 }: DocsSectionHeaderProps) {
     return (
-        <div className="space-y-1">
-            <h2 className="flex items-center gap-2 text-xl font-bold tracking-tight">
-                {Icon && <Icon className="size-5 text-muted-foreground" />}
+        <div className="space-y-2">
+            <h2 className="flex items-center gap-2.5 text-2xl font-bold tracking-tight">
+                {Icon && <Icon className="size-5 text-brand-accent" />}
                 {title}
             </h2>
             {description && (
-                <div className="text-sm text-muted-foreground [&_a]:hover-docs-link [&_a]:font-medium [&_a]:text-foreground">
+                <div className="max-w-2xl text-sm leading-relaxed text-muted-foreground [&_a]:hover-docs-link [&_a]:font-medium [&_a]:text-foreground">
                     {description}
                 </div>
             )}
