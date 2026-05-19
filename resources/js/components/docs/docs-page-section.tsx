@@ -4,7 +4,7 @@ import { DocsSectionHeader } from '@/components/docs/docs-section-header';
 type DocsPageSectionProps = {
     icon?: ComponentType<{ className?: string }>;
     title: string;
-    description?: string;
+    description?: ReactNode;
     children: ReactNode;
 };
 

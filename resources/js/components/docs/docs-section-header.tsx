@@ -1,9 +1,9 @@
-import type { ComponentType } from 'react';
+import type { ComponentType, ReactNode } from 'react';
 
 type DocsSectionHeaderProps = {
     icon?: ComponentType<{ className?: string }>;
     title: string;
-    description?: string;
+    description?: ReactNode;
 };
 
 export function DocsSectionHeader({
@@ -18,7 +18,9 @@ export function DocsSectionHeader({
                 {title}
             </h2>
             {description && (
-                <p className="text-sm text-muted-foreground">{description}</p>
+                <div className="text-sm text-muted-foreground [&_a]:hover-docs-link [&_a]:font-medium [&_a]:text-foreground">
+                    {description}
+                </div>
             )}
         </div>
     );
