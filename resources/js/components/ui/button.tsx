@@ -11,15 +11,17 @@ const buttonVariants = cva(
       variant: {
         default:
           "bg-primary text-primary-foreground shadow-brand-sm hover:bg-primary/90 hover:shadow-brand hover:-translate-y-0.5 active:translate-y-0 active:scale-[0.98] active:shadow-brand-sm",
+        brand:
+          "bg-brand-red text-brand-cream shadow-brand-sm hover:bg-brand-red/90 hover:shadow-brand hover:-translate-y-0.5 active:translate-y-0 active:scale-[0.98] active:shadow-brand-sm focus-visible:ring-brand-red/40",
         destructive:
           "bg-destructive text-white shadow-brand-sm hover:bg-destructive/90 hover:shadow-brand hover:-translate-y-0.5 active:translate-y-0 active:scale-[0.98] active:shadow-brand-sm focus-visible:ring-destructive/20 dark:focus-visible:ring-destructive/40",
         outline:
-          "border-2 border-border bg-background shadow-brand-sm hover:border-primary hover:bg-primary/5 hover:text-primary hover:shadow-brand hover:-translate-y-0.5 active:translate-y-0 active:scale-[0.98] active:shadow-brand-sm",
+          "border-2 border-border bg-background shadow-brand-sm hover:border-brand-yellow-text hover:bg-brand-yellow/10 hover:text-brand-yellow-text hover:shadow-brand hover:-translate-y-1 active:translate-y-0 active:scale-[0.98] active:shadow-brand-sm",
         secondary:
           "bg-secondary text-secondary-foreground shadow-brand-sm hover:bg-secondary/90 hover:shadow-brand hover:-translate-y-0.5 active:translate-y-0 active:scale-[0.98] active:shadow-brand-sm",
         ghost:
           "hover:bg-accent hover:text-accent-foreground active:scale-[0.98] active:bg-accent/80",
-        link: "text-primary underline-offset-4 hover:underline hover:text-primary/80 active:text-primary/70",
+        link: "text-foreground underline-offset-4 hover:font-semibold hover:text-brand-yellow-text hover:underline hover:decoration-brand-yellow-text hover:decoration-2 active:text-brand-yellow-text/80",
       },
       size: {
         default: "h-9 px-4 py-2 has-[>svg]:px-3",

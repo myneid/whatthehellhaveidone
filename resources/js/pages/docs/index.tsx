@@ -82,13 +82,14 @@ export default function DocsIndex() {
 
             <div className="not-prose space-y-10">
                 <header className="space-y-4 border-b-2 border-border pb-8">
-                    <div className="flex items-center gap-2 text-sm font-semibold text-primary">
+                    <div className="flex items-center gap-2 text-sm font-semibold text-brand-yellow-text">
                         <BookOpen className="size-4" />
                         <span>Documentation</span>
                     </div>
                     <div className="space-y-3">
-                        <h1 className="text-3xl font-black tracking-tight sm:text-4xl">
-                            What the <span className="text-primary">HELL</span> have I done?
+                        <h1 className="text-3xl font-black tracking-tight text-foreground sm:text-4xl">
+                            What the <span className="text-brand-red">HELL</span> have i{' '}
+                            <span className="text-brand-yellow-text">done</span>?
                         </h1>
                         <p className="max-w-2xl text-lg text-muted-foreground">
                             A full-featured project management platform with built-in AI integration
@@ -112,10 +113,10 @@ export default function DocsIndex() {
                 <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
                     {topics.map((topic) => (
                         <Link key={topic.href} href={topic.href} className="group block">
-                            <Card className="h-full hover:-translate-y-0.5 hover:border-primary hover:shadow-brand">
+                            <Card className="hover-docs-interactive h-full">
                                 <CardHeader className="gap-3">
-                                    <topic.icon className="size-5 text-primary transition-brand group-hover:scale-110" />
-                                    <CardTitle className="transition-brand group-hover:text-primary">
+                                    <topic.icon className="size-5 text-muted-foreground transition-brand group-hover:scale-110 group-hover-docs-accent" />
+                                    <CardTitle className="transition-brand group-hover-docs-bold">
                                         {topic.title}
                                     </CardTitle>
                                     <CardDescription>{topic.description}</CardDescription>
@@ -125,14 +126,14 @@ export default function DocsIndex() {
                     ))}
                 </div>
 
-                <Card className="border-primary/20 bg-primary/5">
+                <Card className="border-border bg-muted/40">
                     <CardHeader>
                         <CardTitle>Hosted version</CardTitle>
                         <CardDescription>
                             Use the hosted version at{' '}
                             <a
                                 href="https://whatthehellhaveidone.net"
-                                className="font-medium text-primary transition-brand hover:underline"
+                                className="hover-docs-link font-medium text-foreground"
                                 target="_blank"
                                 rel="noopener noreferrer"
                             >

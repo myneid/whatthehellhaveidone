@@ -17,7 +17,7 @@ export function DocsPageHeader({
     return (
         <header className="space-y-4 border-b-2 border-border pb-8">
             {badge && (
-                <Badge variant="outline" className="border-primary/30 bg-primary/5 text-primary">
+                <Badge variant="outline" className="text-muted-foreground">
                     {badge}
                 </Badge>
             )}

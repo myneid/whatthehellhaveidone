@@ -62,6 +62,7 @@
 
     --color-brand-red: var(--brand-red);
     --color-brand-yellow: var(--brand-yellow);
+    --color-brand-yellow-text: var(--brand-yellow-text);
     --color-brand-cream: var(--brand-cream);
     --color-brand-ink: var(--brand-ink);
 
@@ -73,8 +74,9 @@
 }
 
 :root {
-    --brand-red: oklch(0.58 0.24 25);
+    --brand-red: oklch(0.58 0.19 25);
     --brand-yellow: oklch(0.82 0.17 88);
+    --brand-yellow-text: oklch(0.48 0.17 72);
     --brand-cream: oklch(0.98 0.012 88);
     --brand-ink: oklch(0.2 0.04 45);
 
@@ -84,7 +86,7 @@
     --card-foreground: var(--brand-ink);
     --popover: oklch(1 0.008 88);
     --popover-foreground: var(--brand-ink);
-    --primary: var(--brand-red);
+    --primary: var(--brand-ink);
     --primary-foreground: var(--brand-cream);
     --secondary: var(--brand-yellow);
     --secondary-foreground: var(--brand-ink);
@@ -96,7 +98,7 @@
     --destructive-foreground: var(--brand-cream);
     --border: oklch(0.85 0.025 55);
     --input: oklch(0.85 0.025 55);
-    --ring: var(--brand-red);
+    --ring: var(--brand-ink);
     --chart-1: var(--brand-red);
     --chart-2: var(--brand-yellow);
     --chart-3: oklch(0.45 0.03 45);
@@ -105,17 +107,18 @@
     --radius: 0.75rem;
     --sidebar: oklch(0.96 0.012 88);
     --sidebar-foreground: var(--brand-ink);
-    --sidebar-primary: var(--brand-red);
+    --sidebar-primary: var(--brand-ink);
     --sidebar-primary-foreground: var(--brand-cream);
     --sidebar-accent: oklch(0.92 0.04 88);
     --sidebar-accent-foreground: var(--brand-ink);
     --sidebar-border: oklch(0.85 0.025 55);
-    --sidebar-ring: var(--brand-red);
+    --sidebar-ring: var(--brand-ink);
 }
 
 .dark {
     --brand-red: oklch(0.65 0.22 25);
     --brand-yellow: oklch(0.78 0.15 88);
+    --brand-yellow-text: oklch(0.78 0.14 88);
     --brand-cream: oklch(0.96 0.012 88);
     --brand-ink: oklch(0.14 0.03 45);
 
@@ -125,8 +128,8 @@
     --card-foreground: var(--brand-cream);
     --popover: oklch(0.18 0.035 45);
     --popover-foreground: var(--brand-cream);
-    --primary: var(--brand-red);
-    --primary-foreground: var(--brand-cream);
+    --primary: var(--brand-cream);
+    --primary-foreground: var(--brand-ink);
     --secondary: var(--brand-yellow);
     --secondary-foreground: var(--brand-ink);
     --muted: oklch(0.24 0.03 45);
@@ -137,7 +140,7 @@
     --destructive-foreground: var(--brand-cream);
     --border: oklch(0.3 0.03 45);
     --input: oklch(0.3 0.03 45);
-    --ring: var(--brand-red);
+    --ring: var(--brand-cream);
     --chart-1: var(--brand-red);
     --chart-2: var(--brand-yellow);
     --chart-3: oklch(0.72 0.03 88);
@@ -145,12 +148,12 @@
     --chart-5: oklch(0.6 0.16 35);
     --sidebar: oklch(0.16 0.03 45);
     --sidebar-foreground: var(--brand-cream);
-    --sidebar-primary: var(--brand-red);
-    --sidebar-primary-foreground: var(--brand-cream);
+    --sidebar-primary: var(--brand-cream);
+    --sidebar-primary-foreground: var(--brand-ink);
     --sidebar-accent: oklch(0.24 0.03 45);
     --sidebar-accent-foreground: var(--brand-cream);
     --sidebar-border: oklch(0.3 0.03 45);
-    --sidebar-ring: var(--brand-red);
+    --sidebar-ring: var(--brand-cream);
 }
 
 @layer base {
@@ -173,7 +176,7 @@
     }
 
     .docs-prose > :not(.not-prose) h2 {
-        @apply mt-10 mb-4 border-b-2 border-border pb-2 text-xl font-bold text-primary;
+        @apply mt-10 mb-4 border-b-2 border-border pb-2 text-xl font-bold text-foreground;
     }
 
     .docs-prose > :not(.not-prose) h3 {
@@ -206,7 +209,19 @@
     }
 
     .docs-prose > :not(.not-prose) a {
-        @apply font-medium text-primary transition-brand hover:text-primary/80 hover:underline;
+        @apply font-medium text-foreground;
+        transition-property: color, text-decoration-color, font-weight;
+        transition-duration: 200ms;
+        transition-timing-function: var(--ease-brand);
+    }
+
+    .docs-prose > :not(.not-prose) a:hover {
+        color: var(--brand-yellow-text);
+        font-weight: 600;
+        text-decoration: underline;
+        text-decoration-color: var(--brand-yellow-text);
+        text-decoration-thickness: 2px;
+        text-underline-offset: 4px;
     }
 
     .docs-prose > :not(.not-prose) code {
@@ -230,5 +245,42 @@
         .transition-brand {
             transition-duration: 0ms;
         }
+    }
+
+    .hover-docs-interactive {
+        transition-property: color, background-color, border-color, box-shadow, transform;
+        transition-duration: 200ms;
+        transition-timing-function: var(--ease-brand);
+    }
+
+    .hover-docs-interactive:hover {
+        transform: translateY(-4px);
+        border-color: var(--brand-yellow-text);
+        background-color: color-mix(in oklch, var(--brand-yellow) 8%, var(--card));
+        box-shadow: var(--shadow-brand);
+    }
+
+    .hover-docs-link {
+        transition-property: color, text-decoration-color, font-weight;
+        transition-duration: 200ms;
+        transition-timing-function: var(--ease-brand);
+    }
+
+    .hover-docs-link:hover {
+        color: var(--brand-yellow-text);
+        font-weight: 600;
+        text-decoration: underline;
+        text-decoration-color: var(--brand-yellow-text);
+        text-decoration-thickness: 2px;
+        text-underline-offset: 4px;
+    }
+
+    .group:hover .group-hover-docs-accent {
+        color: var(--brand-yellow-text);
+    }
+
+    .group:hover .group-hover-docs-bold {
+        color: var(--brand-yellow-text);
+        font-weight: 600;
     }
 }

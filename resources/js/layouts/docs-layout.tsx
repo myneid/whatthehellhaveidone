@@ -47,7 +47,7 @@ function DocsNavLinks({ onNavigate }: { onNavigate?: () => void }) {
         <div className="space-y-6">
             {sections.map((section) => (
                 <div key={section.heading}>
-                    <p className="mb-2 text-xs font-bold uppercase tracking-wider text-primary/70">
+                    <p className="mb-2 text-xs font-bold uppercase tracking-wider text-muted-foreground">
                         {section.heading}
                     </p>
                     <ul className="space-y-1">
@@ -62,8 +62,8 @@ function DocsNavLinks({ onNavigate }: { onNavigate?: () => void }) {
                                         className={cn(
                                             'block rounded-xl border-2 px-3 py-2 text-sm font-medium transition-brand',
                                             active
-                                                ? 'border-primary/30 bg-primary/10 text-primary shadow-brand-sm'
-                                                : 'border-transparent text-muted-foreground hover:border-border hover:bg-muted/50 hover:text-foreground',
+                                                ? 'border-border bg-muted text-foreground shadow-brand-sm'
+                                                : 'border-transparent text-muted-foreground transition-brand hover:border-brand-yellow-text hover:bg-brand-yellow/10 hover:font-semibold hover:text-brand-yellow-text',
                                         )}
                                     >
                                         {item.title}
@@ -95,7 +95,7 @@ export default function DocsLayout({ children }: PropsWithChildren) {
                         <SheetContent side="left" className="w-72 overflow-y-auto">
                             <SheetHeader>
                                 <SheetTitle className="flex items-center gap-2 text-left">
-                                    <BookOpen className="size-4 text-primary" />
+                                    <BookOpen className="size-4 text-foreground" />
                                     Documentation
                                 </SheetTitle>
                             </SheetHeader>
@@ -116,7 +116,7 @@ export default function DocsLayout({ children }: PropsWithChildren) {
                     <div className="hidden items-center gap-2 text-sm sm:flex">
                         <span className="text-muted-foreground">/</span>
                         <span className="flex items-center gap-1.5 font-semibold text-foreground">
-                            <BookOpen className="size-3.5 text-primary" />
+                            <BookOpen className="size-3.5 text-muted-foreground" />
                             Documentation
                         </span>
                     </div>
@@ -125,7 +125,7 @@ export default function DocsLayout({ children }: PropsWithChildren) {
                         <Button variant="ghost" size="sm" asChild>
                             <Link href={login()}>Sign in</Link>
                         </Button>
-                        <Button size="sm" asChild>
+                        <Button variant="brand" size="sm" asChild>
                             <Link href={register()}>Get started</Link>
                         </Button>
                     </div>

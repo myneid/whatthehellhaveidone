@@ -21,15 +21,15 @@ export function DocsNextSteps({ steps }: DocsNextStepsProps) {
             <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
                 {steps.map((step) => (
                     <Link key={step.href} href={step.href} className="group block">
-                        <Card className="h-full hover:-translate-y-0.5 hover:border-primary hover:shadow-brand">
+                        <Card className="hover-docs-interactive h-full">
                             <CardHeader className="gap-3">
                                 <div className="flex items-start justify-between gap-3">
                                     {step.icon && (
-                                        <step.icon className="size-5 shrink-0 text-primary transition-brand group-hover:scale-110" />
+                                        <step.icon className="size-5 shrink-0 text-muted-foreground transition-brand group-hover:scale-110 group-hover-docs-accent" />
                                     )}
-                                    <ArrowRight className="size-4 shrink-0 text-muted-foreground transition-brand group-hover:translate-x-0.5 group-hover:text-primary" />
+                                    <ArrowRight className="size-4 shrink-0 text-muted-foreground transition-brand group-hover:translate-x-1.5 group-hover-docs-accent" />
                                 </div>
-                                <CardTitle className="text-base transition-brand group-hover:text-primary">
+                                <CardTitle className="text-base transition-brand group-hover-docs-bold">
                                     {step.title}
                                 </CardTitle>
                                 <CardDescription>{step.description}</CardDescription>

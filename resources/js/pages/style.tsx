@@ -19,7 +19,7 @@ const brandColors = [
     {
         name: 'HELL Red',
         token: 'brand-red',
-        role: 'Primary actions, focus rings, links',
+        role: 'CTAs, step badges, brand accents',
         className: 'bg-brand-red',
         textClass: 'text-brand-cream',
     },
@@ -40,14 +40,15 @@ const brandColors = [
     {
         name: 'Ink',
         token: 'brand-ink',
-        role: 'Text, outlines, comic shadows',
+        role: 'Text, outlines, comic shadows, primary UI',
         className: 'bg-brand-ink',
         textClass: 'text-brand-cream',
     },
 ];
 
 const semanticColors = [
-    { name: 'Primary', className: 'bg-primary', text: 'text-primary-foreground' },
+    { name: 'Primary (Ink)', className: 'bg-primary', text: 'text-primary-foreground' },
+    { name: 'Brand CTA', className: 'bg-brand-red', text: 'text-brand-cream' },
     { name: 'Secondary', className: 'bg-secondary', text: 'text-secondary-foreground' },
     { name: 'Accent', className: 'bg-accent', text: 'text-accent-foreground' },
     { name: 'Muted', className: 'bg-muted', text: 'text-muted-foreground' },
@@ -90,7 +91,7 @@ function Swatch({
     textClass: string;
 }) {
     return (
-        <div className="overflow-hidden rounded-2xl border-2 border-border shadow-brand-sm transition-brand hover:-translate-y-0.5 hover:border-primary hover:shadow-brand">
+        <div className="overflow-hidden rounded-2xl border-2 border-border shadow-brand-sm transition-brand hover:-translate-y-0.5 hover:border-brand-red/40 hover:shadow-brand">
             <div className={`flex h-24 items-end p-4 ${className}`}>
                 <span className={`text-sm font-bold ${textClass}`}>{name}</span>
             </div>
@@ -118,7 +119,7 @@ export default function StyleGuide() {
                             />
                         </Link>
                         <div className="hidden sm:block">
-                            <p className="flex items-center gap-2 text-xs font-semibold uppercase tracking-wider text-primary">
+                            <p className="flex items-center gap-2 text-xs font-semibold uppercase tracking-wider text-muted-foreground">
                                 <Palette className="size-3.5" />
                                 Style Guide
                             </p>
@@ -130,7 +131,7 @@ export default function StyleGuide() {
                             <Button variant="outline" size="sm" asChild>
                                 <Link href={login()}>Sign in</Link>
                             </Button>
-                            <Button size="sm" asChild>
+                            <Button variant="brand" size="sm" asChild>
                                 <Link href={register()}>Get started</Link>
                             </Button>
                         </div>
@@ -139,26 +140,25 @@ export default function StyleGuide() {
 
                 <main className="mx-auto max-w-5xl space-y-12 px-6 py-10">
                     <div className="space-y-3">
-                        <div className="inline-flex items-center gap-2 rounded-full border-2 border-primary/20 bg-primary/5 px-3 py-1 text-xs font-semibold text-primary">
+                        <div className="inline-flex items-center gap-2 rounded-full border-2 border-brand-red/20 bg-brand-red/5 px-3 py-1 text-xs font-semibold text-brand-red">
                             <Sparkles className="size-3.5" />
                             Logo-driven branding
                         </div>
                         <h1 className="text-3xl font-black tracking-tight sm:text-4xl">
-                            What the <span className="text-primary">HELL</span> have i{' '}
+                            What the <span className="text-brand-red">HELL</span> have i{' '}
                             <span className="text-secondary-foreground bg-secondary px-2 rounded-lg shadow-brand-sm">
                                 DONE
                             </span>
                         </h1>
                         <p className="max-w-2xl text-muted-foreground">
-                            Comic-book energy: bold red, golden yellow, warm cream, and ink-black
-                            outlines. These tokens flow through buttons, borders, focus rings, and
-                            hover states app-wide via shadcn CSS variables.
+                            Ink carries the UI. Red and yellow are accents — saved for CTAs, the
+                            HELL word, and hover moments. Cream backgrounds keep it readable.
                         </p>
                     </div>
 
                     <Section
                         title="Brand palette"
-                        description="Core colors extracted from the logo. Use Tailwind utilities like bg-brand-red or semantic tokens like bg-primary."
+                        description="Core colors from the logo. Primary (ink) for structure; brand-red for CTAs."
                     >
                         <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
                             {brandColors.map((color) => (
@@ -185,10 +185,11 @@ export default function StyleGuide() {
 
                     <Section
                         title="Buttons"
-                        description="Primary = HELL red. Secondary = DONE yellow. Outline hovers pick up the red border."
+                        description="Default = ink. Brand = HELL red for CTAs. Outline hovers turn red."
                     >
                         <div className="flex flex-wrap gap-3">
-                            <Button>Primary (HELL)</Button>
+                            <Button>Default (Ink)</Button>
+                            <Button variant="brand">Brand (HELL)</Button>
                             <Button variant="secondary">Secondary (DONE)</Button>
                             <Button variant="outline">Outline</Button>
                             <Button variant="ghost">Ghost</Button>
@@ -229,10 +230,10 @@ export default function StyleGuide() {
 
                     <Section
                         title="Cards & borders"
-                        description="Cards use rounded-xl corners and pick up primary border color on hover."
+                        description="Cards pick up a red border tint on hover."
                     >
                         <div className="grid gap-4 sm:grid-cols-2">
-                            <Card className="hover:-translate-y-0.5 hover:border-primary hover:shadow-brand">
+                            <Card className="hover:-translate-y-0.5 hover:border-brand-red/40 hover:shadow-brand">
                                 <CardHeader>
                                     <CardTitle>Move card to Done</CardTitle>
                                     <CardDescription>
@@ -246,7 +247,9 @@ export default function StyleGuide() {
                                     </p>
                                 </CardContent>
                                 <CardFooter>
-                                    <Button size="sm">Do the thing</Button>
+                                    <Button variant="brand" size="sm">
+                                        Do the thing
+                                    </Button>
                                 </CardFooter>
                             </Card>
 
@@ -277,8 +280,8 @@ export default function StyleGuide() {
                     <Section title="Typography">
                         <div className="space-y-3 rounded-2xl border-2 border-border bg-card p-6 shadow-brand-sm">
                             <p className="text-3xl font-black">Heading — bold & punchy</p>
-                            <p className="text-lg font-semibold text-primary">
-                                Subheading in HELL red
+                            <p className="text-lg font-semibold text-foreground">
+                                Subheading in ink
                             </p>
                             <p className="text-base text-foreground">
                                 Body text on warm cream. Readable, not sterile.
@@ -286,8 +289,8 @@ export default function StyleGuide() {
                             <p className="text-sm text-muted-foreground">
                                 Muted text for descriptions and helper copy.
                             </p>
-                            <a href="#" className="text-sm font-medium text-primary transition-brand hover:text-primary/80 hover:underline">
-                                Link styled with primary red
+                            <a href="#" className="text-sm font-medium text-foreground transition-brand hover:text-brand-red hover:underline">
+                                Link — ink by default, red on hover
                             </a>
                         </div>
                     </Section>
