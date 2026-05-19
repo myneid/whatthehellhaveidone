@@ -60,10 +60,49 @@ GITHUB_REDIRECT_URL=https://your-domain.com/github/callback`}</pre>
             <h2>Create a GitHub Issue from a Card</h2>
             <p>Open a card and use the GitHub panel to create a new issue or link to an existing one.</p>
 
+            <p>
+                <Link href="/docs/github-workflow">
+                    Read the full team summary of the GitHub + board workflow →
+                </Link>
+            </p>
+
+            <h2>Column automation</h2>
+            <ol>
+                <li>
+                    On a column menu (⋯), set <strong>Create GitHub issue</strong> on your <strong>In Progress</strong> column.
+                    Moving a card there creates a linked GitHub issue when the board has a connected repository.
+                </li>
+                <li>
+                    After the move, choose <strong>GitHub Copilot</strong> or a <strong>team member</strong> (board owner or members with edit access).
+                    Team members are assigned on the board only; Copilot review is skipped for them.
+                </li>
+                <li>
+                    In board settings, choose which column receives cards when a linked pull request is opened
+                    (defaults to <strong>Review</strong> on new boards).
+                </li>
+            </ol>
+            <p>
+                Reference the issue in the PR title or body (for example <code>Fixes #12</code> or <code>#12</code>).
+                The app moves the card automatically. Copilot code review is requested only when you assigned the card to Copilot on move.
+            </p>
+
+            <h2>Webhooks and local development</h2>
+            <p>
+                Connecting a repository registers a GitHub webhook to <code>/webhooks/github</code> for{' '}
+                <code>issues</code> and <code>pull_request</code> events. GitHub must reach your app over HTTPS.
+            </p>
+            <p>For local testing:</p>
+            <ol>
+                <li>Set <code>APP_URL</code> to your public tunnel URL (not <code>localhost</code>).</li>
+                <li>Expose the app with a tunnel, for example <code>ngrok http https://whatthehellhaveidone.test</code> or Herd Share.</li>
+                <li>Run <code>php artisan queue:work</code> so webhook jobs process.</li>
+                <li>Reconnect the repository in board settings so the webhook URL is updated.</li>
+            </ol>
+
             <h2>Sync Direction</h2>
             <p>The integration supports:</p>
             <ul>
-                <li><strong>Two-way sync</strong> — changes in GitHub reflect in the board and vice versa (requires webhook setup).</li>
+                <li><strong>Two-way sync</strong> — changes in GitHub reflect in the board and vice versa (webhooks are registered automatically when you connect a repo).</li>
                 <li><strong>Import only</strong> — pull issues into the board without pushing changes back.</li>
             </ul>
         </>

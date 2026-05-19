@@ -9,6 +9,9 @@ use App\Models\Board;
 use App\Models\BoardGithubRepository;
 use App\Models\Card;
 use App\Models\GithubAccount;
+use App\Models\User;
+use App\Services\ActivityLogService;
+use App\Services\GithubCardIssueService;
 use App\Services\GitHubService;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\RedirectResponse;
@@ -77,7 +80,7 @@ class GithubController extends Controller
         return response()->json(['accounts' => $accounts]);
     }
 
-    public function connectRepository(Request $request, Board $board): RedirectResponse
+    public function connectRepository(Request $request, Board $board, GitHubService $github): RedirectResponse
     {
         $this->authorize('update', $board);
 
@@ -93,12 +96,52 @@ class GithubController extends Controller
             'sync_direction' => $request->sync_direction ?? 'two_way',
         ]);
 
-        return back()->with('success', 'Repository connected.');
+        $repository = $board->githubRepositories()->find($request->github_repository_id);
+
+        if ($repository) {
+            try {
+                $account = $github->getAccountForRepo($repository);
+                $github->ensureRepositoryWebhook(
+                    $account,
+                    $repository,
+                    route('webhooks.github'),
+                );
+            } catch (RuntimeException $e) {
+                return back()->withErrors([
+                    'github_repository_id' => "Repository connected, but webhook setup failed: {$e->getMessage()}",
+                ]);
+            }
+        }
+
+        return back()->with('success', 'Repository connected and GitHub webhook registered.');
     }
 
-    public function disconnectRepository(Request $request, Board $board, BoardGithubRepository $boardGithubRepository): RedirectResponse
-    {
+    public function disconnectRepository(
+        Request $request,
+        Board $board,
+        BoardGithubRepository $boardGithubRepository,
+        GitHubService $github,
+    ): RedirectResponse {
         $this->authorize('update', $board);
+
+        $repository = $boardGithubRepository->githubRepository;
+
+        if ($repository && $repository->webhook_id) {
+            $stillLinked = BoardGithubRepository::query()
+                ->where('github_repository_id', '=', $repository->id)
+                ->where('board_id', '!=', $board->id)
+                ->exists();
+
+            if (! $stillLinked) {
+                try {
+                    $account = $github->getAccountForRepo($repository);
+                    $github->deleteRepositoryWebhook($account, $repository);
+                } catch (RuntimeException) {
+                    // Allow disconnect even if GitHub cleanup fails.
+                }
+            }
+        }
+
         $boardGithubRepository->delete();
 
         return back();
@@ -155,6 +198,8 @@ class GithubController extends Controller
             $repo = $link->githubRepository;
             $account = $github->getAccountForRepo($repo);
             $github->assignIssueToCopilot($account, $repo, $link->issue_number);
+            $link->update(['request_copilot_review' => true]);
+            $card->assignees()->detach();
         } catch (RuntimeException $e) {
             Inertia::flash('toast', ['type' => 'error', 'message' => $e->getMessage()]);
 
@@ -162,6 +207,79 @@ class GithubController extends Controller
         }
 
         Inertia::flash('toast', ['type' => 'success', 'message' => 'Issue assigned to GitHub Copilot.']);
+
+        return back();
+    }
+
+    public function assignWork(
+        Request $request,
+        Card $card,
+        GithubCardIssueService $githubCardIssues,
+        GitHubService $github,
+        ActivityLogService $activityLog,
+    ): RedirectResponse {
+        $this->authorize('update', $card);
+
+        $validated = $request->validate([
+            'mode' => ['required', 'in:copilot,user'],
+            'user_id' => ['required_if:mode,user', 'nullable', 'exists:users,id'],
+        ]);
+
+        try {
+            $link = $githubCardIssues->ensureIssueForCardOrFail($card);
+        } catch (RuntimeException $exception) {
+            Inertia::flash('toast', ['type' => 'error', 'message' => $exception->getMessage()]);
+
+            return back();
+        }
+
+        $board = $card->board()->firstOrFail();
+
+        if ($validated['mode'] === 'user') {
+            /** @var User $assignee */
+            $assignee = User::query()->findOrFail($validated['user_id']);
+
+            if (! $board->canAssignWorkTo($assignee)) {
+                return back()->withErrors([
+                    'user_id' => 'That user cannot be assigned work on this board.',
+                ]);
+            }
+
+            $card->assignees()->sync([
+                $assignee->id => ['assigned_by' => $request->user()->id],
+            ]);
+
+            $activityLog->log(
+                $card,
+                'user_assigned',
+                new: ['user_id' => $assignee->id],
+                actor: $request->user(),
+            );
+
+            $link->update(['request_copilot_review' => false]);
+
+            Inertia::flash('toast', [
+                'type' => 'success',
+                'message' => "Work assigned to {$assignee->name}. Copilot review is disabled for this card.",
+            ]);
+
+            return back();
+        }
+
+        try {
+            $repo = $link->githubRepository;
+            $account = $github->getAccountForRepo($repo);
+            $github->assignIssueToCopilot($account, $repo, $link->issue_number);
+        } catch (RuntimeException $exception) {
+            Inertia::flash('toast', ['type' => 'error', 'message' => $exception->getMessage()]);
+
+            return back();
+        }
+
+        $link->update(['request_copilot_review' => true]);
+        $card->assignees()->detach();
+
+        Inertia::flash('toast', ['type' => 'success', 'message' => 'Work assigned to GitHub Copilot.']);
 
         return back();
     }

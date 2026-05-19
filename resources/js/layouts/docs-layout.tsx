@@ -15,6 +15,7 @@ const sections = [
         items: [
             { title: 'Projects & Boards', href: '/docs/boards' },
             { title: 'GitHub Integration', href: '/docs/github' },
+            { title: 'GitHub Board Workflow', href: '/docs/github-workflow' },
             { title: 'Discord Notifications', href: '/docs/discord' },
             { title: 'Trello Import', href: '/docs/trello-import' },
             { title: 'Work Log', href: '/docs/work-log' },

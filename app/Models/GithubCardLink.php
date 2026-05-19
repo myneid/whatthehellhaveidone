@@ -6,12 +6,13 @@ use Illuminate\Database\Eloquent\Attributes\Fillable;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
-#[Fillable(['card_id', 'github_repository_id', 'github_issue_id', 'issue_number', 'issue_url', 'issue_state', 'last_synced_source', 'last_synced_at'])]
+#[Fillable(['card_id', 'github_repository_id', 'github_issue_id', 'issue_number', 'issue_url', 'issue_state', 'request_copilot_review', 'last_synced_source', 'last_synced_at'])]
 class GithubCardLink extends Model
 {
     protected function casts(): array
     {
         return [
+            'request_copilot_review' => 'boolean',
             'last_synced_at' => 'datetime',
         ];
     }

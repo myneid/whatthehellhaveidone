@@ -4,14 +4,16 @@ namespace App\Listeners;
 
 use App\Events\CardMoved;
 use App\Models\BoardList;
-use App\Models\Card;
-use App\Models\GithubCardLink;
+use App\Services\GithubCardIssueService;
 use App\Services\GitHubService;
 use Illuminate\Contracts\Queue\ShouldQueue;
 
 class ApplyListGithubActionOnCardMove implements ShouldQueue
 {
-    public function __construct(private readonly GitHubService $github) {}
+    public function __construct(
+        private readonly GitHubService $github,
+        private readonly GithubCardIssueService $githubCardIssues,
+    ) {}
 
     public function handle(CardMoved $event): void
     {
@@ -25,7 +27,7 @@ class ApplyListGithubActionOnCardMove implements ShouldQueue
         $link = $card->githubLink;
         if (! $link) {
             if ($list->github_action === 'open_issue') {
-                $this->openNewIssue($card, $list);
+                $this->githubCardIssues->ensureIssueForCard($card);
             }
 
             return;
@@ -42,30 +44,5 @@ class ApplyListGithubActionOnCardMove implements ShouldQueue
         };
 
         $link->update(['issue_state' => $list->github_action === 'close_issue' ? 'closed' : 'open', 'last_synced_at' => now()]);
-    }
-
-    private function openNewIssue(Card $card, BoardList $list): void
-    {
-        $card->loadMissing('board');
-        $board = $card->board;
-
-        $repo = $board->githubRepositories()->first();
-        if (! $repo) {
-            return;
-        }
-
-        $account = $this->github->getAccountForRepo($repo);
-        $issue = $this->github->createIssue($account, $repo, $card->title, $card->description);
-
-        GithubCardLink::create([
-            'card_id' => $card->id,
-            'github_repository_id' => $repo->id,
-            'github_issue_id' => $issue['id'],
-            'issue_number' => $issue['number'],
-            'issue_url' => $issue['html_url'],
-            'issue_state' => $issue['state'],
-            'last_synced_source' => 'board',
-            'last_synced_at' => now(),
-        ]);
     }
 }
