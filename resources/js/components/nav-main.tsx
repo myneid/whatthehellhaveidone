@@ -7,6 +7,10 @@ import {
     LayoutGrid,
 } from 'lucide-react';
 import { useEffect, useState } from 'react';
+import {
+    Collapsible,
+    CollapsibleContent,
+} from '@/components/ui/collapsible';
 import { useCurrentUrl } from '@/hooks/use-current-url';
 import { cn } from '@/lib/utils';
 import type { NavItem, SidebarNavigation, SidebarProjectNavItem } from '@/types';
@@ -39,26 +43,37 @@ function ProjectNavItem({
     const isActive = projectIsActive(project, isCurrentUrl);
 
     return (
-        <div>
-            <button
-                type="button"
+        <Collapsible open={isOpen}>
+            <div
                 className={cn(
                     'sb-proj-row',
                     (isOpen || isActive) && 'open',
                     isActive && 'active',
                 )}
-                onClick={onToggle}
-                aria-expanded={isOpen}
             >
-                <span className="sb-proj-toggle" aria-hidden>
-                    ›
-                </span>
+                <button
+                    type="button"
+                    className="sb-proj-toggle-btn"
+                    onClick={onToggle}
+                    aria-expanded={isOpen}
+                    aria-label={`${isOpen ? 'Collapse' : 'Expand'} ${project.name}`}
+                >
+                    <span className="sb-proj-toggle" aria-hidden>
+                        ›
+                    </span>
+                </button>
                 <span className="sb-proj-pip" />
-                <span className="min-w-0 flex-1 truncate text-left">{project.name}</span>
+                <Link
+                    href={project.href}
+                    prefetch
+                    className="sb-proj-link"
+                >
+                    {project.name}
+                </Link>
                 <span className="sb-proj-meta">{projectChildCount(project)}</span>
-            </button>
+            </div>
 
-            {isOpen && (
+            <CollapsibleContent className="sb-subtree-collapsible">
                 <div className="sb-subtree">
                     <Link
                         href={project.href}
@@ -90,8 +105,8 @@ function ProjectNavItem({
                         </Link>
                     ))}
                 </div>
-            )}
-        </div>
+            </CollapsibleContent>
+        </Collapsible>
     );
 }
 
