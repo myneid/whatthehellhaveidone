@@ -23,7 +23,6 @@ import { DocsHierarchyDiagram } from '@/components/docs/docs-hierarchy-diagram';
 import { DocsNextSteps } from '@/components/docs/docs-next-steps';
 import { DocsSectionHeader } from '@/components/docs/docs-section-header';
 import { DocsStepCard } from '@/components/docs/docs-step-card';
-import { DiscordIcon } from '@/components/icons/discord-icon';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
 import DocsLayout from '@/layouts/docs-layout';
@@ -72,7 +71,7 @@ export default function DocsDiscord() {
             <div className="not-prose space-y-12">
                 <DocsHero
                     eyebrow="Integrations"
-                    eyebrowIcon={DiscordIcon}
+                    eyebrowIcon={MessageSquare}
                     title="Discord Notifications"
                     description="Get notified in a Discord channel whenever cards are created, moved, commented on, or receive attachments — one webhook per board."
                     stats={stats}
@@ -131,8 +130,8 @@ export default function DocsDiscord() {
 
                 <Card className="border-border bg-muted/30">
                     <CardContent className="flex gap-4 px-6 py-5">
-                        <div className="flex size-10 shrink-0 items-center justify-center rounded-xl border border-border bg-card text-[#5865F2]">
-                            <DiscordIcon className="size-5" />
+                        <div className="flex size-10 shrink-0 items-center justify-center rounded-xl border border-border bg-card text-indigo-500">
+                            <MessageSquare className="size-5" />
                         </div>
                         <div className="space-y-1">
                             <p className="font-semibold text-foreground">
@@ -150,7 +149,7 @@ export default function DocsDiscord() {
 
                 <section className="space-y-4">
                     <DocsSectionHeader
-                        icon={DiscordIcon}
+                        icon={Webhook}
                         title="Create a Discord webhook"
                         description="Set this up once in Discord — takes about a minute."
                     />

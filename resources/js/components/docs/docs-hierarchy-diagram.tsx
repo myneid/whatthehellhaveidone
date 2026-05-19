@@ -1,8 +1,8 @@
 import { ChevronRight } from 'lucide-react';
-import type { LucideIcon } from 'lucide-react';
+import type { ComponentType } from 'react';
 
 type HierarchyLevel = {
-    icon: LucideIcon;
+    icon: ComponentType<{ className?: string }>;
     label: string;
     description: string;
 };
