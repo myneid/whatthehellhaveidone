@@ -1,6 +1,8 @@
 import type { LucideIcon } from 'lucide-react';
+import { motion } from 'motion/react';
 import type { ReactNode } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { springReveal } from '@/lib/motion';
 import { cn } from '@/lib/utils';
 
 type DocsStepCardProps = {
@@ -23,9 +25,14 @@ export function DocsStepCard({
     highlights = [],
 }: DocsStepCardProps) {
     return (
-        <div
-            className="docs-reveal relative flex gap-5 sm:gap-6"
-            style={{ animationDelay: `${(step - 1) * 90}ms` }}
+        <motion.div
+            className="relative flex gap-5 sm:gap-6"
+            initial={{ opacity: 0, y: 14 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{
+                ...springReveal,
+                delay: (step - 1) * 0.07,
+            }}
         >
             <div className="flex flex-col items-center">
                 <span
@@ -78,6 +85,6 @@ export function DocsStepCard({
                     )}
                 </CardContent>
             </Card>
-        </div>
+        </motion.div>
     );
 }

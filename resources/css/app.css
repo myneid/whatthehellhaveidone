@@ -74,8 +74,13 @@
     --shadow-brand: 3px 3px 0 var(--brand-ink);
     --shadow-brand-sm: 2px 2px 0 var(--brand-ink);
     --shadow-brand-lg: 4px 4px 0 var(--brand-ink);
+    --shadow-brand-hover:
+        2px 2px 0 var(--brand-ink), 0 8px 24px -6px oklch(0.2 0.04 45 / 0.18);
 
-    --ease-brand: cubic-bezier(0.34, 1.2, 0.64, 1);
+    --ease-smooth: cubic-bezier(0.22, 1, 0.36, 1);
+    --ease-brand: cubic-bezier(0.22, 1, 0.36, 1);
+    --duration-smooth: 400ms;
+    --duration-fast: 200ms;
 }
 
 :root {
@@ -173,6 +178,9 @@
     --docs-border: oklch(1 0 0 / 0.06);
     --docs-glow-hover: 0 0 40px oklch(0.65 0.22 25 / 0.12);
     --docs-glow-active: 0 0 50px oklch(0.65 0.22 25 / 0.15);
+
+    --shadow-brand-hover:
+        2px 2px 0 var(--brand-cream), 0 8px 28px -6px oklch(0 0 0 / 0.45);
 }
 
 @layer base {
@@ -229,14 +237,13 @@
 
     .docs-prose > :not(.not-prose) a {
         @apply font-medium text-foreground;
-        transition-property: color, text-decoration-color, font-weight;
-        transition-duration: 200ms;
-        transition-timing-function: var(--ease-brand);
+        transition-property: color, text-decoration-color;
+        transition-duration: var(--duration-fast);
+        transition-timing-function: var(--ease-smooth);
     }
 
     .docs-prose > :not(.not-prose) a:hover {
         color: var(--brand-yellow-text);
-        font-weight: 600;
         text-decoration: underline;
         text-decoration-color: var(--brand-yellow-text);
         text-decoration-thickness: 2px;
@@ -321,11 +328,14 @@
 
     .docs-nav-item {
         @apply block rounded-xl px-3 py-2 text-sm font-medium text-muted-foreground;
-        transition: all 200ms cubic-bezier(0.22, 1, 0.36, 1);
+        transition:
+            transform var(--duration-smooth) var(--ease-smooth),
+            color var(--duration-fast) ease,
+            background-color var(--duration-fast) ease;
     }
 
     .docs-nav-item:hover {
-        transform: translateX(4px);
+        transform: translateX(2px);
         color: var(--foreground);
         background: oklch(1 0 0 / 0.04);
     }
@@ -386,28 +396,68 @@
 }
 
 @layer utilities {
+    .transition-smooth {
+        transition-property: transform, box-shadow, opacity, filter;
+        transition-duration: var(--duration-smooth);
+        transition-timing-function: var(--ease-smooth);
+    }
+
+    .transition-smooth-colors {
+        transition-property: color, background-color, border-color, box-shadow, opacity;
+        transition-duration: var(--duration-fast);
+        transition-timing-function: var(--ease-smooth);
+    }
+
+    .shadow-brand-hover {
+        box-shadow: var(--shadow-brand-hover);
+    }
+
+    .btn-smooth {
+        transition-property: transform, box-shadow, color, background-color, border-color, opacity;
+        transition-duration: var(--duration-smooth);
+        transition-timing-function: var(--ease-smooth);
+    }
+
+    .btn-smooth:hover {
+        transform: translateY(-1px);
+        box-shadow: var(--shadow-brand-hover);
+    }
+
+    .btn-smooth:active {
+        transform: translateY(0) scale(0.985);
+        transition-duration: 150ms;
+    }
+
     .transition-brand {
         transition-property: color, background-color, border-color, box-shadow, transform,
             opacity, filter;
-        transition-duration: 200ms;
-        transition-timing-function: var(--ease-brand);
+        transition-duration: var(--duration-smooth);
+        transition-timing-function: var(--ease-smooth);
     }
 
     @media (prefers-reduced-motion: reduce) {
-        .transition-brand {
+        .transition-brand,
+        .transition-smooth,
+        .transition-smooth-colors,
+        .btn-smooth {
             transition-duration: 0ms;
+        }
+
+        .btn-smooth:hover,
+        .btn-smooth:active {
+            transform: none;
         }
     }
 
     .hover-docs-interactive {
-        transition-property: color, background-color, border-color, box-shadow, transform;
-        transition-duration: 300ms;
-        transition-timing-function: cubic-bezier(0.22, 1, 0.36, 1);
+        transition-property: transform, box-shadow, background-color, border-color;
+        transition-duration: var(--duration-smooth);
+        transition-timing-function: var(--ease-smooth);
     }
 
     .hover-docs-interactive:hover {
-        transform: translateY(-4px) scale(1.01);
-        border-color: oklch(0.65 0.22 25 / 0.2);
+        transform: translateY(-2px);
+        border-color: oklch(0.65 0.22 25 / 0.15);
         background: var(--docs-surface-elevated);
         box-shadow: var(--docs-glow-hover);
     }
@@ -442,7 +492,7 @@
     @keyframes docs-fade-up {
         from {
             opacity: 0;
-            transform: translateY(20px);
+            transform: translateY(12px);
         }
 
         to {
@@ -452,7 +502,7 @@
     }
 
     .docs-reveal {
-        animation: docs-fade-up 0.55s cubic-bezier(0.22, 1, 0.36, 1) both;
+        animation: docs-fade-up 0.7s var(--ease-smooth) both;
     }
 
     @media (prefers-reduced-motion: reduce) {
@@ -470,14 +520,13 @@
     }
 
     .hover-docs-link {
-        transition-property: color, text-decoration-color, font-weight;
-        transition-duration: 200ms;
-        transition-timing-function: var(--ease-brand);
+        transition-property: color, text-decoration-color;
+        transition-duration: var(--duration-fast);
+        transition-timing-function: var(--ease-smooth);
     }
 
     .hover-docs-link:hover {
         color: var(--brand-yellow-text);
-        font-weight: 600;
         text-decoration: underline;
         text-decoration-color: var(--brand-yellow-text);
         text-decoration-thickness: 2px;
@@ -486,10 +535,11 @@
 
     .group:hover .group-hover-docs-accent {
         color: var(--brand-yellow-text);
+        transition: color var(--duration-fast) var(--ease-smooth);
     }
 
     .group:hover .group-hover-docs-bold {
         color: var(--brand-yellow-text);
-        font-weight: 600;
+        transition: color var(--duration-fast) var(--ease-smooth);
     }
 }
