@@ -1,7 +1,7 @@
 import { Head, router } from '@inertiajs/react';
+import MDEditor from '@uiw/react-md-editor';
 import { ChevronDown, ChevronRight, FileText, Github } from 'lucide-react';
 import { useState } from 'react';
-import ReactMarkdown from 'react-markdown';
 import { dashboard } from '@/routes';
 import * as projectRoutes from '@/routes/projects';
 import * as docRoutes from '@/routes/projects/documents';
@@ -156,8 +156,8 @@ export default function GithubDocsShow({ project, repository, files, selectedFil
                         {selectedFile ? (
                             <div className="mx-auto max-w-3xl px-6 py-8">
                                 <p className="mb-4 font-mono text-xs text-muted-foreground">{selectedFile.path}</p>
-                                <div className="prose prose-neutral dark:prose-invert max-w-none">
-                                    <ReactMarkdown>{selectedFile.content}</ReactMarkdown>
+                                <div className="max-w-none" data-color-mode="auto">
+                                    <MDEditor.Markdown source={selectedFile.content} style={{ backgroundColor: 'transparent' }} />
                                 </div>
                             </div>
                         ) : (

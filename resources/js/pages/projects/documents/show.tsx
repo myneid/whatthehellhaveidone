@@ -1,11 +1,11 @@
 import { Head } from '@inertiajs/react';
+import MDEditor from '@uiw/react-md-editor';
 import { Pencil } from 'lucide-react';
-import ReactMarkdown from 'react-markdown';
 import { Button } from '@/components/ui/button';
 import { dashboard } from '@/routes';
+import * as documentRoutes from '@/routes/documents';
 import * as projectRoutes from '@/routes/projects';
 import * as docRoutes from '@/routes/projects/documents';
-import * as documentRoutes from '@/routes/documents';
 import type { BreadcrumbItem } from '@/types';
 import type { Project } from '@/types/app';
 
@@ -24,7 +24,7 @@ type Props = {
     project: Project;
 };
 
-export default function DocumentShow({ document, project }: Props) {
+export default function DocumentShow({ document }: Props) {
     return (
         <>
             <Head title={document.title} />
@@ -50,9 +50,9 @@ export default function DocumentShow({ document, project }: Props) {
                     </Button>
                 </div>
 
-                <div className="prose prose-neutral dark:prose-invert max-w-none">
+                <div className="max-w-none" data-color-mode="auto">
                     {document.markdown_body
-                        ? <ReactMarkdown>{document.markdown_body}</ReactMarkdown>
+                        ? <MDEditor.Markdown source={document.markdown_body} style={{ backgroundColor: 'transparent' }} />
                         : <p className="text-muted-foreground italic">This document has no content yet.</p>}
                 </div>
             </div>
