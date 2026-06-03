@@ -16,7 +16,7 @@ class CardAttachmentController extends Controller
         $this->authorize('update', $card);
 
         $request->validate([
-            'file' => ['required', 'file', 'max:102400', 'mimes:jpeg,png,gif,webp,svg,pdf,doc,docx,xls,xlsx,txt,csv,zip,rar,7z,mov,mp4,avi,wmv,flv,mkv'],
+            'file' => ['required', 'file', 'max:1024000', 'mimes:jpeg,png,gif,webp,svg,pdf,doc,docx,xls,xlsx,txt,csv,zip,rar,7z,mov,mp4,avi,wmv,flv,mkv'],
         ]);
 
         $file = $request->file('file');
