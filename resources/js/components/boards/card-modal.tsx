@@ -357,7 +357,7 @@ function AttachmentsSection({ card }: { card: Card }) {
                     ref={fileRef}
                     type="file"
                     className="hidden"
-                    accept="image/*,.pdf,.doc,.docx,.xls,.xlsx,.txt"
+                    accept="image/*,.pdf,.doc,.docx,.xls,.xlsx,.txt,movie/*,application/zip,application/x-rar-compressed,.csv,.7z,.zip"
                     onChange={selectFile}
                 />
             </div>
