@@ -85,7 +85,7 @@ export function WorkAssigneeDialog({
                     <DialogTitle>Who should work on this?</DialogTitle>
                     <DialogDescription>
                         {card
-                            ? `Choose how "${card.title}" should be handled after moving to In Progress.`
+                            ? `Choose how "${card.title}" should be handled after moving to Review.`
                             : 'Choose who should work on this card.'}
                     </DialogDescription>
                 </DialogHeader>

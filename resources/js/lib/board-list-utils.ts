@@ -68,8 +68,11 @@ export function moveCardBetweenLists(
     return normalizeLists(movedLists);
 }
 
-export function listPromptsWorkAssignment(list: BoardList): boolean {
-    return list.github_action === 'open_issue';
+export function listPromptsWorkAssignment(
+    list: BoardList,
+    copilotDoneListId: number | null,
+): boolean {
+    return copilotDoneListId !== null && list.id === copilotDoneListId;
 }
 
 export function buildBoardListSignature(boardLists: BoardList[]): string {

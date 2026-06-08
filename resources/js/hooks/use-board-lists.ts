@@ -99,11 +99,16 @@ export function useBoardLists(board: Board) {
 
     const promptWorkAssignmentIfNeeded = useCallback(
         (cardId: number, targetList: BoardList) => {
-            if (listPromptsWorkAssignment(targetList)) {
+            if (
+                listPromptsWorkAssignment(
+                    targetList,
+                    board.copilot_done_list_id,
+                )
+            ) {
                 setPendingWorkAssignmentCardId(cardId);
             }
         },
-        [],
+        [board.copilot_done_list_id],
     );
 
     const deleteList = useCallback(
