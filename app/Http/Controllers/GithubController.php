@@ -12,6 +12,7 @@ use App\Models\GithubAccount;
 use App\Models\User;
 use App\Services\ActivityLogService;
 use App\Services\GithubCardIssueService;
+use App\Services\GithubPullRequestService;
 use App\Services\GitHubService;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\RedirectResponse;
@@ -280,6 +281,48 @@ class GithubController extends Controller
         $card->assignees()->detach();
 
         Inertia::flash('toast', ['type' => 'success', 'message' => 'Work assigned to GitHub Copilot.']);
+
+        return back();
+    }
+
+    public function resolvePullRequest(
+        Request $request,
+        Card $card,
+        GithubPullRequestService $githubPullRequests,
+    ): RedirectResponse {
+        $this->authorize('update', $card);
+
+        $validated = $request->validate([
+            'action' => ['required', 'in:close,merge'],
+        ]);
+
+        $link = $card->githubLink;
+
+        if (! $link || ! $link->pull_request_number) {
+            Inertia::flash('toast', [
+                'type' => 'error',
+                'message' => 'This card does not have a linked pull request.',
+            ]);
+
+            return back();
+        }
+
+        try {
+            $link = $validated['action'] === 'merge'
+                ? $githubPullRequests->merge($link)
+                : $githubPullRequests->close($link);
+        } catch (RuntimeException $exception) {
+            Inertia::flash('toast', ['type' => 'error', 'message' => $exception->getMessage()]);
+
+            return back();
+        }
+
+        Inertia::flash('toast', [
+            'type' => 'success',
+            'message' => $validated['action'] === 'merge'
+                ? "Pull request #{$link->pull_request_number} merged on GitHub."
+                : "Pull request #{$link->pull_request_number} closed on GitHub.",
+        ]);
 
         return back();
     }

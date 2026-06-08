@@ -34,6 +34,19 @@ class UpdateBoardRequest extends FormRequest
                         ->whereNull('archived_at');
                 }),
             ],
+            'done_list_id' => [
+                'nullable',
+                'integer',
+                Rule::exists('board_lists', 'id')->where(function ($query) use ($board) {
+                    if (! $board) {
+                        return $query->whereRaw('1 = 0');
+                    }
+
+                    return $query
+                        ->where('board_id', $board->id)
+                        ->whereNull('archived_at');
+                }),
+            ],
         ];
     }
 }

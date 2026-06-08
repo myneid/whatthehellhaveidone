@@ -78,15 +78,22 @@ export function WorkAssigneeDialog({
     const canSubmit =
         mode === 'copilot' || (mode === 'user' && userId !== '');
 
+    const prNumber = card?.github_link?.pull_request_number;
+    const cardLabel = card
+        ? prNumber
+            ? `"${card.title}" (PR #${prNumber})`
+            : `"${card.title}"`
+        : null;
+
     return (
         <Dialog open={open} onOpenChange={(isOpen) => !isOpen && handleClose()}>
             <DialogContent className="max-w-md">
                 <DialogHeader>
-                    <DialogTitle>Who should work on this?</DialogTitle>
+                    <DialogTitle>Who should review this?</DialogTitle>
                     <DialogDescription>
-                        {card
-                            ? `Choose how "${card.title}" should be handled after moving to Review.`
-                            : 'Choose who should work on this card.'}
+                        {cardLabel
+                            ? `${cardLabel} is in Review. Choose who should handle the GitHub issue and pull request.`
+                            : 'Choose who should review this card on GitHub.'}
                     </DialogDescription>
                 </DialogHeader>
 
@@ -107,8 +114,8 @@ export function WorkAssigneeDialog({
                                     GitHub Copilot
                                 </span>
                                 <span className="block text-xs text-muted-foreground">
-                                    Assigns the linked issue to GitHub Copilot and enables
-                                    automatic Copilot PR review.
+                                    Copilot takes the GitHub issue and requests automatic
+                                    code review on the pull request.
                                 </span>
                             </span>
                         </label>
@@ -128,7 +135,8 @@ export function WorkAssigneeDialog({
                                     Team member
                                 </span>
                                 <span className="block text-xs text-muted-foreground">
-                                    Assigns on the board only. Copilot review is skipped for this card.
+                                    Assigns the card to a teammate on the board. Copilot
+                                    will not review the pull request.
                                 </span>
                             </span>
                         </label>
@@ -140,7 +148,7 @@ export function WorkAssigneeDialog({
                                 htmlFor="work-assignee"
                                 className="text-xs font-medium uppercase text-muted-foreground"
                             >
-                                Assign to
+                                Assign card to
                             </label>
                             <select
                                 id="work-assignee"
@@ -157,7 +165,7 @@ export function WorkAssigneeDialog({
                             </select>
                             {assignableMembers.length === 0 && (
                                 <p className="text-xs text-muted-foreground">
-                                    Add board members (non-viewer) before assigning work.
+                                    Add board members before you can assign the card.
                                 </p>
                             )}
                         </div>
@@ -171,14 +179,14 @@ export function WorkAssigneeDialog({
                         onClick={handleClose}
                         disabled={submitting}
                     >
-                        Skip for now
+                        Not now
                     </Button>
                     <Button
                         type="button"
                         onClick={submit}
                         disabled={!canSubmit || submitting}
                     >
-                        {submitting ? 'Assigning…' : 'Confirm'}
+                        {submitting ? 'Saving…' : 'Apply'}
                     </Button>
                 </DialogFooter>
             </DialogContent>

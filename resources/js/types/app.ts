@@ -49,6 +49,7 @@ export type Board = {
     description: string | null;
     background_color: string | null;
     copilot_done_list_id: number | null;
+    done_list_id: number | null;
     visibility: 'private' | 'team' | 'public';
     archived_at: string | null;
     created_at: string;

@@ -13,7 +13,7 @@ use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Database\Eloquent\Relations\HasOne;
 use Illuminate\Support\Collection;
 
-#[Fillable(['project_id', 'owner_id', 'name', 'slug', 'description', 'visibility', 'background_color', 'copilot_done_list_id', 'archived_at'])]
+#[Fillable(['project_id', 'owner_id', 'name', 'slug', 'description', 'visibility', 'background_color', 'copilot_done_list_id', 'done_list_id', 'archived_at'])]
 class Board extends Model
 {
     /** @use HasFactory<BoardFactory> */
@@ -59,6 +59,11 @@ class Board extends Model
     public function copilotDoneList(): BelongsTo
     {
         return $this->belongsTo(BoardList::class, 'copilot_done_list_id');
+    }
+
+    public function doneList(): BelongsTo
+    {
+        return $this->belongsTo(BoardList::class, 'done_list_id');
     }
 
     public function cards(): HasMany

@@ -47,6 +47,7 @@ function GitHubSection({ board, githubAccounts }: { board: Board; githubAccounts
     const [selectedRepoId, setSelectedRepoId] = useState<number | null>(null);
     const [connecting, setConnecting] = useState(false);
     const [savingDoneList, setSavingDoneList] = useState(false);
+    const [savingCompletedList, setSavingCompletedList] = useState(false);
 
     const connectedRepos = (board.github_repositories as ConnectedRepo[] | undefined) ?? [];
     const activeAccounts = githubAccounts.filter((a) => !a.revoked_at);
@@ -95,6 +96,15 @@ function GitHubSection({ board, githubAccounts }: { board: Board; githubAccounts
         );
     }
 
+    function saveDoneList(value: string) {
+        setSavingCompletedList(true);
+        router.patch(
+            boards.update({ board: boardRouteKey }).url,
+            { done_list_id: value === 'none' ? null : Number(value) },
+            { preserveScroll: true, onFinish: () => setSavingCompletedList(false) },
+        );
+    }
+
     if (activeAccounts.length === 0) {
         return (
             <div className="space-y-2">
@@ -126,6 +136,26 @@ function GitHubSection({ board, githubAccounts }: { board: Board; githubAccounts
                     className="border-input bg-background w-full rounded-md border px-3 py-2 text-sm"
                 >
                     <option value="none">Do not move automatically</option>
+                    {activeLists.map((list: BoardList) => (
+                        <option key={list.id} value={list.id}>{list.name}</option>
+                    ))}
+                </select>
+            </div>
+
+            <div className="space-y-2 rounded-md border p-3">
+                <div>
+                    <p className="text-xs font-medium uppercase text-muted-foreground">Done column</p>
+                    <p className="mt-1 text-sm text-muted-foreground">
+                        When a card with a linked pull request is moved here, you will be asked to merge or close the pull request on GitHub.
+                    </p>
+                </div>
+                <select
+                    value={board.done_list_id ?? 'none'}
+                    onChange={(e) => saveDoneList(e.target.value)}
+                    disabled={savingCompletedList}
+                    className="border-input bg-background w-full rounded-md border px-3 py-2 text-sm"
+                >
+                    <option value="none">Do not prompt</option>
                     {activeLists.map((list: BoardList) => (
                         <option key={list.id} value={list.id}>{list.name}</option>
                     ))}

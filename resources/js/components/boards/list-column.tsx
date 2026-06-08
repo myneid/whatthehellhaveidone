@@ -130,12 +130,6 @@ export function ListColumn({
                                         <SelectItem value="close_issue">
                                             Close GitHub issue
                                         </SelectItem>
-                                        <SelectItem value="close_pull_request">
-                                            Close pull request
-                                        </SelectItem>
-                                        <SelectItem value="merge_pull_request">
-                                            Merge pull request
-                                        </SelectItem>
                                         <SelectItem value="reopen_issue">
                                             Reopen GitHub issue
                                         </SelectItem>

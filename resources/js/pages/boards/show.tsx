@@ -4,6 +4,7 @@ import { BoardHeader } from '@/components/boards/board-header';
 import { BoardKanban } from '@/components/boards/board-kanban';
 import { BoardSettingsSheet } from '@/components/boards/board-settings-sheet';
 import { CardModal } from '@/components/boards/card-modal';
+import { PullRequestActionDialog } from '@/components/boards/pull-request-action-dialog';
 import { WorkAssigneeDialog } from '@/components/boards/work-assignee-dialog';
 import type { AssignableMember } from '@/components/boards/work-assignee-dialog';
 import { useBoardDnd } from '@/hooks/use-board-dnd';
@@ -39,6 +40,10 @@ export default function BoardShow({
         pendingWorkAssignmentCardId,
         setPendingWorkAssignmentCardId,
         promptWorkAssignmentIfNeeded,
+        pendingPullRequestActionCard,
+        pendingPullRequestActionCardId,
+        setPendingPullRequestActionCardId,
+        promptPullRequestActionIfNeeded,
         reloadBoardAfterMove,
         openCard,
     } = useBoardLists(board);
@@ -54,6 +59,7 @@ export default function BoardShow({
         lists,
         updateLists,
         promptWorkAssignmentIfNeeded,
+        promptPullRequestActionIfNeeded,
         reloadBoardAfterMove,
     });
 
@@ -105,6 +111,12 @@ export default function BoardShow({
                 assignableMembers={assignableMembers}
                 open={pendingWorkAssignmentCardId !== null}
                 onClose={() => setPendingWorkAssignmentCardId(null)}
+            />
+
+            <PullRequestActionDialog
+                card={pendingPullRequestActionCard}
+                open={pendingPullRequestActionCardId !== null}
+                onClose={() => setPendingPullRequestActionCardId(null)}
             />
         </>
     );

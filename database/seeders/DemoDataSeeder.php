@@ -185,6 +185,10 @@ class DemoDataSeeder extends Seeder
             if ($name === 'Review' && $board->copilot_done_list_id === null) {
                 $board->update(['copilot_done_list_id' => $list->id]);
             }
+
+            if ($name === 'Done' && $board->done_list_id === null) {
+                $board->update(['done_list_id' => $list->id]);
+            }
         }
 
         return $listIds;

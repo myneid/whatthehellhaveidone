@@ -2,9 +2,11 @@ import { router } from '@inertiajs/react';
 import { useCallback, useMemo, useState } from 'react';
 import {
     buildBoardListSignature,
+    listPromptsPullRequestAction,
     listPromptsWorkAssignment,
     moveCardBetweenLists,
     normalizeLists,
+    resolveDoneListId,
 } from '@/lib/board-list-utils';
 import * as cardRoutes from '@/routes/cards';
 import * as listRoutes from '@/routes/lists';
@@ -29,6 +31,8 @@ export function useBoardLists(board: Board) {
     const [selectedCardId, setSelectedCardId] = useState<number | null>(null);
     const [movingCardId, setMovingCardId] = useState<number | null>(null);
     const [pendingWorkAssignmentCardId, setPendingWorkAssignmentCardId] =
+        useState<number | null>(null);
+    const [pendingPullRequestActionCardId, setPendingPullRequestActionCardId] =
         useState<number | null>(null);
 
     const lists =
@@ -61,6 +65,42 @@ export function useBoardLists(board: Board) {
 
         return null;
     }, [lists, pendingWorkAssignmentCardId]);
+
+    const pendingPullRequestActionCard = useMemo(() => {
+        if (pendingPullRequestActionCardId === null) {
+            return null;
+        }
+
+        for (const list of lists) {
+            for (const card of list.cards ?? []) {
+                if (card.id === pendingPullRequestActionCardId) {
+                    return card;
+                }
+            }
+        }
+
+        return null;
+    }, [lists, pendingPullRequestActionCardId]);
+
+    const doneListId = useMemo(
+        () => resolveDoneListId(board, lists),
+        [board, lists],
+    );
+
+    const findCardById = useCallback(
+        (cardId: number): Card | null => {
+            for (const list of lists) {
+                for (const card of list.cards ?? []) {
+                    if (card.id === cardId) {
+                        return card;
+                    }
+                }
+            }
+
+            return null;
+        },
+        [lists],
+    );
 
     const updateLists = useCallback(
         (
@@ -109,6 +149,21 @@ export function useBoardLists(board: Board) {
             }
         },
         [board.copilot_done_list_id],
+    );
+
+    const promptPullRequestActionIfNeeded = useCallback(
+        (cardId: number, targetList: BoardList) => {
+            if (
+                listPromptsPullRequestAction(
+                    targetList,
+                    doneListId,
+                    findCardById(cardId),
+                )
+            ) {
+                setPendingPullRequestActionCardId(cardId);
+            }
+        },
+        [doneListId, findCardById],
     );
 
     const deleteList = useCallback(
@@ -163,6 +218,7 @@ export function useBoardLists(board: Board) {
                     preserveScroll: true,
                     onSuccess: () => {
                         promptWorkAssignmentIfNeeded(card.id, targetList);
+                        promptPullRequestActionIfNeeded(card.id, targetList);
                         reloadBoardAfterMove();
                     },
                     onError: () => {
@@ -180,6 +236,7 @@ export function useBoardLists(board: Board) {
             lists,
             movingCardId,
             promptWorkAssignmentIfNeeded,
+            promptPullRequestActionIfNeeded,
             reloadBoardAfterMove,
             updateLists,
         ],
@@ -202,6 +259,10 @@ export function useBoardLists(board: Board) {
         pendingWorkAssignmentCardId,
         setPendingWorkAssignmentCardId,
         promptWorkAssignmentIfNeeded,
+        pendingPullRequestActionCard,
+        pendingPullRequestActionCardId,
+        setPendingPullRequestActionCardId,
+        promptPullRequestActionIfNeeded,
         reloadBoardAfterMove,
         openCard,
     };

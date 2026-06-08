@@ -75,6 +75,29 @@ export function listPromptsWorkAssignment(
     return copilotDoneListId !== null && list.id === copilotDoneListId;
 }
 
+export function resolveDoneListId(
+    board: { done_list_id: number | null },
+    lists: BoardList[],
+): number | null {
+    if (board.done_list_id !== null) {
+        return board.done_list_id;
+    }
+
+    return lists.find((list) => list.name === 'Done')?.id ?? null;
+}
+
+export function listPromptsPullRequestAction(
+    targetList: BoardList,
+    doneListId: number | null,
+    card: Card | null,
+): boolean {
+    if (doneListId === null || targetList.id !== doneListId || !card) {
+        return false;
+    }
+
+    return card.github_link?.pull_request_number != null;
+}
+
 export function buildBoardListSignature(boardLists: BoardList[]): string {
     return boardLists
         .map(

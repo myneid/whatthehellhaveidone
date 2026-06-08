@@ -8,6 +8,7 @@ use App\Models\GithubAccount;
 use App\Models\GithubCardLink;
 use App\Models\GithubRepository;
 use App\Services\GithubCardIssueService;
+use App\Services\GithubPullRequestService;
 use App\Services\GitHubService;
 use Illuminate\Contracts\Queue\ShouldQueue;
 
@@ -16,6 +17,7 @@ class ApplyListGithubActionOnCardMove implements ShouldQueue
     public function __construct(
         private readonly GitHubService $github,
         private readonly GithubCardIssueService $githubCardIssues,
+        private readonly GithubPullRequestService $githubPullRequests,
     ) {}
 
     public function handle(CardMoved $event): void
@@ -44,10 +46,18 @@ class ApplyListGithubActionOnCardMove implements ShouldQueue
         match ($list->github_action) {
             'close_issue' => $this->closeIssue($account, $repo, $link, $linkUpdates),
             'reopen_issue' => $this->reopenIssue($account, $repo, $link, $linkUpdates),
-            'close_pull_request' => $this->applyPullRequestAction($account, $repo, $link, 'close', $linkUpdates),
-            'merge_pull_request' => $this->applyPullRequestAction($account, $repo, $link, 'merge', $linkUpdates),
+            'close_pull_request' => $link->pull_request_number
+                ? $this->githubPullRequests->close($link)
+                : null,
+            'merge_pull_request' => $link->pull_request_number
+                ? $this->githubPullRequests->merge($link)
+                : null,
             default => null,
         };
+
+        if (in_array($list->github_action, ['close_pull_request', 'merge_pull_request'], true)) {
+            return;
+        }
 
         $link->update($linkUpdates);
     }
@@ -76,28 +86,5 @@ class ApplyListGithubActionOnCardMove implements ShouldQueue
     ): void {
         $this->github->updateIssue($account, $repo, $link->issue_number, ['state' => 'open']);
         $linkUpdates['issue_state'] = 'open';
-    }
-
-    /**
-     * @param  array<string, mixed>  $linkUpdates
-     */
-    private function applyPullRequestAction(
-        GithubAccount $account,
-        GithubRepository $repo,
-        GithubCardLink $link,
-        string $action,
-        array &$linkUpdates,
-    ): void {
-        if (! $link->pull_request_number) {
-            return;
-        }
-
-        $pullRequest = $action === 'merge'
-            ? $this->github->mergePullRequest($account, $repo, $link->pull_request_number)
-            : $this->github->closePullRequest($account, $repo, $link->pull_request_number);
-
-        $linkUpdates['pull_request_state'] = ($pullRequest['merged'] ?? false)
-            ? 'merged'
-            : ($pullRequest['state'] ?? ($action === 'merge' ? 'merged' : 'closed'));
     }
 }
