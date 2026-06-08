@@ -80,7 +80,13 @@ export type BoardList = {
     name: string;
     position: number;
     wip_limit: number | null;
-    github_action: 'open_issue' | 'close_issue' | 'reopen_issue' | null;
+    github_action:
+        | 'open_issue'
+        | 'close_issue'
+        | 'reopen_issue'
+        | 'close_pull_request'
+        | 'merge_pull_request'
+        | null;
     archived_at: string | null;
     created_at: string;
     updated_at: string;
@@ -182,6 +188,9 @@ export type GithubIssueLink = {
     issue_title: string;
     issue_url: string;
     state: 'open' | 'closed';
+    pull_request_number: number | null;
+    pull_request_url: string | null;
+    pull_request_state: 'open' | 'closed' | 'merged' | null;
     synced_at: string | null;
     github_repository?: GithubRepository;
 };

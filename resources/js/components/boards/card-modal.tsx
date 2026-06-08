@@ -236,7 +236,7 @@ function GitHubIssueSection({ card }: { card: Card }) {
                 </svg>
                 GitHub Issue
             </p>
-            <div className="flex items-center gap-2">
+            <div className="flex flex-wrap items-center gap-2">
                 <a
                     href={link.issue_url}
                     target="_blank"
@@ -256,6 +256,29 @@ function GitHubIssueSection({ card }: { card: Card }) {
                     </span>
                     <ExternalLink className="h-3 w-3 text-muted-foreground" />
                 </a>
+                {link.pull_request_number && (
+                    <a
+                        href={link.pull_request_url ?? '#'}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="flex items-center gap-1.5 rounded-md border px-2.5 py-1 text-sm transition-colors hover:bg-muted"
+                        onClick={(e) => e.stopPropagation()}
+                    >
+                        <span className="font-medium">
+                            PR #{link.pull_request_number}
+                        </span>
+                        <span
+                            className={`rounded-full px-2 py-0.5 text-xs font-medium capitalize ${
+                                link.pull_request_state === 'open'
+                                    ? 'bg-green-100 text-green-700'
+                                    : 'bg-purple-100 text-purple-700'
+                            }`}
+                        >
+                            {link.pull_request_state ?? 'open'}
+                        </span>
+                        <ExternalLink className="h-3 w-3 text-muted-foreground" />
+                    </a>
+                )}
                 <Button
                     size="sm"
                     variant="outline"

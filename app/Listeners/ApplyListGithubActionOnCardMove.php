@@ -4,6 +4,9 @@ namespace App\Listeners;
 
 use App\Events\CardMoved;
 use App\Models\BoardList;
+use App\Models\GithubAccount;
+use App\Models\GithubCardLink;
+use App\Models\GithubRepository;
 use App\Services\GithubCardIssueService;
 use App\Services\GitHubService;
 use Illuminate\Contracts\Queue\ShouldQueue;
@@ -36,13 +39,65 @@ class ApplyListGithubActionOnCardMove implements ShouldQueue
         $repo = $link->githubRepository;
         $account = $this->github->getAccountForRepo($repo);
 
+        $linkUpdates = ['last_synced_at' => now()];
+
         match ($list->github_action) {
-            'close_issue' => $this->github->updateIssue($account, $repo, $link->issue_number, ['state' => 'closed']),
-            'reopen_issue' => $this->github->updateIssue($account, $repo, $link->issue_number, ['state' => 'open']),
-            'open_issue' => null, // already linked, nothing to do
+            'close_issue' => $this->closeIssue($account, $repo, $link, $linkUpdates),
+            'reopen_issue' => $this->reopenIssue($account, $repo, $link, $linkUpdates),
+            'close_pull_request' => $this->applyPullRequestAction($account, $repo, $link, 'close', $linkUpdates),
+            'merge_pull_request' => $this->applyPullRequestAction($account, $repo, $link, 'merge', $linkUpdates),
             default => null,
         };
 
-        $link->update(['issue_state' => $list->github_action === 'close_issue' ? 'closed' : 'open', 'last_synced_at' => now()]);
+        $link->update($linkUpdates);
+    }
+
+    /**
+     * @param  array<string, mixed>  $linkUpdates
+     */
+    private function closeIssue(
+        GithubAccount $account,
+        GithubRepository $repo,
+        GithubCardLink $link,
+        array &$linkUpdates,
+    ): void {
+        $this->github->updateIssue($account, $repo, $link->issue_number, ['state' => 'closed']);
+        $linkUpdates['issue_state'] = 'closed';
+    }
+
+    /**
+     * @param  array<string, mixed>  $linkUpdates
+     */
+    private function reopenIssue(
+        GithubAccount $account,
+        GithubRepository $repo,
+        GithubCardLink $link,
+        array &$linkUpdates,
+    ): void {
+        $this->github->updateIssue($account, $repo, $link->issue_number, ['state' => 'open']);
+        $linkUpdates['issue_state'] = 'open';
+    }
+
+    /**
+     * @param  array<string, mixed>  $linkUpdates
+     */
+    private function applyPullRequestAction(
+        GithubAccount $account,
+        GithubRepository $repo,
+        GithubCardLink $link,
+        string $action,
+        array &$linkUpdates,
+    ): void {
+        if (! $link->pull_request_number) {
+            return;
+        }
+
+        $pullRequest = $action === 'merge'
+            ? $this->github->mergePullRequest($account, $repo, $link->pull_request_number)
+            : $this->github->closePullRequest($account, $repo, $link->pull_request_number);
+
+        $linkUpdates['pull_request_state'] = ($pullRequest['merged'] ?? false)
+            ? 'merged'
+            : ($pullRequest['state'] ?? ($action === 'merge' ? 'merged' : 'closed'));
     }
 }
