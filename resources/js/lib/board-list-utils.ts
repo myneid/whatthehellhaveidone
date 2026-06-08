@@ -68,11 +68,28 @@ export function moveCardBetweenLists(
     return normalizeLists(movedLists);
 }
 
+export type WorkAssignmentContext = 'in_progress' | 'review';
+
+export function workAssignmentContext(
+    list: BoardList,
+    copilotDoneListId: number | null,
+): WorkAssignmentContext | null {
+    if (list.github_action === 'open_issue') {
+        return 'in_progress';
+    }
+
+    if (copilotDoneListId !== null && list.id === copilotDoneListId) {
+        return 'review';
+    }
+
+    return null;
+}
+
 export function listPromptsWorkAssignment(
     list: BoardList,
     copilotDoneListId: number | null,
 ): boolean {
-    return copilotDoneListId !== null && list.id === copilotDoneListId;
+    return workAssignmentContext(list, copilotDoneListId) !== null;
 }
 
 export function resolveDoneListId(

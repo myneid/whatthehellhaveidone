@@ -38,7 +38,9 @@ export default function BoardShow({
         deleteList,
         pendingWorkAssignmentCard,
         pendingWorkAssignmentCardId,
+        pendingWorkAssignmentContext,
         setPendingWorkAssignmentCardId,
+        setPendingWorkAssignmentContext,
         promptWorkAssignmentIfNeeded,
         pendingPullRequestActionCard,
         pendingPullRequestActionCardId,
@@ -109,8 +111,12 @@ export default function BoardShow({
             <WorkAssigneeDialog
                 card={pendingWorkAssignmentCard}
                 assignableMembers={assignableMembers}
+                context={pendingWorkAssignmentContext}
                 open={pendingWorkAssignmentCardId !== null}
-                onClose={() => setPendingWorkAssignmentCardId(null)}
+                onClose={() => {
+                    setPendingWorkAssignmentCardId(null);
+                    setPendingWorkAssignmentContext(null);
+                }}
             />
 
             <PullRequestActionDialog

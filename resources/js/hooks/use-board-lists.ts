@@ -3,10 +3,11 @@ import { useCallback, useMemo, useState } from 'react';
 import {
     buildBoardListSignature,
     listPromptsPullRequestAction,
-    listPromptsWorkAssignment,
     moveCardBetweenLists,
     normalizeLists,
     resolveDoneListId,
+    workAssignmentContext,
+    type WorkAssignmentContext,
 } from '@/lib/board-list-utils';
 import * as cardRoutes from '@/routes/cards';
 import * as listRoutes from '@/routes/lists';
@@ -32,6 +33,8 @@ export function useBoardLists(board: Board) {
     const [movingCardId, setMovingCardId] = useState<number | null>(null);
     const [pendingWorkAssignmentCardId, setPendingWorkAssignmentCardId] =
         useState<number | null>(null);
+    const [pendingWorkAssignmentContext, setPendingWorkAssignmentContext] =
+        useState<WorkAssignmentContext | null>(null);
     const [pendingPullRequestActionCardId, setPendingPullRequestActionCardId] =
         useState<number | null>(null);
 
@@ -139,13 +142,14 @@ export function useBoardLists(board: Board) {
 
     const promptWorkAssignmentIfNeeded = useCallback(
         (cardId: number, targetList: BoardList) => {
-            if (
-                listPromptsWorkAssignment(
-                    targetList,
-                    board.copilot_done_list_id,
-                )
-            ) {
+            const context = workAssignmentContext(
+                targetList,
+                board.copilot_done_list_id,
+            );
+
+            if (context) {
                 setPendingWorkAssignmentCardId(cardId);
+                setPendingWorkAssignmentContext(context);
             }
         },
         [board.copilot_done_list_id],
@@ -257,7 +261,9 @@ export function useBoardLists(board: Board) {
         deleteList,
         pendingWorkAssignmentCard,
         pendingWorkAssignmentCardId,
+        pendingWorkAssignmentContext,
         setPendingWorkAssignmentCardId,
+        setPendingWorkAssignmentContext,
         promptWorkAssignmentIfNeeded,
         pendingPullRequestActionCard,
         pendingPullRequestActionCardId,

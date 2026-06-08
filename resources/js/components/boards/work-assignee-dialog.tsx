@@ -10,6 +10,7 @@ import {
     DialogHeader,
     DialogTitle,
 } from '@/components/ui/dialog';
+import type { WorkAssignmentContext } from '@/lib/board-list-utils';
 import type { Card } from '@/types/app';
 import { assignWork } from '@/actions/App/Http/Controllers/GithubController';
 
@@ -22,6 +23,7 @@ export type AssignableMember = {
 type Props = {
     card: Card | null;
     assignableMembers: AssignableMember[];
+    context: WorkAssignmentContext | null;
     open: boolean;
     onClose: () => void;
 };
@@ -29,6 +31,7 @@ type Props = {
 export function WorkAssigneeDialog({
     card,
     assignableMembers,
+    context,
     open,
     onClose,
 }: Props) {
@@ -79,22 +82,33 @@ export function WorkAssigneeDialog({
         mode === 'copilot' || (mode === 'user' && userId !== '');
 
     const prNumber = card?.github_link?.pull_request_number;
-    const cardLabel = card
-        ? prNumber
-            ? `"${card.title}" (PR #${prNumber})`
-            : `"${card.title}"`
-        : null;
+    const cardLabel = card ? `"${card.title}"` : null;
+    const isReview = context === 'review';
+    const title = isReview ? 'Who should review this?' : 'Who should work on this?';
+    const description = (() => {
+        if (!cardLabel) {
+            return isReview
+                ? 'Choose who should review this card on GitHub.'
+                : 'Choose who should work on this card on GitHub.';
+        }
+
+        if (isReview) {
+            const reviewLabel = prNumber
+                ? `${cardLabel} (PR #${prNumber})`
+                : cardLabel;
+
+            return `${reviewLabel} is in Review. Choose who should handle the GitHub issue and pull request.`;
+        }
+
+        return `${cardLabel} is in progress. Choose whether Copilot or a teammate should handle this on GitHub.`;
+    })();
 
     return (
         <Dialog open={open} onOpenChange={(isOpen) => !isOpen && handleClose()}>
             <DialogContent className="max-w-md">
                 <DialogHeader>
-                    <DialogTitle>Who should review this?</DialogTitle>
-                    <DialogDescription>
-                        {cardLabel
-                            ? `${cardLabel} is in Review. Choose who should handle the GitHub issue and pull request.`
-                            : 'Choose who should review this card on GitHub.'}
-                    </DialogDescription>
+                    <DialogTitle>{title}</DialogTitle>
+                    <DialogDescription>{description}</DialogDescription>
                 </DialogHeader>
 
                 <div className="space-y-4">
