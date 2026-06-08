@@ -1,6 +1,7 @@
 import { useForm } from '@inertiajs/react';
 import { Github } from 'lucide-react';
 import { useEffect, useMemo } from 'react';
+import { MentionTextField } from '@/components/mention-text-field';
 import { Button } from '@/components/ui/button';
 import {
     Dialog,
@@ -11,6 +12,7 @@ import {
     DialogTitle,
 } from '@/components/ui/dialog';
 import { Input } from '@/components/ui/input';
+import type { MentionableUser } from '@/hooks/use-mention-autocomplete';
 import * as cardRoutes from '@/routes/cards';
 import type { Board, BoardList, GithubRepository } from '@/types/app';
 
@@ -27,6 +29,17 @@ export function CreateCardDialog({ board, list, open, onClose }: Props) {
         [board.github_repositories],
     );
     const hasConnectedRepository = repositories.length > 0;
+    const boardMembers: MentionableUser[] = useMemo(
+        () =>
+            (board.members ?? [])
+                .map((member) => ({
+                    id: member.user?.id ?? 0,
+                    name: member.user?.name ?? '',
+                    avatar: member.user?.avatar ?? null,
+                }))
+                .filter((member) => member.id),
+        [board.members],
+    );
 
     const form = useForm({
         title: '',
@@ -126,15 +139,16 @@ export function CreateCardDialog({ board, list, open, onClose }: Props) {
                             >
                                 Description
                             </label>
-                            <textarea
+                            <MentionTextField
+                                multiline
                                 id="create-card-description"
+                                members={boardMembers}
                                 value={form.data.description}
-                                onChange={(e) =>
-                                    form.setData('description', e.target.value)
+                                onValueChange={(description) =>
+                                    form.setData('description', description)
                                 }
-                                placeholder="Optional details for the card and GitHub issue..."
+                                placeholder="Optional details... use @ to mention"
                                 rows={3}
-                                className="border-input bg-background w-full rounded-md border px-3 py-2 text-sm"
                             />
                         </div>
 

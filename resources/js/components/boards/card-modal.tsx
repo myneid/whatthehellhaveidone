@@ -14,6 +14,7 @@ import {
 } from 'lucide-react';
 import { useRef, useState } from 'react';
 import * as githubController from '@/actions/App/Http/Controllers/GithubController';
+import { MentionTextField } from '@/components/mention-text-field';
 import { Button } from '@/components/ui/button';
 import {
     Dialog,
@@ -21,7 +22,7 @@ import {
     DialogHeader,
     DialogTitle,
 } from '@/components/ui/dialog';
-import { Input } from '@/components/ui/input';
+import type { MentionableUser } from '@/hooks/use-mention-autocomplete';
 import * as attachmentRoutes from '@/routes/attachments';
 import * as cards from '@/routes/cards';
 import * as cardAttachments from '@/routes/cards/attachments';
@@ -107,7 +108,7 @@ function CommentForm({
     boardMembers,
 }: {
     cardId: number;
-    boardMembers: { id: number; name: string }[];
+    boardMembers: MentionableUser[];
 }) {
     const form = useForm({ body: '' });
 
@@ -119,29 +120,22 @@ function CommentForm({
     }
 
     return (
-        <div className="space-y-1.5">
-            <form onSubmit={submit} className="flex gap-2">
-                <Input
-                    value={form.data.body}
-                    onChange={(e) => form.setData('body', e.target.value)}
-                    placeholder="Add a comment..."
-                    className="flex-1"
-                />
-                <Button
-                    type="submit"
-                    size="sm"
-                    disabled={form.processing || !form.data.body.trim()}
-                >
-                    Post
-                </Button>
-            </form>
-            {boardMembers.length > 0 && (
-                <p className="text-xs text-muted-foreground">
-                    Mention someone with @
-                    {boardMembers.map((m) => m.name).join(', @')}
-                </p>
-            )}
-        </div>
+        <form onSubmit={submit} className="flex gap-2">
+            <MentionTextField
+                members={boardMembers}
+                value={form.data.body}
+                onValueChange={(body) => form.setData('body', body)}
+                placeholder="Add a comment... use @ to mention"
+                className="flex-1"
+            />
+            <Button
+                type="submit"
+                size="sm"
+                disabled={form.processing || !form.data.body.trim()}
+            >
+                Post
+            </Button>
+        </form>
     );
 }
 
@@ -592,8 +586,12 @@ export function CardModal({
     open,
     onClose,
 }: Props) {
-    const boardMembers = (board.members ?? [])
-        .map((m) => ({ id: m.user?.id ?? 0, name: m.user?.name ?? '' }))
+    const boardMembers: MentionableUser[] = (board.members ?? [])
+        .map((m) => ({
+            id: m.user?.id ?? 0,
+            name: m.user?.name ?? '',
+            avatar: m.user?.avatar ?? null,
+        }))
         .filter((m) => m.id);
     const [editingTitle, setEditingTitle] = useState(false);
     const [editingDesc, setEditingDesc] = useState(false);
@@ -765,13 +763,13 @@ export function CardModal({
                         </p>
                         {editingDesc ? (
                             <div className="space-y-2">
-                                <textarea
+                                <MentionTextField
+                                    multiline
+                                    members={boardMembers}
                                     value={description}
-                                    onChange={(e) =>
-                                        setDescription(e.target.value)
-                                    }
+                                    onValueChange={setDescription}
                                     rows={5}
-                                    className="w-full rounded-md border border-input bg-background px-3 py-2 text-sm"
+                                    placeholder="Add a description... use @ to mention"
                                     autoFocus
                                 />
                                 <div className="flex gap-2">
