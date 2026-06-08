@@ -75,6 +75,7 @@ Route::middleware(['auth', 'verified'])->group(function () {
     Route::post('boards/{board}/github/connect', [GithubController::class, 'connectRepository'])->name('github.connect-repository');
     Route::delete('boards/{board}/github/{boardGithubRepository}', [GithubController::class, 'disconnectRepository'])->name('github.disconnect-repository');
     Route::post('cards/{card}/github/create-issue', [GithubController::class, 'createIssue'])->name('github.create-issue');
+    Route::post('cards/{card}/github/open-issue', [GithubController::class, 'openIssue'])->name('github.open-issue');
     Route::post('cards/{card}/github/link-issue', [GithubController::class, 'linkIssue'])->name('github.link-issue');
     Route::post('cards/{card}/github/sync', [GithubController::class, 'syncCard'])->name('github.sync-card');
     Route::post('cards/{card}/github/assign-copilot', [GithubController::class, 'assignToCopilot'])->name('github.assign-copilot');

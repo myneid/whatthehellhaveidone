@@ -100,7 +100,7 @@ export function WorkAssigneeDialog({
             return `${reviewLabel} is in Review. Choose who should handle the GitHub issue and pull request.`;
         }
 
-        return `${cardLabel} is in progress. Choose whether Copilot or a teammate should handle this on GitHub.`;
+        return `${cardLabel} is in In Progress. Choose whether Copilot or a teammate should handle this on GitHub.`;
     })();
 
     return (

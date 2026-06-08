@@ -19,6 +19,8 @@ class StoreCardRequest extends FormRequest
             'description' => ['nullable', 'string'],
             'priority' => ['nullable', 'in:low,medium,high,urgent'],
             'due_at' => ['nullable', 'date'],
+            'create_github_issue' => ['sometimes', 'boolean'],
+            'github_repository_id' => ['nullable', 'integer', 'exists:github_repositories,id'],
         ];
     }
 }

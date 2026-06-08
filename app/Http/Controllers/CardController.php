@@ -11,6 +11,7 @@ use App\Models\BoardList;
 use App\Models\Card;
 use App\Models\User;
 use App\Services\ActivityLogService;
+use App\Services\GithubCardIssueService;
 use App\Services\MentionService;
 use App\Services\WorkLogService;
 use Illuminate\Http\JsonResponse;
@@ -18,6 +19,7 @@ use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Inertia\Inertia;
 use Inertia\Response;
+use RuntimeException;
 
 class CardController extends Controller
 {
@@ -27,15 +29,17 @@ class CardController extends Controller
         private readonly MentionService $mentionService,
     ) {}
 
-    public function store(StoreCardRequest $request): RedirectResponse
-    {
+    public function store(
+        StoreCardRequest $request,
+        GithubCardIssueService $githubCardIssues,
+    ): RedirectResponse {
         $list = BoardList::findOrFail($request->list_id);
         $this->authorize('create', [Card::class, $list->board]);
 
         $position = Card::where('list_id', $list->id)->whereNull('archived_at')->max('position') ?? 0;
 
         $card = Card::create([
-            ...$request->validated(),
+            ...$request->safe()->only(['list_id', 'title', 'description', 'priority', 'due_at']),
             'board_id' => $list->board_id,
             'creator_id' => $request->user()->id,
             'position' => $position + 1,
@@ -45,6 +49,25 @@ class CardController extends Controller
         $this->workLog->logCardCreated($card, $request->user());
 
         event(new CardCreated($card));
+
+        if ($request->boolean('create_github_issue')) {
+            try {
+                $link = $githubCardIssues->ensureIssueForCardOrFail(
+                    $card,
+                    $request->integer('github_repository_id') ?: null,
+                );
+
+                Inertia::flash('toast', [
+                    'type' => 'success',
+                    'message' => "Card created with GitHub issue #{$link->issue_number}.",
+                ]);
+            } catch (RuntimeException $exception) {
+                Inertia::flash('toast', [
+                    'type' => 'error',
+                    'message' => "Card created, but the GitHub issue could not be opened: {$exception->getMessage()}",
+                ]);
+            }
+        }
 
         return back();
     }

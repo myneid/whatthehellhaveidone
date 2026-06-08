@@ -81,6 +81,7 @@ function BoardKanbanStatic({
                 {lists.map((list) => (
                     <ListColumnStatic
                         key={list.id}
+                        board={board}
                         list={list}
                         onOpenCard={onOpenCard}
                         onDeleteList={onDeleteList}
@@ -121,6 +122,7 @@ function BoardKanbanInteractive({
                         {lists.map((list) => (
                             <ListColumn
                                 key={list.id}
+                                board={board}
                                 list={list}
                                 onOpenCard={onOpenCard}
                                 onDeleteList={onDeleteList}

@@ -48,6 +48,8 @@ function GitHubSection({ board, githubAccounts }: { board: Board; githubAccounts
     const [connecting, setConnecting] = useState(false);
     const [savingDoneList, setSavingDoneList] = useState(false);
     const [savingCompletedList, setSavingCompletedList] = useState(false);
+    const [savingTodoList, setSavingTodoList] = useState(false);
+    const [savingWorkStartList, setSavingWorkStartList] = useState(false);
 
     const connectedRepos = (board.github_repositories as ConnectedRepo[] | undefined) ?? [];
     const activeAccounts = githubAccounts.filter((a) => !a.revoked_at);
@@ -105,6 +107,24 @@ function GitHubSection({ board, githubAccounts }: { board: Board; githubAccounts
         );
     }
 
+    function saveTodoList(value: string) {
+        setSavingTodoList(true);
+        router.patch(
+            boards.update({ board: boardRouteKey }).url,
+            { todo_list_id: value === 'none' ? null : Number(value) },
+            { preserveScroll: true, onFinish: () => setSavingTodoList(false) },
+        );
+    }
+
+    function saveWorkStartList(value: string) {
+        setSavingWorkStartList(true);
+        router.patch(
+            boards.update({ board: boardRouteKey }).url,
+            { work_start_list_id: value === 'none' ? null : Number(value) },
+            { preserveScroll: true, onFinish: () => setSavingWorkStartList(false) },
+        );
+    }
+
     if (activeAccounts.length === 0) {
         return (
             <div className="space-y-2">
@@ -136,6 +156,46 @@ function GitHubSection({ board, githubAccounts }: { board: Board; githubAccounts
                     className="border-input bg-background w-full rounded-md border px-3 py-2 text-sm"
                 >
                     <option value="none">Do not move automatically</option>
+                    {activeLists.map((list: BoardList) => (
+                        <option key={list.id} value={list.id}>{list.name}</option>
+                    ))}
+                </select>
+            </div>
+
+            <div className="space-y-2 rounded-md border p-3">
+                <div>
+                    <p className="text-xs font-medium uppercase text-muted-foreground">To Do column</p>
+                    <p className="mt-1 text-sm text-muted-foreground">
+                        When a card without a linked issue moves here, ask whether to create a GitHub issue.
+                    </p>
+                </div>
+                <select
+                    value={board.todo_list_id ?? 'none'}
+                    onChange={(e) => saveTodoList(e.target.value)}
+                    disabled={savingTodoList}
+                    className="border-input bg-background w-full rounded-md border px-3 py-2 text-sm"
+                >
+                    <option value="none">Do not prompt</option>
+                    {activeLists.map((list: BoardList) => (
+                        <option key={list.id} value={list.id}>{list.name}</option>
+                    ))}
+                </select>
+            </div>
+
+            <div className="space-y-2 rounded-md border p-3">
+                <div>
+                    <p className="text-xs font-medium uppercase text-muted-foreground">In Progress column</p>
+                    <p className="mt-1 text-sm text-muted-foreground">
+                        When a card moves here, ask whether Copilot or a teammate should handle the work on GitHub.
+                    </p>
+                </div>
+                <select
+                    value={board.work_start_list_id ?? 'none'}
+                    onChange={(e) => saveWorkStartList(e.target.value)}
+                    disabled={savingWorkStartList}
+                    className="border-input bg-background w-full rounded-md border px-3 py-2 text-sm"
+                >
+                    <option value="none">Do not prompt</option>
                     {activeLists.map((list: BoardList) => (
                         <option key={list.id} value={list.id}>{list.name}</option>
                     ))}

@@ -2,10 +2,12 @@ import { router } from '@inertiajs/react';
 import { useCallback, useMemo, useState } from 'react';
 import {
     buildBoardListSignature,
+    listPromptsGithubIssue,
     listPromptsPullRequestAction,
     moveCardBetweenLists,
     normalizeLists,
     resolveDoneListId,
+    resolveTodoListId,
     workAssignmentContext,
     type WorkAssignmentContext,
 } from '@/lib/board-list-utils';
@@ -36,6 +38,8 @@ export function useBoardLists(board: Board) {
     const [pendingWorkAssignmentContext, setPendingWorkAssignmentContext] =
         useState<WorkAssignmentContext | null>(null);
     const [pendingPullRequestActionCardId, setPendingPullRequestActionCardId] =
+        useState<number | null>(null);
+    const [pendingGithubIssueCardId, setPendingGithubIssueCardId] =
         useState<number | null>(null);
 
     const lists =
@@ -90,6 +94,13 @@ export function useBoardLists(board: Board) {
         [board, lists],
     );
 
+    const todoListId = useMemo(
+        () => resolveTodoListId(board, lists),
+        [board, lists],
+    );
+
+    const hasConnectedRepository = (board.github_repositories?.length ?? 0) > 0;
+
     const findCardById = useCallback(
         (cardId: number): Card | null => {
             for (const list of lists) {
@@ -104,6 +115,14 @@ export function useBoardLists(board: Board) {
         },
         [lists],
     );
+
+    const pendingGithubIssueCard = useMemo(() => {
+        if (pendingGithubIssueCardId === null) {
+            return null;
+        }
+
+        return findCardById(pendingGithubIssueCardId);
+    }, [findCardById, pendingGithubIssueCardId]);
 
     const updateLists = useCallback(
         (
@@ -142,17 +161,30 @@ export function useBoardLists(board: Board) {
 
     const promptWorkAssignmentIfNeeded = useCallback(
         (cardId: number, targetList: BoardList) => {
-            const context = workAssignmentContext(
-                targetList,
-                board.copilot_done_list_id,
-            );
+            const context = workAssignmentContext(targetList, board, lists);
 
             if (context) {
                 setPendingWorkAssignmentCardId(cardId);
                 setPendingWorkAssignmentContext(context);
             }
         },
-        [board.copilot_done_list_id],
+        [board, lists],
+    );
+
+    const promptGithubIssueIfNeeded = useCallback(
+        (cardId: number, targetList: BoardList) => {
+            if (
+                listPromptsGithubIssue(
+                    targetList,
+                    todoListId,
+                    findCardById(cardId),
+                    hasConnectedRepository,
+                )
+            ) {
+                setPendingGithubIssueCardId(cardId);
+            }
+        },
+        [findCardById, hasConnectedRepository, todoListId],
     );
 
     const promptPullRequestActionIfNeeded = useCallback(
@@ -221,6 +253,7 @@ export function useBoardLists(board: Board) {
                 {
                     preserveScroll: true,
                     onSuccess: () => {
+                        promptGithubIssueIfNeeded(card.id, targetList);
                         promptWorkAssignmentIfNeeded(card.id, targetList);
                         promptPullRequestActionIfNeeded(card.id, targetList);
                         reloadBoardAfterMove();
@@ -239,6 +272,7 @@ export function useBoardLists(board: Board) {
         [
             lists,
             movingCardId,
+            promptGithubIssueIfNeeded,
             promptWorkAssignmentIfNeeded,
             promptPullRequestActionIfNeeded,
             reloadBoardAfterMove,
@@ -265,6 +299,10 @@ export function useBoardLists(board: Board) {
         setPendingWorkAssignmentCardId,
         setPendingWorkAssignmentContext,
         promptWorkAssignmentIfNeeded,
+        pendingGithubIssueCard,
+        pendingGithubIssueCardId,
+        setPendingGithubIssueCardId,
+        promptGithubIssueIfNeeded,
         pendingPullRequestActionCard,
         pendingPullRequestActionCardId,
         setPendingPullRequestActionCardId,

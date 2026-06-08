@@ -70,15 +70,48 @@ export function moveCardBetweenLists(
 
 export type WorkAssignmentContext = 'in_progress' | 'review';
 
+type BoardListRouting = {
+    copilot_done_list_id: number | null;
+    work_start_list_id: number | null;
+};
+
+export function resolveWorkStartListId(
+    board: { work_start_list_id: number | null },
+    lists: BoardList[],
+): number | null {
+    if (board.work_start_list_id !== null) {
+        return board.work_start_list_id;
+    }
+
+    return lists.find((list) => list.name === 'In Progress')?.id ?? null;
+}
+
+export function resolveTodoListId(
+    board: { todo_list_id: number | null },
+    lists: BoardList[],
+): number | null {
+    if (board.todo_list_id !== null) {
+        return board.todo_list_id;
+    }
+
+    return lists.find((list) => list.name === 'To Do')?.id ?? null;
+}
+
 export function workAssignmentContext(
     list: BoardList,
-    copilotDoneListId: number | null,
+    board: BoardListRouting,
+    lists: BoardList[],
 ): WorkAssignmentContext | null {
-    if (list.github_action === 'open_issue') {
+    const workStartListId = resolveWorkStartListId(board, lists);
+
+    if (workStartListId !== null && list.id === workStartListId) {
         return 'in_progress';
     }
 
-    if (copilotDoneListId !== null && list.id === copilotDoneListId) {
+    if (
+        board.copilot_done_list_id !== null &&
+        list.id === board.copilot_done_list_id
+    ) {
         return 'review';
     }
 
@@ -87,9 +120,28 @@ export function workAssignmentContext(
 
 export function listPromptsWorkAssignment(
     list: BoardList,
-    copilotDoneListId: number | null,
+    board: BoardListRouting,
+    lists: BoardList[],
 ): boolean {
-    return workAssignmentContext(list, copilotDoneListId) !== null;
+    return workAssignmentContext(list, board, lists) !== null;
+}
+
+export function listPromptsGithubIssue(
+    targetList: BoardList,
+    todoListId: number | null,
+    card: Card | null,
+    hasConnectedRepository: boolean,
+): boolean {
+    if (
+        !hasConnectedRepository ||
+        todoListId === null ||
+        targetList.id !== todoListId ||
+        !card
+    ) {
+        return false;
+    }
+
+    return card.github_link == null;
 }
 
 export function resolveDoneListId(

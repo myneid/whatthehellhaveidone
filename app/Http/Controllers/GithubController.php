@@ -159,6 +159,45 @@ class GithubController extends Controller
         return back()->with('success', 'GitHub issue creation queued.');
     }
 
+    public function openIssue(
+        Request $request,
+        Card $card,
+        GithubCardIssueService $githubCardIssues,
+    ): RedirectResponse {
+        $this->authorize('update', $card);
+
+        if ($card->githubLink) {
+            Inertia::flash('toast', [
+                'type' => 'info',
+                'message' => "This card is already linked to issue #{$card->githubLink->issue_number}.",
+            ]);
+
+            return back();
+        }
+
+        $validated = $request->validate([
+            'github_repository_id' => ['nullable', 'integer', 'exists:github_repositories,id'],
+        ]);
+
+        try {
+            $link = $githubCardIssues->ensureIssueForCardOrFail(
+                $card,
+                $validated['github_repository_id'] ?? null,
+            );
+        } catch (RuntimeException $exception) {
+            Inertia::flash('toast', ['type' => 'error', 'message' => $exception->getMessage()]);
+
+            return back();
+        }
+
+        Inertia::flash('toast', [
+            'type' => 'success',
+            'message' => "GitHub issue #{$link->issue_number} created and linked to this card.",
+        ]);
+
+        return back();
+    }
+
     public function linkIssue(Request $request, Card $card): RedirectResponse
     {
         $this->authorize('update', $card);

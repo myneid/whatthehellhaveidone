@@ -11,7 +11,7 @@ class GithubCardIssueService
 {
     public function __construct(private readonly GitHubService $github) {}
 
-    public function ensureIssueForCard(Card $card): ?GithubCardLink
+    public function ensureIssueForCard(Card $card, ?int $repositoryId = null): ?GithubCardLink
     {
         $card->loadMissing(['githubLink', 'board.githubRepositories']);
 
@@ -19,7 +19,15 @@ class GithubCardIssueService
             return $card->githubLink;
         }
 
-        $repo = $card->board?->githubRepositories()->first();
+        $repositories = $card->board?->githubRepositories();
+
+        if (! $repositories) {
+            return null;
+        }
+
+        $repo = $repositoryId
+            ? $repositories->where('github_repositories.id', $repositoryId)->first()
+            : $repositories->first();
 
         if (! $repo instanceof GithubRepository) {
             return null;
@@ -44,9 +52,9 @@ class GithubCardIssueService
     /**
      * @throws RuntimeException
      */
-    public function ensureIssueForCardOrFail(Card $card): GithubCardLink
+    public function ensureIssueForCardOrFail(Card $card, ?int $repositoryId = null): GithubCardLink
     {
-        $link = $this->ensureIssueForCard($card);
+        $link = $this->ensureIssueForCard($card, $repositoryId);
 
         if (! $link) {
             throw new RuntimeException('Connect a GitHub repository to this board before assigning work.');
