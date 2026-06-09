@@ -1,7 +1,7 @@
 import { router } from '@inertiajs/react';
 import { GripVertical, Plus, Settings, Trash2 } from 'lucide-react';
 import { useState } from 'react';
-import { AddCardForm } from '@/components/boards/add-card-form';
+import { CreateCardDialog } from '@/components/boards/create-card-dialog';
 import { BoardCard } from '@/components/boards/board-card';
 import { Button } from '@/components/ui/button';
 import {
@@ -17,20 +17,22 @@ import {
     SelectValue,
 } from '@/components/ui/select';
 import * as listRoutes from '@/routes/lists';
-import type { BoardList, Card } from '@/types/app';
+import type { Board, BoardList, Card } from '@/types/app';
 
 type ListColumnStaticProps = {
+    board: Board;
     list: BoardList;
     onOpenCard: (card: Card) => void;
     onDeleteList: (list: BoardList) => void;
 };
 
 export function ListColumnStatic({
+    board,
     list,
     onOpenCard,
     onDeleteList,
 }: ListColumnStaticProps) {
-    const [addingCard, setAddingCard] = useState(false);
+    const [createCardOpen, setCreateCardOpen] = useState(false);
 
     function saveGithubAction(value: string) {
         router.patch(
@@ -130,23 +132,23 @@ export function ListColumnStatic({
             </div>
 
             <div className="px-2 pb-2">
-                {addingCard ? (
-                    <AddCardForm
-                        listId={list.id}
-                        onDone={() => setAddingCard(false)}
-                    />
-                ) : (
-                    <Button
-                        variant="ghost"
-                        size="sm"
-                        className="w-full justify-start text-muted-foreground"
-                        onClick={() => setAddingCard(true)}
-                    >
-                        <Plus className="mr-1 h-4 w-4" />
-                        Add card
-                    </Button>
-                )}
+                <Button
+                    variant="ghost"
+                    size="sm"
+                    className="w-full justify-start text-muted-foreground"
+                    onClick={() => setCreateCardOpen(true)}
+                >
+                    <Plus className="mr-1 h-4 w-4" />
+                    Add card
+                </Button>
             </div>
+
+            <CreateCardDialog
+                board={board}
+                list={list}
+                open={createCardOpen}
+                onClose={() => setCreateCardOpen(false)}
+            />
         </div>
     );
 }

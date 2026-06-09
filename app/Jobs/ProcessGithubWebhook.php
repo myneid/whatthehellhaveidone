@@ -172,21 +172,40 @@ class ProcessGithubWebhook implements ShouldQueue
             return;
         }
 
-        $linkedCards->each(fn (GithubCardLink $link) => $this->moveCardToCopilotDoneList($link, $activityLog));
+        $linkedCards->each(fn (GithubCardLink $link) => $this->moveCardToCopilotDoneList(
+            $link,
+            $activityLog,
+            $pullRequest,
+        ));
 
         if ($linkedCards->contains(fn (GithubCardLink $link): bool => $link->request_copilot_review)) {
             RequestGithubCopilotReview::dispatch($this->event->githubRepository, $pullNumber);
         }
     }
 
-    private function moveCardToCopilotDoneList(GithubCardLink $link, ActivityLogService $activityLog): void
-    {
+    private function moveCardToCopilotDoneList(
+        GithubCardLink $link,
+        ActivityLogService $activityLog,
+        array $pullRequest,
+    ): void {
         $card = $link->card;
         $board = $card?->board;
         $targetList = $board?->copilotDoneList;
 
         if (! $card || ! $board || ! $targetList) {
             return;
+        }
+
+        $pullNumber = (int) ($pullRequest['number'] ?? 0);
+
+        if ($pullNumber > 0) {
+            $link->update([
+                'pull_request_number' => $pullNumber,
+                'pull_request_url' => $pullRequest['html_url'] ?? null,
+                'pull_request_state' => $pullRequest['state'] ?? 'open',
+                'last_synced_source' => 'github',
+                'last_synced_at' => now(),
+            ]);
         }
 
         if ($targetList->board_id !== $board->id || $targetList->archived_at || $card->list_id === $targetList->id) {

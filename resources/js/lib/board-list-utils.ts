@@ -68,8 +68,103 @@ export function moveCardBetweenLists(
     return normalizeLists(movedLists);
 }
 
-export function listPromptsWorkAssignment(list: BoardList): boolean {
-    return list.github_action === 'open_issue';
+export type WorkAssignmentContext = 'in_progress' | 'review';
+
+type BoardListRouting = {
+    copilot_done_list_id: number | null;
+    work_start_list_id: number | null;
+};
+
+export function resolveWorkStartListId(
+    board: { work_start_list_id: number | null },
+    lists: BoardList[],
+): number | null {
+    if (board.work_start_list_id !== null) {
+        return board.work_start_list_id;
+    }
+
+    return lists.find((list) => list.name === 'In Progress')?.id ?? null;
+}
+
+export function resolveTodoListId(
+    board: { todo_list_id: number | null },
+    lists: BoardList[],
+): number | null {
+    if (board.todo_list_id !== null) {
+        return board.todo_list_id;
+    }
+
+    return lists.find((list) => list.name === 'To Do')?.id ?? null;
+}
+
+export function workAssignmentContext(
+    list: BoardList,
+    board: BoardListRouting,
+    lists: BoardList[],
+): WorkAssignmentContext | null {
+    const workStartListId = resolveWorkStartListId(board, lists);
+
+    if (workStartListId !== null && list.id === workStartListId) {
+        return 'in_progress';
+    }
+
+    if (
+        board.copilot_done_list_id !== null &&
+        list.id === board.copilot_done_list_id
+    ) {
+        return 'review';
+    }
+
+    return null;
+}
+
+export function listPromptsWorkAssignment(
+    list: BoardList,
+    board: BoardListRouting,
+    lists: BoardList[],
+): boolean {
+    return workAssignmentContext(list, board, lists) !== null;
+}
+
+export function listPromptsGithubIssue(
+    targetList: BoardList,
+    todoListId: number | null,
+    card: Card | null,
+    hasConnectedRepository: boolean,
+): boolean {
+    if (
+        !hasConnectedRepository ||
+        todoListId === null ||
+        targetList.id !== todoListId ||
+        !card
+    ) {
+        return false;
+    }
+
+    return card.github_link == null;
+}
+
+export function resolveDoneListId(
+    board: { done_list_id: number | null },
+    lists: BoardList[],
+): number | null {
+    if (board.done_list_id !== null) {
+        return board.done_list_id;
+    }
+
+    return lists.find((list) => list.name === 'Done')?.id ?? null;
+}
+
+export function listPromptsPullRequestAction(
+    targetList: BoardList,
+    doneListId: number | null,
+    card: Card | null,
+): boolean {
+    if (doneListId === null || targetList.id !== doneListId || !card) {
+        return false;
+    }
+
+    return card.github_link?.pull_request_number != null;
 }
 
 export function buildBoardListSignature(boardLists: BoardList[]): string {
@@ -92,7 +187,7 @@ export function buildBoardListSignature(boardLists: BoardList[]): string {
                             .join('.');
 
                         const githubLinkSignature = card.github_link
-                            ? `${card.github_link.id}:${card.github_link.issue_number}:${card.github_link.state}:${card.github_link.synced_at ?? ''}`
+                            ? `${card.github_link.id}:${card.github_link.issue_number}:${card.github_link.state}:${card.github_link.pull_request_number ?? 'none'}:${card.github_link.pull_request_state ?? 'none'}:${card.github_link.synced_at ?? ''}`
                             : 'none';
 
                         return `${card.id}:${card.updated_at}:${attachmentSignature}:${commentSignature}:${githubLinkSignature}`;

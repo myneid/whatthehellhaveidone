@@ -10,6 +10,7 @@ import {
     DialogHeader,
     DialogTitle,
 } from '@/components/ui/dialog';
+import type { WorkAssignmentContext } from '@/lib/board-list-utils';
 import type { Card } from '@/types/app';
 import { assignWork } from '@/actions/App/Http/Controllers/GithubController';
 
@@ -22,6 +23,7 @@ export type AssignableMember = {
 type Props = {
     card: Card | null;
     assignableMembers: AssignableMember[];
+    context: WorkAssignmentContext | null;
     open: boolean;
     onClose: () => void;
 };
@@ -29,6 +31,7 @@ type Props = {
 export function WorkAssigneeDialog({
     card,
     assignableMembers,
+    context,
     open,
     onClose,
 }: Props) {
@@ -78,16 +81,34 @@ export function WorkAssigneeDialog({
     const canSubmit =
         mode === 'copilot' || (mode === 'user' && userId !== '');
 
+    const prNumber = card?.github_link?.pull_request_number;
+    const cardLabel = card ? `"${card.title}"` : null;
+    const isReview = context === 'review';
+    const title = isReview ? 'Who should review this?' : 'Who should work on this?';
+    const description = (() => {
+        if (!cardLabel) {
+            return isReview
+                ? 'Choose who should review this card on GitHub.'
+                : 'Choose who should work on this card on GitHub.';
+        }
+
+        if (isReview) {
+            const reviewLabel = prNumber
+                ? `${cardLabel} (PR #${prNumber})`
+                : cardLabel;
+
+            return `${reviewLabel} is in Review. Choose who should handle the GitHub issue and pull request.`;
+        }
+
+        return `${cardLabel} is in In Progress. Choose whether Copilot or a teammate should handle this on GitHub.`;
+    })();
+
     return (
         <Dialog open={open} onOpenChange={(isOpen) => !isOpen && handleClose()}>
             <DialogContent className="max-w-md">
                 <DialogHeader>
-                    <DialogTitle>Who should work on this?</DialogTitle>
-                    <DialogDescription>
-                        {card
-                            ? `Choose how "${card.title}" should be handled after moving to In Progress.`
-                            : 'Choose who should work on this card.'}
-                    </DialogDescription>
+                    <DialogTitle>{title}</DialogTitle>
+                    <DialogDescription>{description}</DialogDescription>
                 </DialogHeader>
 
                 <div className="space-y-4">
@@ -107,8 +128,8 @@ export function WorkAssigneeDialog({
                                     GitHub Copilot
                                 </span>
                                 <span className="block text-xs text-muted-foreground">
-                                    Assigns the linked issue to GitHub Copilot and enables
-                                    automatic Copilot PR review.
+                                    Copilot takes the GitHub issue and requests automatic
+                                    code review on the pull request.
                                 </span>
                             </span>
                         </label>
@@ -128,7 +149,8 @@ export function WorkAssigneeDialog({
                                     Team member
                                 </span>
                                 <span className="block text-xs text-muted-foreground">
-                                    Assigns on the board only. Copilot review is skipped for this card.
+                                    Assigns the card to a teammate on the board. Copilot
+                                    will not review the pull request.
                                 </span>
                             </span>
                         </label>
@@ -140,7 +162,7 @@ export function WorkAssigneeDialog({
                                 htmlFor="work-assignee"
                                 className="text-xs font-medium uppercase text-muted-foreground"
                             >
-                                Assign to
+                                Assign card to
                             </label>
                             <select
                                 id="work-assignee"
@@ -157,7 +179,7 @@ export function WorkAssigneeDialog({
                             </select>
                             {assignableMembers.length === 0 && (
                                 <p className="text-xs text-muted-foreground">
-                                    Add board members (non-viewer) before assigning work.
+                                    Add board members before you can assign the card.
                                 </p>
                             )}
                         </div>
@@ -171,14 +193,14 @@ export function WorkAssigneeDialog({
                         onClick={handleClose}
                         disabled={submitting}
                     >
-                        Skip for now
+                        Not now
                     </Button>
                     <Button
                         type="button"
                         onClick={submit}
                         disabled={!canSubmit || submitting}
                     >
-                        {submitting ? 'Assigning…' : 'Confirm'}
+                        {submitting ? 'Saving…' : 'Apply'}
                     </Button>
                 </DialogFooter>
             </DialogContent>

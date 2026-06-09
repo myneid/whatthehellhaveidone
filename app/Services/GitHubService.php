@@ -139,6 +139,28 @@ class GitHubService
         return $response->json();
     }
 
+    public function closePullRequest(GithubAccount $account, GithubRepository $repo, int $pullNumber): array
+    {
+        $response = $this->clientFor($account)
+            ->patch("/repos/{$repo->full_name}/pulls/{$pullNumber}", [
+                'state' => 'closed',
+            ]);
+
+        $this->assertOk($response, "close pull request #{$pullNumber}");
+
+        return $response->json();
+    }
+
+    public function mergePullRequest(GithubAccount $account, GithubRepository $repo, int $pullNumber): array
+    {
+        $response = $this->clientFor($account)
+            ->put("/repos/{$repo->full_name}/pulls/{$pullNumber}/merge");
+
+        $this->assertOk($response, "merge pull request #{$pullNumber}");
+
+        return $response->json();
+    }
+
     public function ensureRepositoryWebhook(GithubAccount $account, GithubRepository $repo, string $webhookUrl): GithubRepository
     {
         if ($repo->webhook_id && $repo->webhook_secret) {

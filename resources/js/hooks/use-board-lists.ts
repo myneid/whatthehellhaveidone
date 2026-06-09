@@ -2,9 +2,14 @@ import { router } from '@inertiajs/react';
 import { useCallback, useMemo, useState } from 'react';
 import {
     buildBoardListSignature,
-    listPromptsWorkAssignment,
+    listPromptsGithubIssue,
+    listPromptsPullRequestAction,
     moveCardBetweenLists,
     normalizeLists,
+    resolveDoneListId,
+    resolveTodoListId,
+    workAssignmentContext,
+    type WorkAssignmentContext,
 } from '@/lib/board-list-utils';
 import * as cardRoutes from '@/routes/cards';
 import * as listRoutes from '@/routes/lists';
@@ -29,6 +34,12 @@ export function useBoardLists(board: Board) {
     const [selectedCardId, setSelectedCardId] = useState<number | null>(null);
     const [movingCardId, setMovingCardId] = useState<number | null>(null);
     const [pendingWorkAssignmentCardId, setPendingWorkAssignmentCardId] =
+        useState<number | null>(null);
+    const [pendingWorkAssignmentContext, setPendingWorkAssignmentContext] =
+        useState<WorkAssignmentContext | null>(null);
+    const [pendingPullRequestActionCardId, setPendingPullRequestActionCardId] =
+        useState<number | null>(null);
+    const [pendingGithubIssueCardId, setPendingGithubIssueCardId] =
         useState<number | null>(null);
 
     const lists =
@@ -61,6 +72,57 @@ export function useBoardLists(board: Board) {
 
         return null;
     }, [lists, pendingWorkAssignmentCardId]);
+
+    const pendingPullRequestActionCard = useMemo(() => {
+        if (pendingPullRequestActionCardId === null) {
+            return null;
+        }
+
+        for (const list of lists) {
+            for (const card of list.cards ?? []) {
+                if (card.id === pendingPullRequestActionCardId) {
+                    return card;
+                }
+            }
+        }
+
+        return null;
+    }, [lists, pendingPullRequestActionCardId]);
+
+    const doneListId = useMemo(
+        () => resolveDoneListId(board, lists),
+        [board, lists],
+    );
+
+    const todoListId = useMemo(
+        () => resolveTodoListId(board, lists),
+        [board, lists],
+    );
+
+    const hasConnectedRepository = (board.github_repositories?.length ?? 0) > 0;
+
+    const findCardById = useCallback(
+        (cardId: number): Card | null => {
+            for (const list of lists) {
+                for (const card of list.cards ?? []) {
+                    if (card.id === cardId) {
+                        return card;
+                    }
+                }
+            }
+
+            return null;
+        },
+        [lists],
+    );
+
+    const pendingGithubIssueCard = useMemo(() => {
+        if (pendingGithubIssueCardId === null) {
+            return null;
+        }
+
+        return findCardById(pendingGithubIssueCardId);
+    }, [findCardById, pendingGithubIssueCardId]);
 
     const updateLists = useCallback(
         (
@@ -99,11 +161,45 @@ export function useBoardLists(board: Board) {
 
     const promptWorkAssignmentIfNeeded = useCallback(
         (cardId: number, targetList: BoardList) => {
-            if (listPromptsWorkAssignment(targetList)) {
+            const context = workAssignmentContext(targetList, board, lists);
+
+            if (context) {
                 setPendingWorkAssignmentCardId(cardId);
+                setPendingWorkAssignmentContext(context);
             }
         },
-        [],
+        [board, lists],
+    );
+
+    const promptGithubIssueIfNeeded = useCallback(
+        (cardId: number, targetList: BoardList) => {
+            if (
+                listPromptsGithubIssue(
+                    targetList,
+                    todoListId,
+                    findCardById(cardId),
+                    hasConnectedRepository,
+                )
+            ) {
+                setPendingGithubIssueCardId(cardId);
+            }
+        },
+        [findCardById, hasConnectedRepository, todoListId],
+    );
+
+    const promptPullRequestActionIfNeeded = useCallback(
+        (cardId: number, targetList: BoardList) => {
+            if (
+                listPromptsPullRequestAction(
+                    targetList,
+                    doneListId,
+                    findCardById(cardId),
+                )
+            ) {
+                setPendingPullRequestActionCardId(cardId);
+            }
+        },
+        [doneListId, findCardById],
     );
 
     const deleteList = useCallback(
@@ -157,7 +253,9 @@ export function useBoardLists(board: Board) {
                 {
                     preserveScroll: true,
                     onSuccess: () => {
+                        promptGithubIssueIfNeeded(card.id, targetList);
                         promptWorkAssignmentIfNeeded(card.id, targetList);
+                        promptPullRequestActionIfNeeded(card.id, targetList);
                         reloadBoardAfterMove();
                     },
                     onError: () => {
@@ -174,7 +272,9 @@ export function useBoardLists(board: Board) {
         [
             lists,
             movingCardId,
+            promptGithubIssueIfNeeded,
             promptWorkAssignmentIfNeeded,
+            promptPullRequestActionIfNeeded,
             reloadBoardAfterMove,
             updateLists,
         ],
@@ -195,8 +295,18 @@ export function useBoardLists(board: Board) {
         deleteList,
         pendingWorkAssignmentCard,
         pendingWorkAssignmentCardId,
+        pendingWorkAssignmentContext,
         setPendingWorkAssignmentCardId,
+        setPendingWorkAssignmentContext,
         promptWorkAssignmentIfNeeded,
+        pendingGithubIssueCard,
+        pendingGithubIssueCardId,
+        setPendingGithubIssueCardId,
+        promptGithubIssueIfNeeded,
+        pendingPullRequestActionCard,
+        pendingPullRequestActionCardId,
+        setPendingPullRequestActionCardId,
+        promptPullRequestActionIfNeeded,
         reloadBoardAfterMove,
         openCard,
     };

@@ -33,7 +33,7 @@ class BoardListController extends Controller
             'name' => ['sometimes', 'required', 'string', 'max:255'],
             'position' => ['sometimes', 'integer', 'min:1'],
             'wip_limit' => ['nullable', 'integer', 'min:1'],
-            'github_action' => ['nullable', 'in:open_issue,close_issue,reopen_issue'],
+            'github_action' => ['nullable', 'in:open_issue,close_issue,reopen_issue,close_pull_request,merge_pull_request'],
         ]);
 
         $attributes = $request->only(['name', 'wip_limit', 'github_action']);

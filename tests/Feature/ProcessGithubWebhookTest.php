@@ -93,6 +93,8 @@ it('moves a linked card to the configured review list and queues copilot review 
                 'draft' => false,
                 'title' => 'Fixes #42',
                 'body' => 'Implements the linked card work.',
+                'html_url' => 'https://github.com/octo-org/octo-repo/pull/9',
+                'state' => 'open',
                 'head' => ['ref' => '42-webhook-flow'],
                 'user' => ['login' => 'octocat'],
             ],
@@ -101,9 +103,14 @@ it('moves a linked card to the configured review list and queues copilot review 
 
     (new ProcessGithubWebhook($event))->handle(app(ActivityLogService::class), app(GithubPullRequestIssueMatcher::class));
 
+    $link = GithubCardLink::query()->where('card_id', $card->id)->first();
+
     expect($card->fresh()->list_id)->toBe($review->id)
         ->and($event->fresh()->processed_at)->not()->toBeNull()
-        ->and($card->activityLogs()->where('event_type', 'card_moved')->exists())->toBeTrue();
+        ->and($card->activityLogs()->where('event_type', 'card_moved')->exists())->toBeTrue()
+        ->and($link?->pull_request_number)->toBe(9)
+        ->and($link?->pull_request_url)->toBe('https://github.com/octo-org/octo-repo/pull/9')
+        ->and($link?->pull_request_state)->toBe('open');
 
     Bus::assertDispatched(RequestGithubCopilotReview::class, function (RequestGithubCopilotReview $job) use ($repository): bool {
         return $job->repository->is($repository) && $job->pullNumber === 9;

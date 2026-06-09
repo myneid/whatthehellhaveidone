@@ -4,6 +4,8 @@ import { BoardHeader } from '@/components/boards/board-header';
 import { BoardKanban } from '@/components/boards/board-kanban';
 import { BoardSettingsSheet } from '@/components/boards/board-settings-sheet';
 import { CardModal } from '@/components/boards/card-modal';
+import { GithubIssueDialog } from '@/components/boards/github-issue-dialog';
+import { PullRequestActionDialog } from '@/components/boards/pull-request-action-dialog';
 import { WorkAssigneeDialog } from '@/components/boards/work-assignee-dialog';
 import type { AssignableMember } from '@/components/boards/work-assignee-dialog';
 import { useBoardDnd } from '@/hooks/use-board-dnd';
@@ -37,8 +39,18 @@ export default function BoardShow({
         deleteList,
         pendingWorkAssignmentCard,
         pendingWorkAssignmentCardId,
+        pendingWorkAssignmentContext,
         setPendingWorkAssignmentCardId,
+        setPendingWorkAssignmentContext,
         promptWorkAssignmentIfNeeded,
+        pendingGithubIssueCard,
+        pendingGithubIssueCardId,
+        setPendingGithubIssueCardId,
+        promptGithubIssueIfNeeded,
+        pendingPullRequestActionCard,
+        pendingPullRequestActionCardId,
+        setPendingPullRequestActionCardId,
+        promptPullRequestActionIfNeeded,
         reloadBoardAfterMove,
         openCard,
     } = useBoardLists(board);
@@ -54,6 +66,8 @@ export default function BoardShow({
         lists,
         updateLists,
         promptWorkAssignmentIfNeeded,
+        promptGithubIssueIfNeeded,
+        promptPullRequestActionIfNeeded,
         reloadBoardAfterMove,
     });
 
@@ -100,11 +114,28 @@ export default function BoardShow({
                 onClose={() => setShowSettings(false)}
             />
 
+            <GithubIssueDialog
+                card={pendingGithubIssueCard}
+                board={board}
+                open={pendingGithubIssueCardId !== null}
+                onClose={() => setPendingGithubIssueCardId(null)}
+            />
+
             <WorkAssigneeDialog
                 card={pendingWorkAssignmentCard}
                 assignableMembers={assignableMembers}
+                context={pendingWorkAssignmentContext}
                 open={pendingWorkAssignmentCardId !== null}
-                onClose={() => setPendingWorkAssignmentCardId(null)}
+                onClose={() => {
+                    setPendingWorkAssignmentCardId(null);
+                    setPendingWorkAssignmentContext(null);
+                }}
+            />
+
+            <PullRequestActionDialog
+                card={pendingPullRequestActionCard}
+                open={pendingPullRequestActionCardId !== null}
+                onClose={() => setPendingPullRequestActionCardId(null)}
             />
         </>
     );
