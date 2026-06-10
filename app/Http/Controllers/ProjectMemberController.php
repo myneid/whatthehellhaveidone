@@ -7,6 +7,7 @@ use App\Models\Invitation;
 use App\Models\Project;
 use App\Models\ProjectMember;
 use App\Models\User;
+use App\Services\ProjectInvitationReconciliationService;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Mail;
@@ -14,6 +15,10 @@ use Illuminate\Support\Str;
 
 class ProjectMemberController extends Controller
 {
+    public function __construct(
+        private readonly ProjectInvitationReconciliationService $invitationReconciliation,
+    ) {}
+
     public function store(Request $request, Project $project): RedirectResponse
     {
         $this->authorize('update', $project);
@@ -33,6 +38,8 @@ class ProjectMemberController extends Controller
                 ->exists();
 
             if ($alreadyMember) {
+                $this->invitationReconciliation->reconcile($project);
+
                 return back()->withErrors(['email' => 'This user is already a member of this project.']);
             }
 
@@ -41,6 +48,8 @@ class ProjectMemberController extends Controller
                 'user_id' => $user->id,
                 'role' => $request->role,
             ]);
+
+            $this->invitationReconciliation->reconcile($project);
 
             return back()->with('success', "{$user->name} has been added to the project.");
         }
@@ -86,6 +95,18 @@ class ProjectMemberController extends Controller
         $this->queueInvitation($invitation);
 
         return back()->with('success', "Invitation resent to {$invitation->email}.");
+    }
+
+    public function destroyInvitation(Request $request, Project $project, Invitation $invitation): RedirectResponse
+    {
+        $this->authorize('update', $project);
+
+        abort_unless($invitation->project_id === $project->id && is_null($invitation->accepted_at), 404);
+
+        $email = $invitation->email;
+        $invitation->delete();
+
+        return back()->with('success', "Invitation for {$email} has been cancelled.");
     }
 
     public function update(Request $request, ProjectMember $projectMember): RedirectResponse

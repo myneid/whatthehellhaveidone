@@ -53,6 +53,8 @@ Route::middleware(['auth', 'verified'])->group(function () {
     Route::resource('projects.members', ProjectMemberController::class)->shallow();
     Route::post('projects/{project}/invitations/{invitation}/resend', [ProjectMemberController::class, 'resend'])
         ->name('projects.invitations.resend');
+    Route::delete('projects/{project}/invitations/{invitation}', [ProjectMemberController::class, 'destroyInvitation'])
+        ->name('projects.invitations.destroy');
 
     // Standalone Boards
     Route::resource('boards', BoardController::class);

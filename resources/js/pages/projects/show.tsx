@@ -25,6 +25,10 @@ function projectInvitationResendUrl(projectId: number, invitationId: number): st
     return `/projects/${projectId}/invitations/${invitationId}/resend`;
 }
 
+function projectInvitationCancelUrl(projectId: number, invitationId: number): string {
+    return `/projects/${projectId}/invitations/${invitationId}`;
+}
+
 function CreateBoardDialog({ open, onClose, projectId }: { open: boolean; onClose: () => void; projectId: number }) {
     const form = useForm({ name: '', description: '', visibility: 'team', project_id: projectId });
 
@@ -117,6 +121,7 @@ function InviteMemberForm({ project }: { project: Project }) {
 function PendingInvitations({ project }: { project: Project }) {
     const [copiedText, copy] = useClipboard();
     const [resendingInvitationId, setResendingInvitationId] = useState<number | null>(null);
+    const [cancellingInvitationId, setCancellingInvitationId] = useState<number | null>(null);
 
     function resendInvitation(invitation: ProjectInvitation) {
         router.post(
@@ -130,6 +135,14 @@ function PendingInvitations({ project }: { project: Project }) {
         );
     }
 
+    function cancelInvitation(invitation: ProjectInvitation) {
+        router.delete(projectInvitationCancelUrl(project.id, invitation.id), {
+            preserveScroll: true,
+            onStart: () => setCancellingInvitationId(invitation.id),
+            onFinish: () => setCancellingInvitationId(null),
+        });
+    }
+
     if ((project.invitations?.length ?? 0) === 0) {
         return null;
     }
@@ -139,7 +152,7 @@ function PendingInvitations({ project }: { project: Project }) {
             <div className="flex items-center justify-between gap-3">
                 <div>
                     <h3 className="text-sm font-semibold">Pending invitations</h3>
-                    <p className="text-xs text-muted-foreground">See who has been invited, resend the email, or copy their invite link.</p>
+                    <p className="text-xs text-muted-foreground">See who has been invited, resend the email, copy their invite link, or cancel the invitation.</p>
                 </div>
                 <span className="rounded-full bg-muted px-2 py-1 text-xs text-muted-foreground">
                     {project.invitations?.length} pending
@@ -150,6 +163,7 @@ function PendingInvitations({ project }: { project: Project }) {
                 {project.invitations?.map((invitation) => {
                     const copied = copiedText === invitation.accept_url;
                     const isResending = resendingInvitationId === invitation.id;
+                    const isCancelling = cancellingInvitationId === invitation.id;
 
                     return (
                         <div key={invitation.id} className="flex flex-col gap-3 rounded-lg border px-4 py-3 sm:flex-row sm:items-center sm:justify-between">
@@ -193,11 +207,22 @@ function PendingInvitations({ project }: { project: Project }) {
                                     type="button"
                                     size="sm"
                                     variant="outline"
-                                    disabled={isResending}
+                                    disabled={isResending || isCancelling}
                                     onClick={() => resendInvitation(invitation)}
                                 >
                                     <RefreshCw className={`mr-1.5 h-4 w-4 ${isResending ? 'animate-spin' : ''}`} />
                                     {isResending ? 'Resending...' : 'Resend'}
+                                </Button>
+                                <Button
+                                    type="button"
+                                    size="sm"
+                                    variant="ghost"
+                                    className="text-muted-foreground hover:text-destructive"
+                                    disabled={isResending || isCancelling}
+                                    onClick={() => cancelInvitation(invitation)}
+                                >
+                                    <Trash2 className={`mr-1.5 h-4 w-4 ${isCancelling ? 'animate-pulse' : ''}`} />
+                                    {isCancelling ? 'Cancelling...' : 'Cancel'}
                                 </Button>
                             </div>
                         </div>

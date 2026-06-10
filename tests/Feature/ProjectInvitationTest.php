@@ -85,3 +85,68 @@ test('project owners can resend pending invitations', function () {
         return $mail->hasTo($invitation->email) && $mail->invitation->is($invitation);
     });
 });
+
+test('project owners can cancel pending invitations', function () {
+    $owner = User::factory()->create();
+    $project = Project::create([
+        'owner_id' => $owner->id,
+        'name' => 'Cancel Project',
+        'slug' => 'cancel-project',
+    ]);
+
+    $project->members()->create([
+        'user_id' => $owner->id,
+        'role' => 'owner',
+    ]);
+
+    $invitation = Invitation::create([
+        'project_id' => $project->id,
+        'invited_by' => $owner->id,
+        'email' => 'invitee@example.com',
+        'role' => 'member',
+        'token' => 'cancel-me-token',
+        'expires_at' => now()->addDays(3),
+    ]);
+
+    actingAs($owner)
+        ->delete(route('projects.invitations.destroy', ['project' => $project, 'invitation' => $invitation]))
+        ->assertRedirect()
+        ->assertSessionHas('success', 'Invitation for invitee@example.com has been cancelled.');
+
+    expect(Invitation::query()->find($invitation->id))->toBeNull();
+});
+
+test('members cannot cancel pending invitations', function () {
+    $owner = User::factory()->create();
+    $member = User::factory()->create();
+    $project = Project::create([
+        'owner_id' => $owner->id,
+        'name' => 'Protected Project',
+        'slug' => 'protected-project',
+    ]);
+
+    $project->members()->create([
+        'user_id' => $owner->id,
+        'role' => 'owner',
+    ]);
+
+    $project->members()->create([
+        'user_id' => $member->id,
+        'role' => 'member',
+    ]);
+
+    $invitation = Invitation::create([
+        'project_id' => $project->id,
+        'invited_by' => $owner->id,
+        'email' => 'invitee@example.com',
+        'role' => 'member',
+        'token' => 'protected-token',
+        'expires_at' => now()->addDays(3),
+    ]);
+
+    actingAs($member)
+        ->delete(route('projects.invitations.destroy', ['project' => $project, 'invitation' => $invitation]))
+        ->assertForbidden();
+
+    expect(Invitation::query()->find($invitation->id))->not->toBeNull();
+});

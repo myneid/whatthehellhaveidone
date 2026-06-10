@@ -44,6 +44,7 @@ type Props = {
     card: Card;
     board: Board;
     lists: BoardList[];
+    mentionableMembers: MentionableUser[];
     isMoving: boolean;
     onMoveToList: (list: BoardList) => void;
     open: boolean;
@@ -727,6 +728,7 @@ export function CardModal({
     card,
     board,
     lists,
+    mentionableMembers,
     isMoving,
     onMoveToList,
     open,
@@ -735,13 +737,6 @@ export function CardModal({
     const { auth } = usePage().props;
     const currentUserId = auth.user?.id;
     const isSuperAdmin = Boolean(auth.user?.is_super_admin);
-    const boardMembers: MentionableUser[] = (board.members ?? [])
-        .map((m) => ({
-            id: m.user?.id ?? 0,
-            name: m.user?.name ?? '',
-            avatar: m.user?.avatar ?? null,
-        }))
-        .filter((m) => m.id);
     const [editingTitle, setEditingTitle] = useState(false);
     const [editingDesc, setEditingDesc] = useState(false);
     const [title, setTitle] = useState(card.title);
@@ -908,7 +903,7 @@ export function CardModal({
                             <div className="space-y-2">
                                 <MentionTextField
                                     multiline
-                                    members={boardMembers}
+                                    members={mentionableMembers}
                                     value={description}
                                     onValueChange={setDescription}
                                     rows={5}
@@ -1013,14 +1008,14 @@ export function CardModal({
                         </p>
                         <CommentForm
                             cardId={card.id}
-                            boardMembers={boardMembers}
+                            boardMembers={mentionableMembers}
                         />
                         <div className="mt-3 space-y-3">
                             {card.comments?.map((comment) => (
                                 <CommentItem
                                     key={comment.id}
                                     comment={comment}
-                                    boardMembers={boardMembers}
+                                    boardMembers={mentionableMembers}
                                     currentUserId={currentUserId}
                                     isSuperAdmin={isSuperAdmin}
                                 />

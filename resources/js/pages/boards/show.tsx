@@ -10,6 +10,7 @@ import { WorkAssigneeDialog } from '@/components/boards/work-assignee-dialog';
 import type { AssignableMember } from '@/components/boards/work-assignee-dialog';
 import { useBoardDnd } from '@/hooks/use-board-dnd';
 import { useBoardLists } from '@/hooks/use-board-lists';
+import type { MentionableUser } from '@/hooks/use-mention-autocomplete';
 import { dashboard } from '@/routes';
 import * as boardRoutes from '@/routes/boards';
 import * as projectRoutes from '@/routes/projects';
@@ -20,12 +21,14 @@ type Props = {
     board: Board;
     githubAccounts: GithubAccount[];
     assignableMembers: AssignableMember[];
+    mentionableMembers: MentionableUser[];
 };
 
 export default function BoardShow({
     board,
     githubAccounts,
     assignableMembers,
+    mentionableMembers,
 }: Props) {
     const [showSettings, setShowSettings] = useState(false);
 
@@ -84,6 +87,7 @@ export default function BoardShow({
                 <BoardKanban
                     board={board}
                     lists={lists}
+                    mentionableMembers={mentionableMembers}
                     sensors={sensors}
                     activeCard={activeCard}
                     ignoreCardClickRef={ignoreCardClickRef}
@@ -100,6 +104,7 @@ export default function BoardShow({
                     card={selectedCard}
                     board={board}
                     lists={lists}
+                    mentionableMembers={mentionableMembers}
                     isMoving={movingCardId === selectedCard.id}
                     onMoveToList={(list) => moveCardToList(selectedCard, list)}
                     open={!!selectedCard}
