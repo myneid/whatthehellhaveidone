@@ -7,10 +7,12 @@ use App\Models\Card;
 use App\Models\GithubAccount;
 use App\Models\GithubCardLink;
 use App\Models\GithubRepository;
+use App\Models\Project;
 use App\Models\User;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\Crypt;
 use Illuminate\Support\Facades\Http;
+use Inertia\Testing\AssertableInertia as Assert;
 
 use function Pest\Laravel\actingAs;
 
@@ -208,4 +210,81 @@ it('rejects assigning work to a user who is not on the board', function (): void
             'user_id' => $outsider->id,
         ])
         ->assertSessionHasErrors('user_id');
+});
+
+it('includes project members in assignable members for team boards', function (): void {
+    $owner = User::factory()->create();
+    $projectMember = User::factory()->create(['name' => 'Project Teammate']);
+
+    $project = Project::create([
+        'owner_id' => $owner->id,
+        'name' => 'Apollo',
+        'slug' => 'apollo-assignable',
+    ]);
+
+    $project->members()->create(['user_id' => $owner->id, 'role' => 'owner']);
+    $project->members()->create(['user_id' => $projectMember->id, 'role' => 'member']);
+
+    $board = Board::create([
+        'project_id' => $project->id,
+        'owner_id' => $owner->id,
+        'name' => 'Sprint Board',
+        'slug' => 'sprint-board-assignable',
+        'visibility' => 'team',
+    ]);
+
+    BoardMember::create([
+        'board_id' => $board->id,
+        'user_id' => $owner->id,
+        'role' => 'admin',
+    ]);
+
+    actingAs($projectMember)
+        ->get(route('boards.show', $board))
+        ->assertOk()
+        ->assertInertia(fn (Assert $page) => $page
+            ->component('boards/show')
+            ->where('assignableMembers', fn ($members) => collect($members)->contains(
+                fn ($member) => $member['id'] === $projectMember->id && $member['name'] === 'Project Teammate',
+            )),
+        );
+});
+
+it('assigns work to a project member who is not a board member', function (): void {
+    Http::fake([
+        'https://api.github.com/repos/octo-org/octo-repo/issues' => Http::response([
+            'id' => 999,
+            'number' => 12,
+            'html_url' => 'https://github.com/octo-org/octo-repo/issues/12',
+            'state' => 'open',
+        ], 201),
+    ]);
+
+    $owner = User::factory()->create();
+    $projectMember = User::factory()->create(['name' => 'Project Teammate']);
+
+    $project = Project::create([
+        'owner_id' => $owner->id,
+        'name' => 'Apollo',
+        'slug' => 'apollo-assign-work',
+    ]);
+
+    $project->members()->create(['user_id' => $owner->id, 'role' => 'owner']);
+    $project->members()->create(['user_id' => $projectMember->id, 'role' => 'member']);
+
+    [$board, $card] = createBoardWithGithubLink($owner);
+
+    $board->update([
+        'project_id' => $project->id,
+        'visibility' => 'team',
+    ]);
+
+    actingAs($projectMember)
+        ->post(route('github.assign-work', $card), [
+            'mode' => 'user',
+            'user_id' => $projectMember->id,
+        ])
+        ->assertRedirect();
+
+    expect($card->fresh()->assignees->first()?->id)->toBe($projectMember->id);
 });

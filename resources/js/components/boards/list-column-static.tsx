@@ -17,11 +17,13 @@ import {
     SelectValue,
 } from '@/components/ui/select';
 import * as listRoutes from '@/routes/lists';
+import type { MentionableUser } from '@/hooks/use-mention-autocomplete';
 import type { Board, BoardList, Card } from '@/types/app';
 
 type ListColumnStaticProps = {
     board: Board;
     list: BoardList;
+    mentionableMembers: MentionableUser[];
     onOpenCard: (card: Card) => void;
     onDeleteList: (list: BoardList) => void;
 };
@@ -29,6 +31,7 @@ type ListColumnStaticProps = {
 export function ListColumnStatic({
     board,
     list,
+    mentionableMembers,
     onOpenCard,
     onDeleteList,
 }: ListColumnStaticProps) {
@@ -146,6 +149,7 @@ export function ListColumnStatic({
             <CreateCardDialog
                 board={board}
                 list={list}
+                mentionableMembers={mentionableMembers}
                 open={createCardOpen}
                 onClose={() => setCreateCardOpen(false)}
             />

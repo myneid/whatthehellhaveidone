@@ -19,27 +19,23 @@ import type { Board, BoardList, GithubRepository } from '@/types/app';
 type Props = {
     board: Board;
     list: BoardList | null;
+    mentionableMembers: MentionableUser[];
     open: boolean;
     onClose: () => void;
 };
 
-export function CreateCardDialog({ board, list, open, onClose }: Props) {
+export function CreateCardDialog({
+    board,
+    list,
+    mentionableMembers,
+    open,
+    onClose,
+}: Props) {
     const repositories = useMemo(
         () => board.github_repositories ?? [],
         [board.github_repositories],
     );
     const hasConnectedRepository = repositories.length > 0;
-    const boardMembers: MentionableUser[] = useMemo(
-        () =>
-            (board.members ?? [])
-                .map((member) => ({
-                    id: member.user?.id ?? 0,
-                    name: member.user?.name ?? '',
-                    avatar: member.user?.avatar ?? null,
-                }))
-                .filter((member) => member.id),
-        [board.members],
-    );
 
     const form = useForm({
         title: '',
@@ -142,7 +138,7 @@ export function CreateCardDialog({ board, list, open, onClose }: Props) {
                             <MentionTextField
                                 multiline
                                 id="create-card-description"
-                                members={boardMembers}
+                                members={mentionableMembers}
                                 value={form.data.description}
                                 onValueChange={(description) =>
                                     form.setData('description', description)

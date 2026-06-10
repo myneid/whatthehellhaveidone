@@ -18,12 +18,10 @@ class MentionService
 
         $names = array_map('trim', $matches[1]);
 
-        $card->loadMissing('board.members.user');
-
-        $boardMemberUsers = $card->board->members->map(fn ($m) => $m->user)->filter();
+        $mentionableUsers = $card->board->mentionableUsers();
 
         foreach ($names as $name) {
-            $mentioned = $boardMemberUsers->first(
+            $mentioned = $mentionableUsers->first(
                 fn (User $u) => mb_strtolower($u->name) === mb_strtolower($name)
             );
 

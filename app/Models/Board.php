@@ -113,7 +113,7 @@ class Board extends Model
      */
     public function assignableUsers(): Collection
     {
-        $this->loadMissing(['owner', 'members.user']);
+        $this->loadMissing(['owner', 'members.user', 'project.members.user']);
 
         $users = collect();
 
@@ -129,7 +129,66 @@ class Board extends Model
             $users->push($member->user);
         }
 
+        if ($this->project_id && $this->project) {
+            foreach ($this->project->members as $member) {
+                if ($member->role === 'viewer' || ! $member->user) {
+                    continue;
+                }
+
+                $users->push($member->user);
+            }
+        }
+
         return $users->unique('id')->values();
+    }
+
+    /**
+     * Users who can be @mentioned on cards in this board.
+     *
+     * Includes board members, the owner, and project members for team boards.
+     *
+     * @return Collection<int, User>
+     */
+    public function mentionableUsers(): Collection
+    {
+        $this->loadMissing(['owner', 'members.user', 'project.members.user']);
+
+        $users = collect();
+
+        if ($this->owner) {
+            $users->push($this->owner);
+        }
+
+        foreach ($this->members as $member) {
+            if ($member->user) {
+                $users->push($member->user);
+            }
+        }
+
+        if ($this->project_id && $this->project) {
+            foreach ($this->project->members as $member) {
+                if ($member->user) {
+                    $users->push($member->user);
+                }
+            }
+        }
+
+        return $users->unique('id')->values();
+    }
+
+    /**
+     * @return list<array{id: int, name: string, avatar: string|null}>
+     */
+    public function mentionableUsersPayload(): array
+    {
+        return $this->mentionableUsers()
+            ->map(fn (User $user) => [
+                'id' => $user->id,
+                'name' => $user->name,
+                'avatar' => $user->avatar,
+            ])
+            ->values()
+            ->all();
     }
 
     public function canAssignWorkTo(User $user): bool

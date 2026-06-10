@@ -123,6 +123,7 @@ class BoardController extends Controller
             'board' => $board,
             'githubAccounts' => $githubAccounts,
             'assignableMembers' => $assignableMembers,
+            'mentionableMembers' => $board->mentionableUsersPayload(),
         ]);
     }
 

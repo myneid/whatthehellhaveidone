@@ -22,11 +22,13 @@ import { ListColumn } from '@/components/boards/list-column';
 import { ListColumnStatic } from '@/components/boards/list-column-static';
 import { Button } from '@/components/ui/button';
 import { useIsClient } from '@/hooks/use-is-client';
+import type { MentionableUser } from '@/hooks/use-mention-autocomplete';
 import type { Board, BoardList, Card } from '@/types/app';
 
 type BoardKanbanProps = {
     board: Board;
     lists: BoardList[];
+    mentionableMembers: MentionableUser[];
     sensors: SensorDescriptor<SensorOptions>[];
     activeCard: Card | null;
     ignoreCardClickRef: RefObject<boolean>;
@@ -69,11 +71,12 @@ function BoardKanbanAddListColumn({
 function BoardKanbanStatic({
     board,
     lists,
+    mentionableMembers,
     onOpenCard,
     onDeleteList,
 }: Pick<
     BoardKanbanProps,
-    'board' | 'lists' | 'onOpenCard' | 'onDeleteList'
+    'board' | 'lists' | 'mentionableMembers' | 'onOpenCard' | 'onDeleteList'
 >) {
     return (
         <div className="flex-1 overflow-x-auto overflow-y-hidden">
@@ -83,6 +86,7 @@ function BoardKanbanStatic({
                         key={list.id}
                         board={board}
                         list={list}
+                        mentionableMembers={mentionableMembers}
                         onOpenCard={onOpenCard}
                         onDeleteList={onDeleteList}
                     />
@@ -96,6 +100,7 @@ function BoardKanbanStatic({
 function BoardKanbanInteractive({
     board,
     lists,
+    mentionableMembers,
     sensors,
     activeCard,
     ignoreCardClickRef,
@@ -124,6 +129,7 @@ function BoardKanbanInteractive({
                                 key={list.id}
                                 board={board}
                                 list={list}
+                                mentionableMembers={mentionableMembers}
                                 onOpenCard={onOpenCard}
                                 onDeleteList={onDeleteList}
                                 ignoreCardClickRef={ignoreCardClickRef}
@@ -151,6 +157,7 @@ export function BoardKanban(props: BoardKanbanProps) {
             <BoardKanbanStatic
                 board={props.board}
                 lists={props.lists}
+                mentionableMembers={props.mentionableMembers}
                 onOpenCard={props.onOpenCard}
                 onDeleteList={props.onDeleteList}
             />

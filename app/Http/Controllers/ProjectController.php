@@ -6,6 +6,7 @@ use App\Http\Requests\StoreProjectRequest;
 use App\Http\Requests\UpdateProjectRequest;
 use App\Models\Invitation;
 use App\Models\Project;
+use App\Services\ProjectInvitationReconciliationService;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Str;
@@ -14,6 +15,10 @@ use Inertia\Response;
 
 class ProjectController extends Controller
 {
+    public function __construct(
+        private readonly ProjectInvitationReconciliationService $invitationReconciliation,
+    ) {}
+
     public function index(Request $request): Response
     {
         $projects = $request->user()
@@ -58,6 +63,8 @@ class ProjectController extends Controller
     {
         $this->authorize('view', $project);
 
+        $this->invitationReconciliation->reconcile($project);
+
         $project->load([
             'owner',
             'members.user',
@@ -68,10 +75,16 @@ class ProjectController extends Controller
             'boards' => fn ($q) => $q->where('archived_at', null)->withCount('cards')->with('labels'),
         ]);
 
+        $memberEmails = $project->members
+            ->map(fn ($member) => strtolower(trim($member->user?->email ?? '')))
+            ->filter()
+            ->all();
+
         return Inertia::render('projects/show', [
             'project' => [
                 ...$project->toArray(),
                 'invitations' => $project->invitations
+                    ->reject(fn (Invitation $invitation): bool => in_array(strtolower(trim($invitation->email)), $memberEmails, true))
                     ->map(fn (Invitation $invitation): array => [
                         'id' => $invitation->id,
                         'email' => $invitation->email,

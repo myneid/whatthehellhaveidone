@@ -23,11 +23,13 @@ import {
     SelectValue,
 } from '@/components/ui/select';
 import * as listRoutes from '@/routes/lists';
+import type { MentionableUser } from '@/hooks/use-mention-autocomplete';
 import type { Board, BoardList, Card } from '@/types/app';
 
 type ListColumnProps = {
     board: Board;
     list: BoardList;
+    mentionableMembers: MentionableUser[];
     onOpenCard: (card: Card) => void;
     onDeleteList: (list: BoardList) => void;
     ignoreCardClickRef: RefObject<boolean>;
@@ -36,6 +38,7 @@ type ListColumnProps = {
 export function ListColumn({
     board,
     list,
+    mentionableMembers,
     onOpenCard,
     onDeleteList,
     ignoreCardClickRef,
@@ -188,6 +191,7 @@ export function ListColumn({
             <CreateCardDialog
                 board={board}
                 list={list}
+                mentionableMembers={mentionableMembers}
                 open={createCardOpen}
                 onClose={() => setCreateCardOpen(false)}
             />
