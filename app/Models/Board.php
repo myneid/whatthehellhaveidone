@@ -113,7 +113,7 @@ class Board extends Model
      */
     public function assignableUsers(): Collection
     {
-        $this->loadMissing(['owner', 'members.user', 'project.members.user']);
+        $this->loadMissing(['owner', 'members.user']);
 
         $users = collect();
 
@@ -129,14 +129,8 @@ class Board extends Model
             $users->push($member->user);
         }
 
-        if ($this->project_id && $this->project) {
-            foreach ($this->project->members as $member) {
-                if ($member->role === 'viewer' || ! $member->user) {
-                    continue;
-                }
-
-                $users->push($member->user);
-            }
+        foreach ($this->projectMemberUsers(assignableOnly: true) as $user) {
+            $users->push($user);
         }
 
         return $users->unique('id')->values();
@@ -151,7 +145,7 @@ class Board extends Model
      */
     public function mentionableUsers(): Collection
     {
-        $this->loadMissing(['owner', 'members.user', 'project.members.user']);
+        $this->loadMissing(['owner', 'members.user']);
 
         $users = collect();
 
@@ -165,15 +159,34 @@ class Board extends Model
             }
         }
 
-        if ($this->project_id && $this->project) {
-            foreach ($this->project->members as $member) {
-                if ($member->user) {
-                    $users->push($member->user);
-                }
-            }
+        foreach ($this->projectMemberUsers() as $user) {
+            $users->push($user);
         }
 
         return $users->unique('id')->values();
+    }
+
+    /**
+     * @return Collection<int, User>
+     */
+    protected function projectMemberUsers(bool $assignableOnly = false): Collection
+    {
+        if (! $this->project_id) {
+            return collect();
+        }
+
+        $query = ProjectMember::query()
+            ->where('project_id', $this->project_id)
+            ->with('user');
+
+        if ($assignableOnly) {
+            $query->where('role', '!=', 'viewer');
+        }
+
+        return $query->get()
+            ->map(fn (ProjectMember $member) => $member->user)
+            ->filter()
+            ->values();
     }
 
     /**

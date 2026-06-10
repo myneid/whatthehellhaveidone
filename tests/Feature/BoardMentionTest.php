@@ -50,8 +50,37 @@ it('includes project members in mentionable users for team boards', function ():
             ->component('boards/show')
             ->where('mentionableMembers', fn ($members) => collect($members)->contains(
                 fn ($member) => $member['id'] === $projectMember->id && $member['name'] === 'Project Teammate',
+            ))
+            ->where('board.project.members', fn ($members) => collect($members)->contains(
+                fn ($member) => $member['user']['id'] === $projectMember->id,
             )),
         );
+});
+
+it('includes project members in mentionable users without loading the project relationship', function (): void {
+    $owner = User::factory()->create();
+    $projectMember = User::factory()->create(['name' => 'Project Teammate']);
+
+    $project = Project::create([
+        'owner_id' => $owner->id,
+        'name' => 'Apollo',
+        'slug' => 'apollo-mentions-query',
+    ]);
+
+    $project->members()->create(['user_id' => $owner->id, 'role' => 'owner']);
+    $project->members()->create(['user_id' => $projectMember->id, 'role' => 'member']);
+
+    $board = Board::create([
+        'project_id' => $project->id,
+        'owner_id' => $owner->id,
+        'name' => 'Sprint Board',
+        'slug' => 'sprint-board-mentions-query',
+        'visibility' => 'team',
+    ]);
+
+    $board = Board::query()->findOrFail($board->id);
+
+    expect($board->mentionableUsers()->pluck('id'))->toContain($projectMember->id);
 });
 
 it('notifies project members mentioned in comments even when they are not board members', function (): void {
@@ -158,6 +187,39 @@ it('reconciles stale pending invitations when viewing a project', function (): v
         'role' => 'member',
         'token' => 'stale-token',
         'expires_at' => now()->addDays(3),
+    ]);
+
+    actingAs($owner)
+        ->get(route('projects.show', $project))
+        ->assertOk()
+        ->assertInertia(fn (Assert $page) => $page
+            ->component('projects/show')
+            ->where('project.invitations', []),
+        );
+
+    expect($invitation->fresh()->accepted_at)->not->toBeNull();
+});
+
+it('reconciles expired pending invitations when viewing a project', function (): void {
+    $owner = User::factory()->create();
+    $member = User::factory()->create(['email' => 'todd@fosh.live', 'name' => 'Todd Glider']);
+
+    $project = Project::create([
+        'owner_id' => $owner->id,
+        'name' => 'Fosh Project',
+        'slug' => 'fosh-project',
+    ]);
+
+    $project->members()->create(['user_id' => $owner->id, 'role' => 'owner']);
+    $project->members()->create(['user_id' => $member->id, 'role' => 'member']);
+
+    $invitation = Invitation::create([
+        'project_id' => $project->id,
+        'invited_by' => $owner->id,
+        'email' => 'todd@fosh.live',
+        'role' => 'member',
+        'token' => 'expired-token',
+        'expires_at' => now()->subDay(),
     ]);
 
     actingAs($owner)

@@ -86,7 +86,7 @@ class BoardController extends Controller
         $this->authorize('view', $board);
 
         $board->load([
-            'project',
+            'project.members.user',
             'owner',
             'members.user',
             'labels',
