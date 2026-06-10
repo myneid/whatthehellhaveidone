@@ -113,7 +113,7 @@ class Board extends Model
      */
     public function assignableUsers(): Collection
     {
-        $this->loadMissing(['owner', 'members.user']);
+        $this->loadMissing(['owner', 'members.user', 'project.members.user']);
 
         $users = collect();
 
@@ -127,6 +127,16 @@ class Board extends Model
             }
 
             $users->push($member->user);
+        }
+
+        if ($this->project_id && $this->project) {
+            foreach ($this->project->members as $member) {
+                if ($member->role === 'viewer' || ! $member->user) {
+                    continue;
+                }
+
+                $users->push($member->user);
+            }
         }
 
         return $users->unique('id')->values();
