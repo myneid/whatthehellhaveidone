@@ -39,29 +39,29 @@ class CardCommentController extends Controller
         return back();
     }
 
-    public function update(Request $request, CardComment $cardComment): RedirectResponse
+    public function update(Request $request, CardComment $comment): RedirectResponse
     {
-        $this->authorize('update', $cardComment->card);
+        $this->authorize('update', $comment->card);
 
-        if ($cardComment->user_id !== $request->user()->id) {
+        if ($comment->user_id !== $request->user()->id) {
             abort(403);
         }
 
         $request->validate(['body' => ['required', 'string']]);
-        $cardComment->update(['body' => $request->body]);
+        $comment->update(['body' => $request->body]);
 
         return back();
     }
 
-    public function destroy(CardComment $cardComment): RedirectResponse
+    public function destroy(CardComment $comment): RedirectResponse
     {
-        $this->authorize('update', $cardComment->card);
+        $this->authorize('update', $comment->card);
 
-        if ($cardComment->user_id !== auth()->id() && ! auth()->user()->is_super_admin) {
+        if ($comment->user_id !== auth()->id() && ! auth()->user()->is_super_admin) {
             abort(403);
         }
 
-        $cardComment->delete();
+        $comment->delete();
 
         return back();
     }
