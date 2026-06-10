@@ -1,4 +1,4 @@
-import { router, useForm } from '@inertiajs/react';
+import { router, useForm, usePage } from '@inertiajs/react';
 import {
     ArrowRight,
     Calendar,
@@ -7,6 +7,7 @@ import {
     Image,
     MessageSquare,
     Paperclip,
+    Pencil,
     Tag,
     Trash2,
     User,
@@ -35,6 +36,7 @@ import type {
     BoardList,
     Card,
     CardAttachment,
+    CardComment,
     Label,
 } from '@/types/app';
 
@@ -136,6 +138,150 @@ function CommentForm({
                 Post
             </Button>
         </form>
+    );
+}
+
+function CommentItem({
+    comment,
+    boardMembers,
+    currentUserId,
+    isSuperAdmin,
+}: {
+    comment: CardComment;
+    boardMembers: MentionableUser[];
+    currentUserId: number | undefined;
+    isSuperAdmin: boolean;
+}) {
+    const canEdit = currentUserId === comment.user_id;
+    const canDelete = canEdit || isSuperAdmin;
+    const [editing, setEditing] = useState(false);
+    const [body, setBody] = useState(comment.body);
+    const isEdited =
+        Boolean(comment.updated_at) &&
+        Boolean(comment.created_at) &&
+        comment.updated_at !== comment.created_at;
+
+    function save() {
+        const trimmed = body.trim();
+
+        if (!trimmed) {
+            return;
+        }
+
+        if (trimmed !== comment.body) {
+            router.patch(
+                commentRoutes.update(comment.id).url,
+                { body: trimmed },
+                {
+                    preserveScroll: true,
+                    onSuccess: () => setEditing(false),
+                },
+            );
+
+            return;
+        }
+
+        setEditing(false);
+    }
+
+    function cancel() {
+        setBody(comment.body);
+        setEditing(false);
+    }
+
+    function deleteComment() {
+        router.delete(commentRoutes.destroy(comment.id).url, {
+            preserveScroll: true,
+        });
+    }
+
+    return (
+        <div className="flex gap-2">
+            <div className="flex h-7 w-7 shrink-0 items-center justify-center rounded-full bg-primary text-xs font-medium text-primary-foreground">
+                {comment.user?.name.charAt(0).toUpperCase()}
+            </div>
+            <div className="flex-1 rounded-lg bg-muted px-3 py-2">
+                <div className="mb-0.5 flex items-center justify-between">
+                    <span className="text-xs font-medium">
+                        {comment.user?.name}
+                    </span>
+                    <div className="flex items-center gap-1">
+                        <time
+                            dateTime={comment.created_at}
+                            className="text-xs text-muted-foreground"
+                            title={comment.created_at}
+                        >
+                            {formatTimestamp(comment.created_at)}
+                        </time>
+                        {isEdited ? (
+                            <span className="text-xs text-muted-foreground">
+                                (edited)
+                            </span>
+                        ) : null}
+                        {canEdit && !editing ? (
+                            <button
+                                type="button"
+                                onClick={() => setEditing(true)}
+                                className="text-muted-foreground hover:text-foreground"
+                                title="Edit comment"
+                            >
+                                <Pencil className="h-3 w-3" />
+                            </button>
+                        ) : null}
+                        {canDelete ? (
+                            <button
+                                type="button"
+                                onClick={deleteComment}
+                                className="text-muted-foreground hover:text-destructive"
+                                title="Delete comment"
+                            >
+                                <X className="h-3 w-3" />
+                            </button>
+                        ) : null}
+                    </div>
+                </div>
+                {editing ? (
+                    <div className="space-y-2">
+                        <MentionTextField
+                            multiline
+                            members={boardMembers}
+                            value={body}
+                            onValueChange={setBody}
+                            rows={3}
+                            placeholder="Edit comment... use @ to mention"
+                            autoFocus
+                        />
+                        <div className="flex gap-2">
+                            <Button
+                                size="sm"
+                                onClick={save}
+                                disabled={!body.trim()}
+                            >
+                                Save
+                            </Button>
+                            <Button
+                                size="sm"
+                                variant="ghost"
+                                onClick={cancel}
+                            >
+                                Cancel
+                            </Button>
+                        </div>
+                    </div>
+                ) : (
+                    <p
+                        className={`text-sm whitespace-pre-wrap ${canEdit ? 'cursor-pointer rounded-sm hover:bg-background/60' : ''}`}
+                        onClick={() => {
+                            if (canEdit) {
+                                setEditing(true);
+                            }
+                        }}
+                    >
+                        {comment.body}
+                    </p>
+                )}
+            </div>
+        </div>
     );
 }
 
@@ -586,6 +732,9 @@ export function CardModal({
     open,
     onClose,
 }: Props) {
+    const { auth } = usePage().props;
+    const currentUserId = auth.user?.id;
+    const isSuperAdmin = Boolean(auth.user?.is_super_admin);
     const boardMembers: MentionableUser[] = (board.members ?? [])
         .map((m) => ({
             id: m.user?.id ?? 0,
@@ -628,12 +777,6 @@ export function CardModal({
             {},
             { preserveScroll: true, onSuccess: onClose },
         );
-    }
-
-    function deleteComment(commentId: number) {
-        router.delete(commentRoutes.destroy(commentId).url, {
-            preserveScroll: true,
-        });
     }
 
     return (
@@ -874,44 +1017,13 @@ export function CardModal({
                         />
                         <div className="mt-3 space-y-3">
                             {card.comments?.map((comment) => (
-                                <div key={comment.id} className="flex gap-2">
-                                    <div className="flex h-7 w-7 shrink-0 items-center justify-center rounded-full bg-primary text-xs font-medium text-primary-foreground">
-                                        {comment.user?.name
-                                            .charAt(0)
-                                            .toUpperCase()}
-                                    </div>
-                                    <div className="flex-1 rounded-lg bg-muted px-3 py-2">
-                                        <div className="mb-0.5 flex items-center justify-between">
-                                            <span className="text-xs font-medium">
-                                                {comment.user?.name}
-                                            </span>
-                                            <div className="flex items-center gap-1">
-                                                <time
-                                                    dateTime={comment.created_at}
-                                                    className="text-xs text-muted-foreground"
-                                                    title={comment.created_at}
-                                                >
-                                                    {formatTimestamp(
-                                                        comment.created_at,
-                                                    )}
-                                                </time>
-                                                <button
-                                                    onClick={() =>
-                                                        deleteComment(
-                                                            comment.id,
-                                                        )
-                                                    }
-                                                    className="text-muted-foreground hover:text-destructive"
-                                                >
-                                                    <X className="h-3 w-3" />
-                                                </button>
-                                            </div>
-                                        </div>
-                                        <p className="text-sm">
-                                            {comment.body}
-                                        </p>
-                                    </div>
-                                </div>
+                                <CommentItem
+                                    key={comment.id}
+                                    comment={comment}
+                                    boardMembers={boardMembers}
+                                    currentUserId={currentUserId}
+                                    isSuperAdmin={isSuperAdmin}
+                                />
                             ))}
                         </div>
                     </div>
