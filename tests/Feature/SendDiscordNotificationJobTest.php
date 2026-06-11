@@ -95,7 +95,11 @@ it('sends attachment notifications as WHHID bot', function (): void {
         'event_settings' => null,
     ]);
 
-    $job = new SendDiscordNotification($webhook, $card, 'card.attachment_added');
+    $job = new SendDiscordNotification($webhook, $card, 'card.attachment_added', [
+        'actor_name' => 'Octocat',
+        'filename' => 'design.png',
+        'is_image' => true,
+    ]);
     $job->handle();
 
     Http::assertSent(function ($request): bool {
@@ -104,6 +108,7 @@ it('sends attachment notifications as WHHID bot', function (): void {
         return $request->url() === 'https://discord.com/api/webhooks/test-attachment'
             && ($payload['username'] ?? null) === 'WHHID bot'
             && isset($payload['embeds'][0]['title'])
-            && $payload['embeds'][0]['title'] === '📎 Attachment Added';
+            && $payload['embeds'][0]['title'] === '🖼️ Image Added'
+            && str_contains($payload['embeds'][0]['description'], 'Octocat');
     });
 });

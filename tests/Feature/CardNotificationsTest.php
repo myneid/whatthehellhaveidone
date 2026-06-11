@@ -80,14 +80,14 @@ it('notifies all board users when a card is commented on', function (): void {
         ->post(route('cards.comments.store', $card), ['body' => 'Looks good to me'])
         ->assertRedirect();
 
-    Notification::assertSentTo($owner, CardActivityNotification::class, function (CardActivityNotification $notification): bool {
+    Notification::assertSentTo($owner, CardActivityNotification::class, function (CardActivityNotification $notification) use ($card): bool {
         return $notification->action === 'commented'
-            && $notification->detail === $notification->actor->name.' commented on "'.$notification->card->title.'"';
+            && $notification->detail === $notification->actor->name.' commented on #'.$card->number.' "'.$card->title.'"';
     });
 
-    Notification::assertSentTo($member, CardActivityNotification::class, function (CardActivityNotification $notification): bool {
+    Notification::assertSentTo($member, CardActivityNotification::class, function (CardActivityNotification $notification) use ($card): bool {
         return $notification->action === 'commented'
-            && $notification->detail === $notification->actor->name.' commented on "'.$notification->card->title.'"';
+            && $notification->detail === $notification->actor->name.' commented on #'.$card->number.' "'.$card->title.'"';
     });
 
     Notification::assertNotSentTo($actor, CardActivityNotification::class);
@@ -110,14 +110,14 @@ it('notifies all board users when a card attachment is added', function (): void
         ])
         ->assertRedirect();
 
-    Notification::assertSentTo($owner, CardActivityNotification::class, function (CardActivityNotification $notification): bool {
+    Notification::assertSentTo($owner, CardActivityNotification::class, function (CardActivityNotification $notification) use ($card): bool {
         return $notification->action === 'attachment_added'
-            && $notification->detail === $notification->actor->name.' added an image to "'.$notification->card->title.'"';
+            && $notification->detail === $notification->actor->name.' added an image to #'.$card->number.' "'.$card->title.'"';
     });
 
-    Notification::assertSentTo($member, CardActivityNotification::class, function (CardActivityNotification $notification): bool {
+    Notification::assertSentTo($member, CardActivityNotification::class, function (CardActivityNotification $notification) use ($card): bool {
         return $notification->action === 'attachment_added'
-            && $notification->detail === $notification->actor->name.' added an image to "'.$notification->card->title.'"';
+            && $notification->detail === $notification->actor->name.' added an image to #'.$card->number.' "'.$card->title.'"';
     });
 
     Notification::assertNotSentTo($actor, CardActivityNotification::class);

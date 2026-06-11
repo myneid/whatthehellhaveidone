@@ -13,6 +13,7 @@ import type { BreadcrumbItem } from '@/types';
 type Notification = {
     id: string;
     card_id?: number;
+    card_number?: number;
     card_title?: string;
     action?: string;
     actor_name?: string;
@@ -28,10 +29,24 @@ type Props = { notifications: Notification[] };
 function formatNotification(notification: Notification): string {
     const actor = notification.actor_name ?? 'Someone';
     const action = notification.action ?? 'updated';
-    const card = notification.card_title ?? 'a card';
+    const card = notification.card_number
+        ? `#${notification.card_number} ${notification.card_title ?? 'a card'}`
+        : (notification.card_title ?? 'a card');
 
     if (action === 'mentioned') {
         return `${actor} mentioned you on ${card}`;
+    }
+
+    if (action === 'commented') {
+        return `${actor} commented on ${card}`;
+    }
+
+    if (action === 'attachment_added') {
+        return `${actor} added an attachment to ${card}`;
+    }
+
+    if (action === 'moved') {
+        return `${actor} moved ${card}`;
     }
 
     return `${actor} ${action} ${card}`;
