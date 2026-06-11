@@ -69,16 +69,40 @@ function resolveMembers(
     );
 }
 
+function seedMembers(
+    board: Board,
+    members: MentionableUser[],
+    assignableOnly: boolean,
+): MentionableUser[] {
+    const embedded = assignableOnly
+        ? board.assignable_members
+        : board.mentionable_members;
+
+    if (embedded && embedded.length > 0) {
+        return embedded;
+    }
+
+    return members;
+}
+
 export function resolveMentionableMembers(
     board: Board,
-    mentionableMembers: MentionableUser[],
+    mentionableMembers: MentionableUser[] = [],
 ): MentionableUser[] {
-    return resolveMembers(board, mentionableMembers, false);
+    return resolveMembers(
+        board,
+        seedMembers(board, mentionableMembers, false),
+        false,
+    );
 }
 
 export function resolveAssignableMembers(
     board: Board,
-    assignableMembers: MentionableUser[],
+    assignableMembers: MentionableUser[] = [],
 ): MentionableUser[] {
-    return resolveMembers(board, assignableMembers, true);
+    return resolveMembers(
+        board,
+        seedMembers(board, assignableMembers, true),
+        true,
+    );
 }

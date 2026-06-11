@@ -17,6 +17,7 @@ import { useRef, useState } from 'react';
 import * as githubController from '@/actions/App/Http/Controllers/GithubController';
 import { MentionTextField } from '@/components/mention-text-field';
 import { Button } from '@/components/ui/button';
+import { useMentionableMembersForBoard } from '@/hooks/use-board-collaborators';
 import {
     Dialog,
     DialogContent,
@@ -737,6 +738,11 @@ export function CardModal({
     const { auth } = usePage().props;
     const currentUserId = auth.user?.id;
     const isSuperAdmin = Boolean(auth.user?.is_super_admin);
+    const effectiveMentionableMembers = useMentionableMembersForBoard(
+        board,
+        mentionableMembers,
+        open,
+    );
     const [editingTitle, setEditingTitle] = useState(false);
     const [editingDesc, setEditingDesc] = useState(false);
     const [title, setTitle] = useState(card.title);
@@ -903,7 +909,7 @@ export function CardModal({
                             <div className="space-y-2">
                                 <MentionTextField
                                     multiline
-                                    members={mentionableMembers}
+                                    members={effectiveMentionableMembers}
                                     value={description}
                                     onValueChange={setDescription}
                                     rows={5}
@@ -1008,14 +1014,14 @@ export function CardModal({
                         </p>
                         <CommentForm
                             cardId={card.id}
-                            boardMembers={mentionableMembers}
+                            boardMembers={effectiveMentionableMembers}
                         />
                         <div className="mt-3 space-y-3">
                             {card.comments?.map((comment) => (
                                 <CommentItem
                                     key={comment.id}
                                     comment={comment}
-                                    boardMembers={mentionableMembers}
+                                    boardMembers={effectiveMentionableMembers}
                                     currentUserId={currentUserId}
                                     isSuperAdmin={isSuperAdmin}
                                 />

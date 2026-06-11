@@ -65,6 +65,16 @@ export type Board = {
     github_repositories?: (GithubRepository & { pivot?: { sync_direction: string } })[];
     copilot_done_list?: BoardList | null;
     cards_count?: number;
+    mentionable_members?: Array<{
+        id: number;
+        name: string;
+        avatar?: string | null;
+    }>;
+    assignable_members?: Array<{
+        id: number;
+        name: string;
+        avatar?: string | null;
+    }>;
 };
 
 export type BoardMember = {

@@ -1,4 +1,4 @@
-import { useCallback, useMemo, useState } from 'react';
+import { useCallback, useMemo, useRef, useState } from 'react';
 
 export type MentionableUser = {
     id: number;
@@ -80,12 +80,13 @@ export function useMentionAutocomplete({
     onValueChange,
     onCursorChange,
 }: UseMentionAutocompleteOptions) {
-    const [cursorPosition, setCursorPosition] = useState(0);
+    const cursorRef = useRef(0);
+    const [cursorVersion, setCursorVersion] = useState(0);
     const [highlightedIndex, setHighlightedIndex] = useState(0);
 
     const mentionContext = useMemo(
-        () => getActiveMention(value, cursorPosition),
-        [value, cursorPosition],
+        () => getActiveMention(value, cursorRef.current),
+        [value, cursorVersion],
     );
 
     const suggestions = useMemo(() => {
@@ -100,7 +101,8 @@ export function useMentionAutocomplete({
 
     const updateCursor = useCallback(
         (position: number) => {
-            setCursorPosition(position);
+            cursorRef.current = position;
+            setCursorVersion((version) => version + 1);
             onCursorChange?.(position);
         },
         [onCursorChange],
@@ -115,7 +117,7 @@ export function useMentionAutocomplete({
             const result = insertMention(
                 value,
                 mentionContext.startIndex,
-                cursorPosition,
+                cursorRef.current,
                 member.name,
             );
 
@@ -125,7 +127,7 @@ export function useMentionAutocomplete({
 
             return result.cursorPosition;
         },
-        [cursorPosition, mentionContext, onValueChange, updateCursor, value],
+        [mentionContext, onValueChange, updateCursor, value],
     );
 
     const handleKeyDown = useCallback(
@@ -158,7 +160,7 @@ export function useMentionAutocomplete({
 
             if (event.key === 'Escape') {
                 event.preventDefault();
-                updateCursor(cursorPosition);
+                updateCursor(cursorRef.current);
 
                 return;
             }
@@ -177,7 +179,6 @@ export function useMentionAutocomplete({
             }
         },
         [
-            cursorPosition,
             highlightedIndex,
             isOpen,
             selectMember,

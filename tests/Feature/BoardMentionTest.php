@@ -16,6 +16,32 @@ use function Pest\Laravel\actingAs;
 
 uses(RefreshDatabase::class);
 
+it('includes project members in mentionable users without loading the project relationship', function (): void {
+    $owner = User::factory()->create();
+    $projectMember = User::factory()->create(['name' => 'Project Teammate']);
+
+    $project = Project::create([
+        'owner_id' => $owner->id,
+        'name' => 'Apollo',
+        'slug' => 'apollo-mentions-query',
+    ]);
+
+    $project->members()->create(['user_id' => $owner->id, 'role' => 'owner']);
+    $project->members()->create(['user_id' => $projectMember->id, 'role' => 'member']);
+
+    $board = Board::create([
+        'project_id' => $project->id,
+        'owner_id' => $owner->id,
+        'name' => 'Sprint Board',
+        'slug' => 'sprint-board-mentions-query',
+        'visibility' => 'team',
+    ]);
+
+    $board = Board::query()->findOrFail($board->id);
+
+    expect($board->mentionableUsers()->pluck('id'))->toContain($projectMember->id);
+});
+
 it('includes project members in mentionable users for team boards', function (): void {
     $owner = User::factory()->create();
     $projectMember = User::factory()->create(['name' => 'Project Teammate']);
@@ -51,20 +77,23 @@ it('includes project members in mentionable users for team boards', function ():
             ->where('mentionableMembers', fn ($members) => collect($members)->contains(
                 fn ($member) => $member['id'] === $projectMember->id && $member['name'] === 'Project Teammate',
             ))
+            ->where('board.mentionable_members', fn ($members) => collect($members)->contains(
+                fn ($member) => $member['id'] === $projectMember->id,
+            ))
             ->where('board.project.members', fn ($members) => collect($members)->contains(
                 fn ($member) => $member['user']['id'] === $projectMember->id,
             )),
         );
 });
 
-it('includes project members in mentionable users without loading the project relationship', function (): void {
+it('returns collaborators for a board as json', function (): void {
     $owner = User::factory()->create();
-    $projectMember = User::factory()->create(['name' => 'Project Teammate']);
+    $projectMember = User::factory()->create(['name' => 'Todd Glider']);
 
     $project = Project::create([
         'owner_id' => $owner->id,
-        'name' => 'Apollo',
-        'slug' => 'apollo-mentions-query',
+        'name' => 'Fosh Project',
+        'slug' => 'fosh-project',
     ]);
 
     $project->members()->create(['user_id' => $owner->id, 'role' => 'owner']);
@@ -73,14 +102,18 @@ it('includes project members in mentionable users without loading the project re
     $board = Board::create([
         'project_id' => $project->id,
         'owner_id' => $owner->id,
-        'name' => 'Sprint Board',
-        'slug' => 'sprint-board-mentions-query',
+        'name' => 'Main Board',
+        'slug' => 'main-board',
         'visibility' => 'team',
     ]);
 
-    $board = Board::query()->findOrFail($board->id);
+    $response = actingAs($owner)
+        ->getJson(route('boards.collaborators', $board))
+        ->assertOk();
 
-    expect($board->mentionableUsers()->pluck('id'))->toContain($projectMember->id);
+    $names = collect($response->json('mentionable_members'))->pluck('name');
+
+    expect($names)->toContain('Todd Glider', $owner->name);
 });
 
 it('notifies project members mentioned in comments even when they are not board members', function (): void {
