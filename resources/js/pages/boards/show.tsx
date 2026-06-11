@@ -1,5 +1,5 @@
 import { Head } from '@inertiajs/react';
-import { useMemo, useState } from 'react';
+import { useState } from 'react';
 import { BoardHeader } from '@/components/boards/board-header';
 import { BoardKanban } from '@/components/boards/board-kanban';
 import { BoardSettingsSheet } from '@/components/boards/board-settings-sheet';
@@ -8,13 +8,10 @@ import { GithubIssueDialog } from '@/components/boards/github-issue-dialog';
 import { PullRequestActionDialog } from '@/components/boards/pull-request-action-dialog';
 import { WorkAssigneeDialog } from '@/components/boards/work-assignee-dialog';
 import type { AssignableMember } from '@/components/boards/work-assignee-dialog';
+import { useBoardCollaborators } from '@/hooks/use-board-collaborators';
 import { useBoardDnd } from '@/hooks/use-board-dnd';
 import { useBoardLists } from '@/hooks/use-board-lists';
 import type { MentionableUser } from '@/hooks/use-mention-autocomplete';
-import {
-    resolveAssignableMembers,
-    resolveMentionableMembers,
-} from '@/lib/board-member-lists';
 import { dashboard } from '@/routes';
 import * as boardRoutes from '@/routes/boards';
 import * as projectRoutes from '@/routes/projects';
@@ -31,17 +28,15 @@ type Props = {
 export default function BoardShow({
     board,
     githubAccounts,
-    assignableMembers,
-    mentionableMembers,
+    assignableMembers: assignableMembersProp,
+    mentionableMembers: mentionableMembersProp,
 }: Props) {
     const [showSettings, setShowSettings] = useState(false);
-    const resolvedMentionableMembers = useMemo(
-        () => resolveMentionableMembers(board, mentionableMembers),
-        [board, mentionableMembers],
-    );
-    const resolvedAssignableMembers = useMemo(
-        () => resolveAssignableMembers(board, assignableMembers),
-        [board, assignableMembers],
+    const { mentionableMembers, assignableMembers } = useBoardCollaborators(
+        board,
+        mentionableMembersProp,
+        assignableMembersProp,
+        true,
     );
 
     const {
@@ -99,7 +94,7 @@ export default function BoardShow({
                 <BoardKanban
                     board={board}
                     lists={lists}
-                    mentionableMembers={resolvedMentionableMembers}
+                    mentionableMembers={mentionableMembers}
                     sensors={sensors}
                     activeCard={activeCard}
                     ignoreCardClickRef={ignoreCardClickRef}
@@ -116,7 +111,7 @@ export default function BoardShow({
                     card={selectedCard}
                     board={board}
                     lists={lists}
-                    mentionableMembers={resolvedMentionableMembers}
+                    mentionableMembers={mentionableMembers}
                     isMoving={movingCardId === selectedCard.id}
                     onMoveToList={(list) => moveCardToList(selectedCard, list)}
                     open={!!selectedCard}
@@ -140,7 +135,7 @@ export default function BoardShow({
 
             <WorkAssigneeDialog
                 card={pendingWorkAssignmentCard}
-                assignableMembers={resolvedAssignableMembers}
+                assignableMembers={assignableMembers}
                 context={pendingWorkAssignmentContext}
                 open={pendingWorkAssignmentCardId !== null}
                 onClose={() => {

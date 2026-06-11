@@ -6,6 +6,7 @@ use App\Http\Requests\StoreBoardRequest;
 use App\Http\Requests\UpdateBoardRequest;
 use App\Models\Board;
 use App\Models\Project;
+use Illuminate\Http\JsonResponse;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Support\Str;
 use Inertia\Inertia;
@@ -119,11 +120,34 @@ class BoardController extends Controller
             ->values()
             ->all();
 
+        $mentionableMembers = $board->mentionableUsersPayload();
+
         return Inertia::render('boards/show', [
-            'board' => $board,
+            'board' => [
+                ...$board->toArray(),
+                'mentionable_members' => $mentionableMembers,
+                'assignable_members' => $assignableMembers,
+            ],
             'githubAccounts' => $githubAccounts,
             'assignableMembers' => $assignableMembers,
-            'mentionableMembers' => $board->mentionableUsersPayload(),
+            'mentionableMembers' => $mentionableMembers,
+        ]);
+    }
+
+    public function collaborators(Board $board): JsonResponse
+    {
+        $this->authorize('view', $board);
+
+        return response()->json([
+            'mentionable_members' => $board->mentionableUsersPayload(),
+            'assignable_members' => $board->assignableUsers()
+                ->map(fn ($user) => [
+                    'id' => $user->id,
+                    'name' => $user->name,
+                    'avatar' => $user->avatar,
+                ])
+                ->values()
+                ->all(),
         ]);
     }
 

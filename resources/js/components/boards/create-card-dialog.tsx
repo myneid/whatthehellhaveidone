@@ -3,6 +3,7 @@ import { Github } from 'lucide-react';
 import { useEffect, useMemo } from 'react';
 import { MentionTextField } from '@/components/mention-text-field';
 import { Button } from '@/components/ui/button';
+import { useMentionableMembersForBoard } from '@/hooks/use-board-collaborators';
 import {
     Dialog,
     DialogContent,
@@ -31,6 +32,11 @@ export function CreateCardDialog({
     open,
     onClose,
 }: Props) {
+    const effectiveMentionableMembers = useMentionableMembersForBoard(
+        board,
+        mentionableMembers,
+        open,
+    );
     const repositories = useMemo(
         () => board.github_repositories ?? [],
         [board.github_repositories],
@@ -138,7 +144,7 @@ export function CreateCardDialog({
                             <MentionTextField
                                 multiline
                                 id="create-card-description"
-                                members={mentionableMembers}
+                                members={effectiveMentionableMembers}
                                 value={form.data.description}
                                 onValueChange={(description) =>
                                     form.setData('description', description)

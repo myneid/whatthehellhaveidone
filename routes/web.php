@@ -58,6 +58,8 @@ Route::middleware(['auth', 'verified'])->group(function () {
 
     // Standalone Boards
     Route::resource('boards', BoardController::class);
+    Route::get('boards/{board}/collaborators', [BoardController::class, 'collaborators'])
+        ->name('boards.collaborators');
     Route::resource('boards.members', BoardMemberController::class)->shallow();
     Route::resource('boards.lists', BoardListController::class)->shallow();
     Route::resource('boards.labels', LabelController::class)->shallow();
