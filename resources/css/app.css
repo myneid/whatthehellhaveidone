@@ -440,7 +440,7 @@
     }
 
     .sb-brand-lockup img {
-        @apply h-8! w-auto max-w-full rounded-full object-contain md:h-9!;
+        @apply h-8! w-auto max-w-full object-contain md:h-9!;
     }
 
     .sb-collapse-btn {
