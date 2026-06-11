@@ -131,6 +131,7 @@ export type Card = {
     attachments?: CardAttachment[];
     checklists?: Checklist[];
     watchers?: User[];
+    mentioned_users?: User[];
     github_link?: GithubIssueLink | null;
     activity_logs?: ActivityLog[];
 };

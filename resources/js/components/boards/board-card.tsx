@@ -49,6 +49,7 @@ export const BoardCard = forwardRef<HTMLDivElement, BoardCardProps>(
             )}
 
             {card.assignees?.length ||
+            card.mentioned_users?.length ||
             card.attachments?.length ||
             card.due_at ||
             card.checklists?.length ||
@@ -129,16 +130,33 @@ export const BoardCard = forwardRef<HTMLDivElement, BoardCardProps>(
                             )}
                         </span>
                     )}
-                    {card.assignees?.length ? (
-                        <div className="ml-auto flex -space-x-1">
-                            {card.assignees.slice(0, 3).map((u) => (
-                                <div
-                                    key={u.id}
-                                    className="flex h-5 w-5 items-center justify-center rounded-full bg-primary text-[10px] font-medium text-primary-foreground ring-1 ring-card"
-                                >
-                                    {u.name.charAt(0).toUpperCase()}
+                    {(card.mentioned_users?.length || card.assignees?.length) ? (
+                        <div className="ml-auto flex items-center gap-1">
+                            {card.mentioned_users?.length ? (
+                                <div className="flex -space-x-1">
+                                    {card.mentioned_users.slice(0, 3).map((u) => (
+                                        <div
+                                            key={u.id}
+                                            className="flex h-5 w-5 items-center justify-center rounded-full border border-dashed border-muted-foreground/40 bg-muted text-[9px] font-medium text-muted-foreground ring-1 ring-card"
+                                            title={`@${u.name} was mentioned`}
+                                        >
+                                            @
+                                        </div>
+                                    ))}
                                 </div>
-                            ))}
+                            ) : null}
+                            {card.assignees?.length ? (
+                                <div className="flex -space-x-1">
+                                    {card.assignees.slice(0, 3).map((u) => (
+                                        <div
+                                            key={u.id}
+                                            className="flex h-5 w-5 items-center justify-center rounded-full bg-primary text-[10px] font-medium text-primary-foreground ring-1 ring-card"
+                                        >
+                                            {u.name.charAt(0).toUpperCase()}
+                                        </div>
+                                    ))}
+                                </div>
+                            ) : null}
                         </div>
                     ) : null}
                 </div>

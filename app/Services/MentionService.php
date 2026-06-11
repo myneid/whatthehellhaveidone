@@ -3,6 +3,7 @@
 namespace App\Services;
 
 use App\Models\Card;
+use App\Models\CardMention;
 use App\Models\User;
 use App\Notifications\CardMentionedNotification;
 
@@ -26,6 +27,11 @@ class MentionService
             );
 
             if ($mentioned && $mentioned->id !== $actor->id) {
+                CardMention::updateOrCreate(
+                    ['card_id' => $card->id, 'user_id' => $mentioned->id],
+                    ['context' => $context],
+                );
+
                 $mentioned->notify(new CardMentionedNotification($card, $actor, $context));
             }
         }

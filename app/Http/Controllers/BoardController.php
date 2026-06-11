@@ -113,6 +113,7 @@ class BoardController extends Controller
                     'checklists.items',
                     'comments.user',
                     'creator',
+                    'mentionedUsers',
                 ]),
             ]),
         ]);

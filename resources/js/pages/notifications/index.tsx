@@ -139,7 +139,12 @@ export default function NotificationsIndex({ notifications }: Props) {
                                     {notification.href ? (
                                         <Link
                                             href={notification.href}
-                                            className="min-w-0 flex-1"
+                                            className="min-w-0 flex-1 cursor-pointer"
+                                            onClick={() => {
+                                                if (isUnread) {
+                                                    readNotification(notification);
+                                                }
+                                            }}
                                         >
                                             {content}
                                         </Link>

@@ -4,6 +4,7 @@ use App\Models\Board;
 use App\Models\BoardList;
 use App\Models\BoardMember;
 use App\Models\Card;
+use App\Models\CardMention;
 use App\Models\Invitation;
 use App\Models\Project;
 use App\Models\User;
@@ -199,6 +200,45 @@ it('notifies project members mentioned in comments even when they are not board 
         ->assertRedirect();
 
     Notification::assertSentTo($projectMember, CardMentionedNotification::class);
+});
+
+it('persists a card mention record when a user is @mentioned in a comment', function (): void {
+    Notification::fake();
+
+    $owner = User::factory()->create();
+    $mentioned = User::factory()->create(['name' => 'Alice Foo']);
+
+    $board = Board::create([
+        'owner_id' => $owner->id,
+        'name' => 'Board',
+        'slug' => 'board-persist-mention',
+        'visibility' => 'private',
+    ]);
+
+    BoardMember::create(['board_id' => $board->id, 'user_id' => $owner->id, 'role' => 'admin']);
+    BoardMember::create(['board_id' => $board->id, 'user_id' => $mentioned->id, 'role' => 'member']);
+
+    $list = BoardList::create(['board_id' => $board->id, 'name' => 'To Do', 'position' => 1]);
+
+    $card = Card::create([
+        'board_id' => $board->id,
+        'list_id' => $list->id,
+        'creator_id' => $owner->id,
+        'title' => 'Test card',
+        'position' => 1,
+    ]);
+
+    actingAs($owner)
+        ->post(route('cards.comments.store', $card), ['body' => 'Please review @Alice Foo'])
+        ->assertRedirect();
+
+    expect(CardMention::query()
+        ->where('card_id', $card->id)
+        ->where('user_id', $mentioned->id)
+        ->exists()
+    )->toBeTrue();
+
+    Notification::assertSentTo($mentioned, CardMentionedNotification::class);
 });
 
 it('clears pending invitations when an existing user is added to a project', function (): void {

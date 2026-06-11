@@ -1,5 +1,8 @@
 import { Link, usePage } from '@inertiajs/react';
+import { useEchoNotification } from '@laravel/echo-react';
 import { Bell, BookOpen, Folder, LayoutGrid, Menu, Search } from 'lucide-react';
+import { useState } from 'react';
+import { toast } from 'sonner';
 import AppLogo from '@/components/app-logo';
 import AppLogoIcon from '@/components/app-logo-icon';
 import { Breadcrumbs } from '@/components/breadcrumbs';
@@ -69,6 +72,18 @@ export function AppHeader({ breadcrumbs = [] }: Props) {
     const { auth } = page.props;
     const getInitials = useInitials();
     const { isCurrentUrl, whenCurrentUrl } = useCurrentUrl();
+    const [unreadCount, setUnreadCount] = useState(auth.unreadNotificationsCount ?? 0);
+
+    useEchoNotification(
+        `App.Models.User.${auth.user?.id}`,
+        (notification: { actor_name?: string; detail?: string; card_title?: string }) => {
+            setUnreadCount((prev) => prev + 1);
+            const actor = notification.actor_name ?? 'Someone';
+            const card = notification.card_title ?? 'a card';
+            const detail = notification.detail ?? 'mentioned you';
+            toast.info(`${actor} ${detail} on "${card}"`);
+        },
+    );
 
     return (
         <>
@@ -193,13 +208,9 @@ export function AppHeader({ breadcrumbs = [] }: Props) {
                                         className="group relative inline-flex h-9 w-9 items-center justify-center rounded-md transition-colors hover:bg-accent"
                                     >
                                         <Bell className="!size-5 opacity-80 group-hover:opacity-100" />
-                                        {(auth.unreadNotificationsCount ?? 0) >
-                                            0 && (
+                                        {unreadCount > 0 && (
                                             <span className="absolute top-1 right-1 flex h-4 min-w-4 items-center justify-center rounded-full bg-destructive px-1 text-[10px] font-bold text-destructive-foreground">
-                                                {auth.unreadNotificationsCount >
-                                                9
-                                                    ? '9+'
-                                                    : auth.unreadNotificationsCount}
+                                                {unreadCount > 9 ? '9+' : unreadCount}
                                             </span>
                                         )}
                                         <span className="sr-only">

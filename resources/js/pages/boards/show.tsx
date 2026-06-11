@@ -1,5 +1,7 @@
 import { Head } from '@inertiajs/react';
+import { useEcho } from '@laravel/echo-react';
 import { useState } from 'react';
+import { toast } from 'sonner';
 import { BoardHeader } from '@/components/boards/board-header';
 import { BoardKanban } from '@/components/boards/board-kanban';
 import { BoardSettingsSheet } from '@/components/boards/board-settings-sheet';
@@ -12,11 +14,19 @@ import { useBoardCollaborators } from '@/hooks/use-board-collaborators';
 import { useBoardDnd } from '@/hooks/use-board-dnd';
 import { useBoardLists } from '@/hooks/use-board-lists';
 import type { MentionableUser } from '@/hooks/use-mention-autocomplete';
+import { moveCardBetweenLists } from '@/lib/board-list-utils';
 import { dashboard } from '@/routes';
 import * as boardRoutes from '@/routes/boards';
 import * as projectRoutes from '@/routes/projects';
 import type { BreadcrumbItem } from '@/types';
 import type { Board, GithubAccount } from '@/types/app';
+
+type CardMovedPayload = {
+    card_id: number;
+    list_id: number;
+    position: number;
+    from_list_id: number;
+};
 
 type Props = {
     board: Board;
@@ -84,6 +94,32 @@ export default function BoardShow({
         promptPullRequestActionIfNeeded,
         reloadBoardAfterMove,
     });
+
+    useEcho<CardMovedPayload>(
+        `board.${board.id}`,
+        'CardMoved',
+        (e) => {
+            updateLists((currentLists) => {
+                const cardAlreadyInTargetList = currentLists
+                    .find((l) => l.id === e.list_id)
+                    ?.cards?.some((c) => c.id === e.card_id);
+
+                if (cardAlreadyInTargetList) {
+                    return currentLists;
+                }
+
+                const targetList = currentLists.find((l) => l.id === e.list_id);
+                const fromList = currentLists.find((l) => l.id === e.from_list_id);
+
+                if (targetList && fromList && targetList.name !== fromList.name) {
+                    toast.info(`Card moved to ${targetList.name}`);
+                }
+
+                return moveCardBetweenLists(currentLists, e.card_id, e.list_id, e.position);
+            });
+        },
+        [board.id],
+    );
 
     return (
         <>

@@ -94,6 +94,11 @@ class Card extends Model
         return $this->hasMany(WorkLogEntry::class);
     }
 
+    public function mentionedUsers(): BelongsToMany
+    {
+        return $this->belongsToMany(User::class, 'card_mentions')->withPivot('context')->withTimestamps();
+    }
+
     public function scopeActive(Builder $query): Builder
     {
         return $query->whereNull('archived_at');
