@@ -59,6 +59,74 @@ function createCommentFixture(): array
     return [$author, $otherMember, $board, $card, $comment];
 }
 
+it('allows a board member to post a comment', function (): void {
+    [$author, , $board, $card] = createCommentFixture();
+
+    $this->actingAs($author)
+        ->from('/boards/'.$board->slug)
+        ->post(route('cards.comments.store', $card), [
+            'body' => 'New top-level comment',
+        ])
+        ->assertRedirect('/boards/'.$board->slug);
+
+    expect($card->comments()->where('body', 'New top-level comment')->exists())->toBeTrue();
+});
+
+it('allows a board member to reply to another users comment', function (): void {
+    [$author, $otherMember, $board, $card, $comment] = createCommentFixture();
+
+    $this->actingAs($otherMember)
+        ->from('/boards/'.$board->slug)
+        ->post(route('cards.comments.store', $card), [
+            'body' => 'Thanks for the update',
+            'parent_id' => $comment->id,
+        ])
+        ->assertRedirect('/boards/'.$board->slug);
+
+    $reply = CardComment::query()
+        ->where('parent_id', $comment->id)
+        ->where('user_id', $otherMember->id)
+        ->first();
+
+    expect($reply)->not->toBeNull()
+        ->and($reply->body)->toBe('Thanks for the update')
+        ->and($reply->card_id)->toBe($card->id);
+});
+
+it('rejects a reply when the parent comment belongs to another card', function (): void {
+    [$author, $otherMember, $board, $card, $comment] = createCommentFixture();
+
+    $otherCard = Card::create([
+        'board_id' => $board->id,
+        'list_id' => $card->list_id,
+        'creator_id' => $author->id,
+        'title' => 'Another card',
+        'position' => 2,
+    ]);
+
+    $this->actingAs($otherMember)
+        ->from('/boards/'.$board->slug)
+        ->post(route('cards.comments.store', $otherCard), [
+            'body' => 'Wrong thread',
+            'parent_id' => $comment->id,
+        ])
+        ->assertSessionHasErrors('parent_id');
+
+    expect(CardComment::query()->where('parent_id', $comment->id)->count())->toBe(0);
+});
+
+it('rejects a reply with an invalid parent id', function (): void {
+    [$author, , $board, $card] = createCommentFixture();
+
+    $this->actingAs($author)
+        ->from('/boards/'.$board->slug)
+        ->post(route('cards.comments.store', $card), [
+            'body' => 'Orphan reply',
+            'parent_id' => 99999,
+        ])
+        ->assertSessionHasErrors('parent_id');
+});
+
 it('allows the comment author to update their comment', function (): void {
     [$author, , $board, , $comment] = createCommentFixture();
 

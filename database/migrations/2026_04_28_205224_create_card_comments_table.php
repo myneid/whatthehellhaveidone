@@ -13,6 +13,7 @@ return new class extends Migration
             $table->foreignId('card_id')->constrained()->cascadeOnDelete();
             $table->foreignId('user_id')->constrained()->cascadeOnDelete();
             $table->longText('body');
+            $table->foreignId('parent_id')->nullable()->constrained('card_comments')->cascadeOnDelete();
             $table->string('github_comment_id')->nullable();
             $table->timestamps();
 

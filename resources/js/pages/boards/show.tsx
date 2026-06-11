@@ -1,6 +1,5 @@
 import { Head } from '@inertiajs/react';
-import { useEcho } from '@laravel/echo-react';
-import { useState } from 'react';
+import { useCallback, useEffect, useState } from 'react';
 import { toast } from 'sonner';
 import { BoardHeader } from '@/components/boards/board-header';
 import { BoardKanban } from '@/components/boards/board-kanban';
@@ -13,6 +12,7 @@ import type { AssignableMember } from '@/components/boards/work-assignee-dialog'
 import { useBoardCollaborators } from '@/hooks/use-board-collaborators';
 import { useBoardDnd } from '@/hooks/use-board-dnd';
 import { useBoardLists } from '@/hooks/use-board-lists';
+import { useIsClient } from '@/hooks/use-is-client';
 import type { MentionableUser } from '@/hooks/use-mention-autocomplete';
 import { moveCardBetweenLists } from '@/lib/board-list-utils';
 import { dashboard } from '@/routes';
@@ -41,6 +41,7 @@ export default function BoardShow({
     assignableMembers: assignableMembersProp,
     mentionableMembers: mentionableMembersProp,
 }: Props) {
+    const isClient = useIsClient();
     const [showSettings, setShowSettings] = useState(false);
     const { mentionableMembers, assignableMembers } = useBoardCollaborators(
         board,
@@ -95,10 +96,8 @@ export default function BoardShow({
         reloadBoardAfterMove,
     });
 
-    useEcho<CardMovedPayload>(
-        `board.${board.id}`,
-        'CardMoved',
-        (e) => {
+    const handleCardMoved = useCallback(
+        (e: CardMovedPayload) => {
             updateLists((currentLists) => {
                 const cardAlreadyInTargetList = currentLists
                     .find((l) => l.id === e.list_id)
@@ -118,8 +117,39 @@ export default function BoardShow({
                 return moveCardBetweenLists(currentLists, e.card_id, e.list_id, e.position);
             });
         },
-        [board.id],
+        [updateLists],
     );
+
+    useEffect(() => {
+        if (!isClient) {
+            return;
+        }
+
+        let active = true;
+        let cleanup: (() => void) | undefined;
+
+        void import('@laravel/echo-react').then(({ echo, echoIsConfigured }) => {
+            if (!active || !echoIsConfigured()) {
+                return;
+            }
+
+            try {
+                const echoInstance = echo();
+                const channel = echoInstance.private(`board.${board.id}`);
+                channel.listen('CardMoved', handleCardMoved);
+                cleanup = () => {
+                    echoInstance.leave(`board.${board.id}`);
+                };
+            } catch {
+                // Real-time updates are optional; the board should still work without Echo.
+            }
+        });
+
+        return () => {
+            active = false;
+            cleanup?.();
+        };
+    }, [isClient, board.id, handleCardMoved]);
 
     return (
         <>
