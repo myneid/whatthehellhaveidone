@@ -8,6 +8,7 @@ use App\Models\Project;
 use App\Models\ProjectMember;
 use App\Models\User;
 use App\Services\ProjectInvitationReconciliationService;
+use App\Services\SyncProjectMembersToBoardService;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Mail;
@@ -17,6 +18,7 @@ class ProjectMemberController extends Controller
 {
     public function __construct(
         private readonly ProjectInvitationReconciliationService $invitationReconciliation,
+        private readonly SyncProjectMembersToBoardService $syncProjectMembersToBoard,
     ) {}
 
     public function store(Request $request, Project $project): RedirectResponse
@@ -50,6 +52,8 @@ class ProjectMemberController extends Controller
             ]);
 
             $this->invitationReconciliation->reconcile($project);
+
+            $this->syncProjectMembersToBoard->syncProject($project);
 
             return back()->with('success', "{$user->name} has been added to the project.");
         }

@@ -16,6 +16,39 @@ use function Pest\Laravel\actingAs;
 
 uses(RefreshDatabase::class);
 
+it('syncs project members to board members when viewing a board', function (): void {
+    $owner = User::factory()->create();
+    $projectMember = User::factory()->create(['name' => 'Todd Glider']);
+
+    $project = Project::create([
+        'owner_id' => $owner->id,
+        'name' => 'Fosh Project',
+        'slug' => 'fosh-sync-board',
+    ]);
+
+    $project->members()->create(['user_id' => $owner->id, 'role' => 'owner']);
+    $project->members()->create(['user_id' => $projectMember->id, 'role' => 'member']);
+
+    $board = Board::create([
+        'project_id' => $project->id,
+        'owner_id' => $owner->id,
+        'name' => 'Main Board',
+        'slug' => 'main-board-sync',
+        'visibility' => 'team',
+    ]);
+
+    expect(BoardMember::query()->where('board_id', $board->id)->count())->toBe(0);
+
+    actingAs($owner)
+        ->get(route('boards.show', $board))
+        ->assertOk();
+
+    expect(BoardMember::query()
+        ->where('board_id', $board->id)
+        ->where('user_id', $projectMember->id)
+        ->exists())->toBeTrue();
+});
+
 it('includes project members in mentionable users without loading the project relationship', function (): void {
     $owner = User::factory()->create();
     $projectMember = User::factory()->create(['name' => 'Project Teammate']);
