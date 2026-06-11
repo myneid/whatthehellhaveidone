@@ -45,6 +45,6 @@ class CreateCardTool extends Tool
 
         $this->workLogService->logCardCreated($card, $user);
 
-        return Response::text("Card created: {$card->id} - {$card->title}");
+        return Response::text("Card created: {$card->number} - {$card->title}");
     }
 }

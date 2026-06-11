@@ -13,11 +13,24 @@ use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Database\Eloquent\Relations\HasOne;
 use Illuminate\Database\Eloquent\Relations\MorphMany;
 
-#[Fillable(['board_id', 'list_id', 'creator_id', 'title', 'description', 'position', 'priority', 'due_at', 'started_at', 'completed_at', 'archived_at', 'source_system', 'source_card_id', 'source_board_id'])]
+#[Fillable(['board_id', 'number', 'list_id', 'creator_id', 'title', 'description', 'position', 'priority', 'due_at', 'started_at', 'completed_at', 'archived_at', 'source_system', 'source_card_id', 'source_board_id'])]
 class Card extends Model
 {
     /** @use HasFactory<CardFactory> */
     use HasFactory;
+
+    protected static function booted(): void
+    {
+        static::creating(function (Card $card): void {
+            if ($card->number !== null) {
+                return;
+            }
+
+            $card->number = ((int) static::query()
+                ->where('board_id', $card->board_id)
+                ->max('number')) + 1;
+        });
+    }
 
     protected function casts(): array
     {

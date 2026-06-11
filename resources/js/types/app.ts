@@ -109,6 +109,7 @@ export type BoardList = {
 export type Card = {
     id: number;
     board_id: number;
+    number: number;
     list_id: number;
     creator_id: number;
     title: string;

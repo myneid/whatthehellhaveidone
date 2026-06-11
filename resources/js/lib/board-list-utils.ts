@@ -214,7 +214,7 @@ export function buildBoardListSignature(boardLists: BoardList[]): string {
                             ? `${card.github_link.id}:${card.github_link.issue_number}:${card.github_link.state}:${card.github_link.pull_request_number ?? 'none'}:${card.github_link.pull_request_state ?? 'none'}:${card.github_link.synced_at ?? ''}`
                             : 'none';
 
-                        return `${card.id}:${card.updated_at}:${attachmentSignature}:${commentSignature}:${githubLinkSignature}`;
+                        return `${card.id}:${card.number}:${card.updated_at}:${attachmentSignature}:${commentSignature}:${githubLinkSignature}`;
                     })
                     .join(',')}`,
         )

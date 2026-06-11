@@ -19,6 +19,7 @@ import * as githubController from '@/actions/App/Http/Controllers/GithubControll
 import { MentionTextField } from '@/components/mention-text-field';
 import { Button } from '@/components/ui/button';
 import { useMentionableMembersForBoard } from '@/hooks/use-board-collaborators';
+import { formatCardNumber } from '@/lib/card-utils';
 import {
     Dialog,
     DialogContent,
@@ -895,6 +896,9 @@ export function CardModal({
                             className="cursor-pointer text-xl hover:underline"
                             onClick={() => setEditingTitle(true)}
                         >
+                            <span className="mr-2 font-normal text-muted-foreground">
+                                {formatCardNumber(card.number)}
+                            </span>
                             {card.title}
                         </DialogTitle>
                     )}
