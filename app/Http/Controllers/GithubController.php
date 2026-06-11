@@ -324,6 +324,58 @@ class GithubController extends Controller
         return back();
     }
 
+    public function closeIssue(Request $request, Card $card, GitHubService $github): RedirectResponse
+    {
+        $this->authorize('update', $card);
+
+        $link = $card->githubLink;
+
+        if (! $link) {
+            Inertia::flash('toast', [
+                'type' => 'error',
+                'message' => 'No GitHub issue linked to this card.',
+            ]);
+
+            return back();
+        }
+
+        if ($link->issue_state === 'closed') {
+            Inertia::flash('toast', [
+                'type' => 'info',
+                'message' => "GitHub issue #{$link->issue_number} is already closed.",
+            ]);
+
+            return back();
+        }
+
+        try {
+            $repo = $link->githubRepository;
+            $account = $github->getAccountForRepo($repo);
+            $github->updateIssue($account, $repo, $link->issue_number, ['state' => 'closed']);
+        } catch (RuntimeException $exception) {
+            Inertia::flash('toast', ['type' => 'error', 'message' => $exception->getMessage()]);
+
+            return back();
+        }
+
+        $link->update([
+            'issue_state' => 'closed',
+            'last_synced_source' => 'board',
+            'last_synced_at' => now(),
+        ]);
+
+        if (! $card->completed_at) {
+            $card->update(['completed_at' => now()]);
+        }
+
+        Inertia::flash('toast', [
+            'type' => 'success',
+            'message' => "GitHub issue #{$link->issue_number} closed.",
+        ]);
+
+        return back();
+    }
+
     public function resolvePullRequest(
         Request $request,
         Card $card,

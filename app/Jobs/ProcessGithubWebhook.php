@@ -2,11 +2,10 @@
 
 namespace App\Jobs;
 
-use App\Events\CardMoved;
 use App\Models\Card;
 use App\Models\GithubCardLink;
 use App\Models\GithubWebhookEvent;
-use App\Services\ActivityLogService;
+use App\Services\CardListMoveService;
 use App\Services\GithubPullRequestIssueMatcher;
 use Illuminate\Contracts\Queue\ShouldQueue;
 use Illuminate\Foundation\Queue\Queueable;
@@ -19,13 +18,13 @@ class ProcessGithubWebhook implements ShouldQueue
     public function __construct(public readonly GithubWebhookEvent $event) {}
 
     public function handle(
-        ActivityLogService $activityLog,
+        CardListMoveService $cardListMove,
         GithubPullRequestIssueMatcher $issueMatcher,
     ): void {
         try {
             match ($this->event->event_type) {
-                'issues' => $this->handleIssueEvent($this->event->payload),
-                'pull_request' => $this->handlePullRequestEvent($this->event->payload, $activityLog, $issueMatcher),
+                'issues' => $this->handleIssueEvent($this->event->payload, $cardListMove),
+                'pull_request' => $this->handlePullRequestEvent($this->event->payload, $cardListMove, $issueMatcher),
                 default => null,
             };
 
@@ -36,7 +35,7 @@ class ProcessGithubWebhook implements ShouldQueue
         }
     }
 
-    private function handleIssueEvent(array $payload): void
+    private function handleIssueEvent(array $payload, CardListMoveService $cardListMove): void
     {
         $action = $payload['action'] ?? null;
         $issue = $payload['issue'] ?? null;
@@ -75,6 +74,10 @@ class ProcessGithubWebhook implements ShouldQueue
 
         if ($updates) {
             $card->update($updates);
+        }
+
+        if ($action === 'closed') {
+            $cardListMove->moveCardToDoneList($card, 'github_issue_closed');
         }
 
         $link->update([
@@ -133,7 +136,7 @@ class ProcessGithubWebhook implements ShouldQueue
 
     private function handlePullRequestEvent(
         array $payload,
-        ActivityLogService $activityLog,
+        CardListMoveService $cardListMove,
         GithubPullRequestIssueMatcher $issueMatcher,
     ): void {
         $action = $payload['action'] ?? null;
@@ -174,7 +177,7 @@ class ProcessGithubWebhook implements ShouldQueue
 
         $linkedCards->each(fn (GithubCardLink $link) => $this->moveCardToCopilotDoneList(
             $link,
-            $activityLog,
+            $cardListMove,
             $pullRequest,
         ));
 
@@ -185,7 +188,7 @@ class ProcessGithubWebhook implements ShouldQueue
 
     private function moveCardToCopilotDoneList(
         GithubCardLink $link,
-        ActivityLogService $activityLog,
+        CardListMoveService $cardListMove,
         array $pullRequest,
     ): void {
         $card = $link->card;
@@ -208,30 +211,6 @@ class ProcessGithubWebhook implements ShouldQueue
             ]);
         }
 
-        if ($targetList->board_id !== $board->id || $targetList->archived_at || $card->list_id === $targetList->id) {
-            return;
-        }
-
-        $oldListId = $card->list_id;
-        $nextPosition = ((Card::query()
-            ->where('list_id', '=', $targetList->id)
-            ->where('archived_at', '=', null)
-            ->orderByDesc('position')
-            ->value('position')) ?? 0) + 1;
-
-        $card->update([
-            'list_id' => $targetList->id,
-            'position' => $nextPosition,
-        ]);
-
-        $activityLog->log(
-            $card,
-            'card_moved',
-            old: ['list_id' => $oldListId],
-            new: ['list_id' => $targetList->id, 'position' => $nextPosition],
-            metadata: ['source' => 'github_pull_request'],
-        );
-
-        event(new CardMoved($card, $oldListId, actorName: 'GitHub'));
+        $cardListMove->moveCardToList($card, $targetList, 'github_pull_request');
     }
 }
