@@ -85,7 +85,8 @@
     --shadow-brand-hover:
         2px 2px 0 var(--brand-ink), 0 8px 24px -6px oklch(0.2 0.04 45 / 0.18);
     --shadow-brand-yellow-hover:
-        2px 2px 0 var(--brand-yellow), 0 8px 24px -6px oklch(0.82 0.17 88 / 0.28);
+        2px 2px 0 var(--brand-yellow),
+        0 8px 24px -6px oklch(0.82 0.17 88 / 0.28);
 
     --ease-smooth: cubic-bezier(0.22, 1, 0.36, 1);
     --ease-brand: cubic-bezier(0.22, 1, 0.36, 1);
@@ -206,7 +207,8 @@
     --shadow-brand-hover:
         2px 2px 0 var(--brand-cream), 0 8px 28px -6px oklch(0 0 0 / 0.45);
     --shadow-brand-yellow-hover:
-        2px 2px 0 var(--brand-yellow), 0 8px 28px -6px oklch(0.78 0.15 88 / 0.22);
+        2px 2px 0 var(--brand-yellow),
+        0 8px 28px -6px oklch(0.78 0.15 88 / 0.22);
 }
 
 @layer base {
@@ -321,7 +323,7 @@
     }
 
     .docs-eyebrow {
-        @apply inline-flex items-center gap-2 text-xs font-semibold uppercase tracking-[0.2em] text-brand-yellow-text;
+        @apply inline-flex items-center gap-2 text-xs font-semibold tracking-[0.2em] text-brand-yellow-text uppercase;
     }
 
     .docs-surface {
@@ -329,7 +331,8 @@
         background: var(--docs-surface);
         backdrop-filter: blur(24px);
         box-shadow: none;
-        transition-property: color, background-color, border-color, box-shadow, transform;
+        transition-property:
+            color, background-color, border-color, box-shadow, transform;
         transition-duration: 300ms;
         transition-timing-function: cubic-bezier(0.22, 1, 0.36, 1);
     }
@@ -429,34 +432,25 @@
     }
 
     .sb-brand-header {
-        @apply flex shrink-0 items-center justify-between border-b border-sidebar-border px-3 py-3.5;
+        @apply relative flex shrink-0 items-center justify-center border-b border-sidebar-border px-3 py-3.5;
     }
 
     .sb-brand-lockup {
-        @apply flex min-w-0 items-center gap-2;
+        @apply flex min-w-0 items-center justify-center;
     }
 
-    .sb-brand-icon {
-        @apply flex shrink-0 items-center justify-center rounded-md;
-        width: 22px;
-        height: 22px;
-        background: var(--brand-red);
-    }
-
-    .sb-brand-name {
-        font-family: var(--font-mono);
-        font-size: 11px;
-        font-weight: 500;
-        color: var(--sidebar-foreground);
-        letter-spacing: 0.04em;
+    .sb-brand-lockup img {
+        @apply h-8! w-auto max-w-full rounded-full object-contain md:h-9!;
     }
 
     .sb-collapse-btn {
-        @apply flex shrink-0 items-center justify-center rounded-md;
+        @apply absolute top-1/2 right-3 flex shrink-0 -translate-y-1/2 items-center justify-center rounded-md;
         width: 20px;
         height: 20px;
         color: var(--sidebar-muted);
-        transition: background 120ms ease, color 120ms ease;
+        transition:
+            background 120ms ease,
+            color 120ms ease;
     }
 
     .sb-collapse-btn:hover {
@@ -465,7 +459,7 @@
     }
 
     .sb-scroll {
-        @apply min-h-0 flex-1 overflow-y-auto overflow-x-hidden pb-2;
+        @apply min-h-0 flex-1 overflow-x-hidden overflow-y-auto pb-2;
     }
 
     .sb-search {
@@ -475,7 +469,9 @@
         border: 1px solid var(--sidebar-search-border);
         font-size: 12px;
         color: var(--sidebar-muted);
-        transition: border-color 150ms ease, background 150ms ease;
+        transition:
+            border-color 150ms ease,
+            background 150ms ease;
     }
 
     .sb-search:hover {
@@ -484,8 +480,16 @@
 
     .sb-search:focus-visible {
         outline: none;
-        border-color: color-mix(in oklch, var(--brand-red) 35%, var(--sidebar-search-border));
-        background: color-mix(in oklch, var(--sidebar-search-bg) 70%, var(--sidebar-item-hover-bg));
+        border-color: color-mix(
+            in oklch,
+            var(--brand-red) 35%,
+            var(--sidebar-search-border)
+        );
+        background: color-mix(
+            in oklch,
+            var(--sidebar-search-bg) 70%,
+            var(--sidebar-item-hover-bg)
+        );
     }
 
     .sb-search kbd {
@@ -498,7 +502,7 @@
     }
 
     .sb-section-label {
-        @apply px-3 pb-1 pt-4;
+        @apply px-3 pt-4 pb-1;
         font-family: var(--font-sans);
         font-size: 11px;
         letter-spacing: 0.02em;
@@ -513,7 +517,9 @@
         color: var(--sidebar-muted);
         font-size: 12.5px;
         font-weight: 400;
-        transition: background 120ms ease, color 120ms ease;
+        transition:
+            background 120ms ease,
+            color 120ms ease;
     }
 
     .sb-nav-row:hover {
@@ -570,7 +576,9 @@
         color: color-mix(in oklch, var(--sidebar-foreground) 45%, transparent);
         font-size: 12.5px;
         font-weight: 400;
-        transition: background 120ms ease, color 120ms ease;
+        transition:
+            background 120ms ease,
+            color 120ms ease;
     }
 
     .sb-proj-row:hover {
@@ -590,7 +598,9 @@
         height: 20px;
         color: var(--sidebar-muted);
         cursor: pointer;
-        transition: background 120ms ease, color 120ms ease;
+        transition:
+            background 120ms ease,
+            color 120ms ease;
     }
 
     .sb-proj-toggle-btn:hover {
@@ -663,7 +673,11 @@
         width: 5px;
         height: 5px;
         margin: 0 8px 0 2px;
-        background: color-mix(in oklch, var(--sidebar-foreground) 35%, transparent);
+        background: color-mix(
+            in oklch,
+            var(--sidebar-foreground) 35%,
+            transparent
+        );
     }
 
     .sb-proj-row.active .sb-proj-pip {
@@ -689,7 +703,9 @@
         padding: 0 6px;
         font-size: 12px;
         color: var(--sidebar-muted);
-        transition: background 120ms ease, color 120ms ease;
+        transition:
+            background 120ms ease,
+            color 120ms ease;
     }
 
     .sb-sub-row:hover {
@@ -719,7 +735,9 @@
         padding: 0 6px;
         font-size: 12.5px;
         color: var(--sidebar-muted);
-        transition: background 120ms ease, color 120ms ease;
+        transition:
+            background 120ms ease,
+            color 120ms ease;
     }
 
     .sb-foot-row:hover {
@@ -760,7 +778,7 @@
 
     .group-data-\[collapsible\=icon\]\/sidebar-wrapper .sb-search,
     .group-data-\[collapsible\=icon\]\/sidebar-wrapper .sb-section-label,
-    .group-data-\[collapsible\=icon\]\/sidebar-wrapper .sb-brand-name,
+    .group-data-\[collapsible\=icon\]\/sidebar-wrapper .sb-brand-lockup,
     .group-data-\[collapsible\=icon\]\/sidebar-wrapper .sb-badge,
     .group-data-\[collapsible\=icon\]\/sidebar-wrapper .sb-proj-meta,
     .group-data-\[collapsible\=icon\]\/sidebar-wrapper .sb-proj-toggle,
@@ -771,6 +789,10 @@
     .group-data-\[collapsible\=icon\]\/sidebar-wrapper .sb-proj-link,
     .group-data-\[collapsible\=icon\]\/sidebar-wrapper .sb-user-row > div {
         display: none;
+    }
+
+    .group-data-\[collapsible\=icon\]\/sidebar-wrapper .sb-collapse-btn {
+        @apply static translate-y-0;
     }
 
     .group-data-\[collapsible\=icon\]\/sidebar-wrapper .sb-nav-row,
@@ -786,7 +808,7 @@
 
     /* ── Board cards (Trello-style grab) ─────────────── */
     .board-card {
-        @apply cursor-grab select-none touch-none;
+        @apply cursor-grab touch-none select-none;
         transition:
             transform 120ms var(--ease-smooth),
             box-shadow 120ms var(--ease-smooth),
@@ -821,7 +843,8 @@
     }
 
     .transition-smooth-colors {
-        transition-property: color, background-color, border-color, box-shadow, opacity;
+        transition-property:
+            color, background-color, border-color, box-shadow, opacity;
         transition-duration: var(--duration-fast);
         transition-timing-function: var(--ease-smooth);
     }
@@ -835,7 +858,9 @@
     }
 
     .btn-smooth {
-        transition-property: transform, box-shadow, color, background-color, border-color, opacity;
+        transition-property:
+            transform, box-shadow, color, background-color, border-color,
+            opacity;
         transition-duration: var(--duration-smooth);
         transition-timing-function: var(--ease-smooth);
     }
@@ -856,7 +881,8 @@
     }
 
     .transition-brand {
-        transition-property: color, background-color, border-color, box-shadow, transform,
+        transition-property:
+            color, background-color, border-color, box-shadow, transform,
             opacity, filter;
         transition-duration: var(--duration-smooth);
         transition-timing-function: var(--ease-smooth);
@@ -877,7 +903,8 @@
     }
 
     .hover-docs-interactive {
-        transition-property: transform, box-shadow, background-color, border-color;
+        transition-property:
+            transform, box-shadow, background-color, border-color;
         transition-duration: var(--duration-smooth);
         transition-timing-function: var(--ease-smooth);
     }
