@@ -10,6 +10,7 @@ use App\Services\MentionService;
 use App\Services\WorkLogService;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
+use Illuminate\Validation\Rule;
 
 class CardCommentController extends Controller
 {
@@ -23,11 +24,19 @@ class CardCommentController extends Controller
     {
         $this->authorize('update', $card);
 
-        $request->validate(['body' => ['required', 'string']]);
+        $validated = $request->validate([
+            'body' => ['required', 'string'],
+            'parent_id' => [
+                'nullable',
+                'integer',
+                Rule::exists('card_comments', 'id')->where('card_id', $card->id),
+            ],
+        ]);
 
         $comment = $card->comments()->create([
+            'parent_id' => $validated['parent_id'] ?? null,
             'user_id' => $request->user()->id,
-            'body' => $request->body,
+            'body' => $validated['body'],
         ]);
 
         $this->activityLog->log($card, 'comment_added', new: ['comment_id' => $comment->id], actor: $request->user());

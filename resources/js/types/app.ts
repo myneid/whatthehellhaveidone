@@ -149,10 +149,12 @@ export type CardComment = {
     id: number;
     card_id: number;
     user_id: number;
+    parent_id?: number | null;
     body: string;
     created_at: string;
     updated_at: string;
     user?: User;
+    replies?: CardComment[];
 };
 
 export type CardAttachment = {

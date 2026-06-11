@@ -57,7 +57,8 @@ Route::middleware(['auth', 'verified'])->group(function () {
         ->name('projects.invitations.destroy');
 
     // Standalone Boards
-    Route::resource('boards', BoardController::class);
+    Route::get('boards', fn () => redirect()->route('dashboard'))->name('boards.index');
+    Route::resource('boards', BoardController::class)->except(['index', 'create', 'edit']);
     Route::get('boards/{board}/collaborators', [BoardController::class, 'collaborators'])
         ->name('boards.collaborators');
     Route::resource('boards.members', BoardMemberController::class)->shallow();
