@@ -5,6 +5,7 @@ import { BoardHeader } from '@/components/boards/board-header';
 import { BoardKanban } from '@/components/boards/board-kanban';
 import { BoardSettingsSheet } from '@/components/boards/board-settings-sheet';
 import { CardModal } from '@/components/boards/card-modal';
+import { GithubIssueCloseDialog } from '@/components/boards/github-issue-close-dialog';
 import { GithubIssueDialog } from '@/components/boards/github-issue-dialog';
 import { PullRequestActionDialog } from '@/components/boards/pull-request-action-dialog';
 import { WorkAssigneeDialog } from '@/components/boards/work-assignee-dialog';
@@ -76,6 +77,10 @@ export default function BoardShow({
         pendingPullRequestActionCardId,
         setPendingPullRequestActionCardId,
         promptPullRequestActionIfNeeded,
+        pendingGithubIssueCloseCard,
+        pendingGithubIssueCloseCardId,
+        setPendingGithubIssueCloseCardId,
+        promptGithubIssueCloseIfNeeded,
         reloadBoardAfterMove,
         openCard,
     } = useBoardLists(board);
@@ -93,6 +98,7 @@ export default function BoardShow({
         promptWorkAssignmentIfNeeded,
         promptGithubIssueIfNeeded,
         promptPullRequestActionIfNeeded,
+        promptGithubIssueCloseIfNeeded,
         reloadBoardAfterMove,
     });
 
@@ -218,6 +224,12 @@ export default function BoardShow({
                 card={pendingPullRequestActionCard}
                 open={pendingPullRequestActionCardId !== null}
                 onClose={() => setPendingPullRequestActionCardId(null)}
+            />
+
+            <GithubIssueCloseDialog
+                card={pendingGithubIssueCloseCard}
+                open={pendingGithubIssueCloseCardId !== null}
+                onClose={() => setPendingGithubIssueCloseCardId(null)}
             />
         </>
     );

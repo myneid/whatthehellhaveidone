@@ -167,6 +167,30 @@ export function listPromptsPullRequestAction(
     return card.github_link?.pull_request_number != null;
 }
 
+export function listPromptsGithubIssueClose(
+    targetList: BoardList,
+    doneListId: number | null,
+    card: Card | null,
+): boolean {
+    if (doneListId === null || targetList.id !== doneListId || !card?.github_link) {
+        return false;
+    }
+
+    if (card.github_link.state !== 'open') {
+        return false;
+    }
+
+    if (card.github_link.pull_request_number != null) {
+        return false;
+    }
+
+    if (targetList.github_action === 'close_issue') {
+        return false;
+    }
+
+    return true;
+}
+
 export function buildBoardListSignature(boardLists: BoardList[]): string {
     return boardLists
         .map(

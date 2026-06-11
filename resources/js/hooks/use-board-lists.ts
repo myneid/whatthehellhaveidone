@@ -3,6 +3,7 @@ import { useCallback, useMemo, useState } from 'react';
 import {
     buildBoardListSignature,
     listPromptsGithubIssue,
+    listPromptsGithubIssueClose,
     listPromptsPullRequestAction,
     moveCardBetweenLists,
     normalizeLists,
@@ -38,6 +39,8 @@ export function useBoardLists(board: Board) {
     const [pendingWorkAssignmentContext, setPendingWorkAssignmentContext] =
         useState<WorkAssignmentContext | null>(null);
     const [pendingPullRequestActionCardId, setPendingPullRequestActionCardId] =
+        useState<number | null>(null);
+    const [pendingGithubIssueCloseCardId, setPendingGithubIssueCloseCardId] =
         useState<number | null>(null);
     const [pendingGithubIssueCardId, setPendingGithubIssueCardId] =
         useState<number | null>(null);
@@ -115,6 +118,14 @@ export function useBoardLists(board: Board) {
         },
         [lists],
     );
+
+    const pendingGithubIssueCloseCard = useMemo(() => {
+        if (pendingGithubIssueCloseCardId === null) {
+            return null;
+        }
+
+        return findCardById(pendingGithubIssueCloseCardId);
+    }, [findCardById, pendingGithubIssueCloseCardId]);
 
     const pendingGithubIssueCard = useMemo(() => {
         if (pendingGithubIssueCardId === null) {
@@ -202,6 +213,21 @@ export function useBoardLists(board: Board) {
         [doneListId, findCardById],
     );
 
+    const promptGithubIssueCloseIfNeeded = useCallback(
+        (cardId: number, targetList: BoardList) => {
+            if (
+                listPromptsGithubIssueClose(
+                    targetList,
+                    doneListId,
+                    findCardById(cardId),
+                )
+            ) {
+                setPendingGithubIssueCloseCardId(cardId);
+            }
+        },
+        [doneListId, findCardById],
+    );
+
     const deleteList = useCallback(
         (list: BoardList) => {
             if (!window.confirm(`Delete row "${list.name}"?`)) {
@@ -256,6 +282,7 @@ export function useBoardLists(board: Board) {
                         promptGithubIssueIfNeeded(card.id, targetList);
                         promptWorkAssignmentIfNeeded(card.id, targetList);
                         promptPullRequestActionIfNeeded(card.id, targetList);
+                        promptGithubIssueCloseIfNeeded(card.id, targetList);
                         reloadBoardAfterMove();
                     },
                     onError: () => {
@@ -275,6 +302,7 @@ export function useBoardLists(board: Board) {
             promptGithubIssueIfNeeded,
             promptWorkAssignmentIfNeeded,
             promptPullRequestActionIfNeeded,
+            promptGithubIssueCloseIfNeeded,
             reloadBoardAfterMove,
             updateLists,
         ],
@@ -307,6 +335,10 @@ export function useBoardLists(board: Board) {
         pendingPullRequestActionCardId,
         setPendingPullRequestActionCardId,
         promptPullRequestActionIfNeeded,
+        pendingGithubIssueCloseCard,
+        pendingGithubIssueCloseCardId,
+        setPendingGithubIssueCloseCardId,
+        promptGithubIssueCloseIfNeeded,
         reloadBoardAfterMove,
         openCard,
     };
