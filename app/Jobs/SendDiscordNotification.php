@@ -16,10 +16,12 @@ class SendDiscordNotification implements ShouldQueue
 
     public int $tries = 3;
 
+    /** @param  array<string, mixed>  $context */
     public function __construct(
         public readonly DiscordWebhook $webhook,
         public readonly Card $card,
         public readonly string $eventType,
+        public readonly array $context = [],
     ) {}
 
     public function handle(): void
@@ -60,6 +62,8 @@ class SendDiscordNotification implements ShouldQueue
         $boardName = $card->board->name ?? 'Unknown Board';
         $listName = $card->list->name ?? 'Unknown List';
         $cardUrl = url("/boards/{$card->board->slug}/cards/{$card->id}");
+        $cardLabel = '#'.$card->number.' '.$card->title;
+        $actorName = $this->context['actor_name'] ?? null;
 
         $color = match ($this->eventType) {
             'card.created' => 0x22C55E,
@@ -75,28 +79,58 @@ class SendDiscordNotification implements ShouldQueue
             'card.moved' => '🔵 Card Moved',
             'card.completed' => '✅ Card Completed',
             'card.commented' => '💬 New Comment',
-            'card.attachment_added' => '📎 Attachment Added',
+            'card.attachment_added' => ($this->context['is_image'] ?? false)
+                ? '🖼️ Image Added'
+                : '📎 Attachment Added',
             default => ucfirst(str_replace('.', ' ', $this->eventType)),
         };
 
         $description = match ($this->eventType) {
-            'card.created' => "**[{$card->title}]({$cardUrl})** was added to **{$listName}**",
-            'card.moved' => "**[{$card->title}]({$cardUrl})** was moved to **{$listName}**",
-            'card.completed' => "**[{$card->title}]({$cardUrl})** was completed",
-            'card.commented' => "A comment was added to **[{$card->title}]({$cardUrl})**",
-            'card.attachment_added' => "An attachment was added to **[{$card->title}]({$cardUrl})**",
-            default => "**[{$card->title}]({$cardUrl})** — {$this->eventType}",
+            'card.created' => "**[{$cardLabel}]({$cardUrl})** was added to **{$listName}**",
+            'card.moved' => $actorName
+                ? "**{$actorName}** moved **[{$cardLabel}]({$cardUrl})** to **{$listName}**"
+                : "**[{$cardLabel}]({$cardUrl})** was moved to **{$listName}**",
+            'card.completed' => "**[{$cardLabel}]({$cardUrl})** was completed",
+            'card.commented' => $actorName
+                ? "**{$actorName}** commented on **[{$cardLabel}]({$cardUrl})**"
+                : "A comment was added to **[{$cardLabel}]({$cardUrl})**",
+            'card.attachment_added' => $actorName
+                ? "**{$actorName}** added ".(($this->context['is_image'] ?? false) ? 'an image' : 'an attachment')." to **[{$cardLabel}]({$cardUrl})**"
+                : "An attachment was added to **[{$cardLabel}]({$cardUrl})**",
+            default => "**[{$cardLabel}]({$cardUrl})** — {$this->eventType}",
         };
+
+        $fields = [];
+
+        if ($this->eventType === 'card.commented' && filled($this->context['comment_excerpt'] ?? null)) {
+            $fields[] = [
+                'name' => 'Comment',
+                'value' => $this->context['comment_excerpt'],
+            ];
+        }
+
+        if ($this->eventType === 'card.attachment_added' && filled($this->context['filename'] ?? null)) {
+            $fields[] = [
+                'name' => ($this->context['is_image'] ?? false) ? 'Image' : 'File',
+                'value' => $this->context['filename'],
+            ];
+        }
+
+        $embed = [
+            'title' => $title,
+            'description' => $description,
+            'color' => $color,
+            'footer' => ['text' => $boardName],
+            'timestamp' => now()->toIso8601String(),
+        ];
+
+        if ($fields !== []) {
+            $embed['fields'] = $fields;
+        }
 
         return [
             'username' => 'WHHID bot',
-            'embeds' => [[
-                'title' => $title,
-                'description' => $description,
-                'color' => $color,
-                'footer' => ['text' => $boardName],
-                'timestamp' => now()->toIso8601String(),
-            ]],
+            'embeds' => [$embed],
         ];
     }
 }

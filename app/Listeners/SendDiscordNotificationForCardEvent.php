@@ -9,6 +9,7 @@ use App\Events\CardCreated;
 use App\Events\CardMoved;
 use App\Jobs\SendDiscordNotification;
 use App\Models\Card;
+use Illuminate\Support\Str;
 
 class SendDiscordNotificationForCardEvent
 {
@@ -40,6 +41,26 @@ class SendDiscordNotificationForCardEvent
             return;
         }
 
-        SendDiscordNotification::dispatch($webhook, $card, $eventType);
+        SendDiscordNotification::dispatch($webhook, $card, $eventType, $this->contextFor($event));
+    }
+
+    /** @return array<string, mixed> */
+    private function contextFor(object $event): array
+    {
+        return match (true) {
+            $event instanceof CardCommented => [
+                'actor_name' => $event->comment->loadMissing('user')->user->name,
+                'comment_excerpt' => Str::limit($event->comment->body, 240),
+            ],
+            $event instanceof CardAttachmentAdded => [
+                'actor_name' => $event->attachment->loadMissing('user')->user->name,
+                'filename' => $event->attachment->filename,
+                'is_image' => str_starts_with((string) $event->attachment->mime_type, 'image/'),
+            ],
+            $event instanceof CardMoved => [
+                'actor_name' => $event->actor?->name ?? $event->actorName ?? 'System',
+            ],
+            default => [],
+        };
     }
 }

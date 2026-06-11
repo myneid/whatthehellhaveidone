@@ -5,6 +5,8 @@ namespace App\Listeners;
 use App\Events\CardAttachmentAdded;
 use App\Events\CardCommented;
 use App\Events\CardMoved;
+use App\Models\Card;
+use App\Models\User;
 use App\Notifications\CardActivityNotification;
 use Illuminate\Support\Facades\Auth;
 
@@ -17,9 +19,11 @@ class NotifyCardParticipants
         $actorName = $actor?->name ?? 'System';
 
         if ($event instanceof CardCommented) {
+            $event->comment->loadMissing('user');
             $actor = $event->comment->user;
             $actorName = $event->comment->user->name;
         } elseif ($event instanceof CardAttachmentAdded) {
+            $event->attachment->loadMissing('user');
             $actor = $event->attachment->user;
             $actorName = $event->attachment->user->name;
         } elseif ($event instanceof CardMoved) {
@@ -27,14 +31,16 @@ class NotifyCardParticipants
             $actorName = $event->actor?->name ?? $event->actorName ?? 'System';
         }
 
+        $cardReference = $this->cardReference($card);
+
         if ($event instanceof CardCommented) {
             $action = 'commented';
-            $detail = $event->comment->user->name.' commented on "'.$card->title.'"';
+            $detail = "{$actorName} commented on {$cardReference}";
         } elseif ($event instanceof CardAttachmentAdded) {
             $isImage = str_starts_with((string) $event->attachment->mime_type, 'image/');
 
             $action = 'attachment_added';
-            $detail = $event->attachment->user->name.' added '.($isImage ? 'an image' : 'an attachment').' to "'.$card->title.'"';
+            $detail = "{$actorName} added ".($isImage ? 'an image' : 'an attachment')." to {$cardReference}";
         } else {
             $card->loadMissing('board.lists');
             $fromList = $card->board?->lists->firstWhere('id', $event->fromListId);
@@ -43,16 +49,21 @@ class NotifyCardParticipants
             $detail = ($fromList?->name ?? '?').' → '.($toList?->name ?? '?');
         }
 
-        $card->loadMissing(['board.owner', 'board.users']);
+        $card->loadMissing('board');
 
-        $recipients = collect([$card->board?->owner])
-            ->merge($card->board?->users ?? collect())
-            ->filter(fn ($user) => $user && $user->id !== $actor?->id)
-            ->unique('id')
-            ->values();
+        if (! $card->board) {
+            return;
+        }
 
-        $recipients->each(
-            fn ($user) => $user->notify(new CardActivityNotification($card, $action, $actor, $actorName, $detail))
-        );
+        $card->board->mentionableUsers()
+            ->filter(fn (User $user): bool => $user->id !== $actor?->id)
+            ->each(fn (User $user) => $user->notify(
+                new CardActivityNotification($card, $action, $actor, $actorName, $detail),
+            ));
+    }
+
+    private function cardReference(Card $card): string
+    {
+        return '#'.$card->number.' "'.$card->title.'"';
     }
 }
