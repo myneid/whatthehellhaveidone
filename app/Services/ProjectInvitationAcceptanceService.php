@@ -8,6 +8,10 @@ use App\Models\User;
 
 class ProjectInvitationAcceptanceService
 {
+    public function __construct(
+        private readonly SyncProjectMembersToBoardService $syncProjectMembersToBoard,
+    ) {}
+
     /**
      * @return array{status: 'accepted' | 'email_mismatch' | 'invalid', invitation: Invitation | null}
      */
@@ -42,6 +46,8 @@ class ProjectInvitationAcceptanceService
         );
 
         $invitation->update(['accepted_at' => now()]);
+
+        $this->syncProjectMembersToBoard->syncProject($invitation->project);
 
         return [
             'status' => 'accepted',

@@ -74,15 +74,15 @@ function seedMembers(
     members: MentionableUser[],
     assignableOnly: boolean,
 ): MentionableUser[] {
+    if (members.length > 0) {
+        return members;
+    }
+
     const embedded = assignableOnly
         ? board.assignable_members
         : board.mentionable_members;
 
-    if (embedded && embedded.length > 0) {
-        return embedded;
-    }
-
-    return members;
+    return embedded ?? [];
 }
 
 export function resolveMentionableMembers(

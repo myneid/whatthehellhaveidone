@@ -34,8 +34,12 @@ export default function BoardShow({
     const [showSettings, setShowSettings] = useState(false);
     const { mentionableMembers, assignableMembers } = useBoardCollaborators(
         board,
-        mentionableMembersProp,
-        assignableMembersProp,
+        mentionableMembersProp.length > 0
+            ? mentionableMembersProp
+            : (board.mentionable_members ?? []),
+        assignableMembersProp.length > 0
+            ? assignableMembersProp
+            : (board.assignable_members ?? []),
         true,
     );
 

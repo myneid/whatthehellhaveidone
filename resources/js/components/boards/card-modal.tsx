@@ -740,7 +740,9 @@ export function CardModal({
     const isSuperAdmin = Boolean(auth.user?.is_super_admin);
     const effectiveMentionableMembers = useMentionableMembersForBoard(
         board,
-        mentionableMembers,
+        mentionableMembers.length > 0
+            ? mentionableMembers
+            : (board.mentionable_members ?? []),
         open,
     );
     const [editingTitle, setEditingTitle] = useState(false);

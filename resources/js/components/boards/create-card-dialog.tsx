@@ -34,7 +34,9 @@ export function CreateCardDialog({
 }: Props) {
     const effectiveMentionableMembers = useMentionableMembersForBoard(
         board,
-        mentionableMembers,
+        mentionableMembers.length > 0
+            ? mentionableMembers
+            : (board.mentionable_members ?? []),
         open,
     );
     const repositories = useMemo(

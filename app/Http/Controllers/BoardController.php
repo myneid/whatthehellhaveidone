@@ -6,6 +6,7 @@ use App\Http\Requests\StoreBoardRequest;
 use App\Http\Requests\UpdateBoardRequest;
 use App\Models\Board;
 use App\Models\Project;
+use App\Services\SyncProjectMembersToBoardService;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Support\Str;
@@ -14,6 +15,10 @@ use Inertia\Response;
 
 class BoardController extends Controller
 {
+    public function __construct(
+        private readonly SyncProjectMembersToBoardService $syncProjectMembersToBoard,
+    ) {}
+
     public function store(StoreBoardRequest $request): RedirectResponse
     {
         $project = $request->project_id ? Project::findOrFail($request->project_id) : null;
@@ -79,12 +84,18 @@ class BoardController extends Controller
             $board->labels()->create($label);
         }
 
+        if ($project) {
+            $this->syncProjectMembersToBoard->sync($board);
+        }
+
         return redirect()->route('boards.show', $board);
     }
 
     public function show(Board $board): Response
     {
         $this->authorize('view', $board);
+
+        $this->syncProjectMembersToBoard->sync($board);
 
         $board->load([
             'project.members.user',
@@ -137,6 +148,9 @@ class BoardController extends Controller
     public function collaborators(Board $board): JsonResponse
     {
         $this->authorize('view', $board);
+
+        $this->syncProjectMembersToBoard->sync($board);
+        $board->loadMissing(['owner', 'members.user', 'project.members.user']);
 
         return response()->json([
             'mentionable_members' => $board->mentionableUsersPayload(),
