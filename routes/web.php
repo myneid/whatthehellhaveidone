@@ -1,6 +1,7 @@
 <?php
 
 use App\Http\Controllers\BoardController;
+use App\Http\Controllers\DeployController;
 use App\Http\Controllers\BoardExportController;
 use App\Http\Controllers\BoardListController;
 use App\Http\Controllers\BoardMemberController;
@@ -146,6 +147,9 @@ Route::post('invitations/{token}/accept', [InvitationController::class, 'accept'
 
 // GitHub webhook (public, signature verified)
 Route::post('webhooks/github', [GithubWebhookController::class, 'handle'])->name('webhooks.github');
+
+// Deploy webhook (public, signature verified)
+Route::post('webhooks/deploy', [DeployController::class, 'handle'])->name('webhooks.deploy');
 
 require __DIR__.'/settings.php';
 require __DIR__.'/api.php';

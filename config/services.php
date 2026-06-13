@@ -41,4 +41,8 @@ return [
         'redirect' => env('GITHUB_REDIRECT_URL', '/github/callback'),
     ],
 
+    'deploy' => [
+        'webhook_secret' => env('DEPLOY_WEBHOOK_SECRET'),
+    ],
+
 ];
