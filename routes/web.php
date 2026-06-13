@@ -57,7 +57,8 @@ Route::middleware(['auth', 'verified'])->group(function () {
         ->name('projects.invitations.destroy');
 
     // Standalone Boards
-    Route::resource('boards', BoardController::class);
+    Route::get('boards', fn () => redirect()->route('dashboard'))->name('boards.index');
+    Route::resource('boards', BoardController::class)->except(['index', 'create', 'edit']);
     Route::get('boards/{board}/collaborators', [BoardController::class, 'collaborators'])
         ->name('boards.collaborators');
     Route::resource('boards.members', BoardMemberController::class)->shallow();
@@ -85,6 +86,7 @@ Route::middleware(['auth', 'verified'])->group(function () {
     Route::post('cards/{card}/github/assign-copilot', [GithubController::class, 'assignToCopilot'])->name('github.assign-copilot');
     Route::post('cards/{card}/assign-work', [GithubController::class, 'assignWork'])->name('github.assign-work');
     Route::post('cards/{card}/pull-request-action', [GithubController::class, 'resolvePullRequest'])->name('github.resolve-pull-request');
+    Route::post('cards/{card}/github/close-issue', [GithubController::class, 'closeIssue'])->name('github.close-issue');
     Route::post('boards/{board}/github/import-issues', [GithubController::class, 'importIssues'])->name('github.import-issues');
 
     // Discord

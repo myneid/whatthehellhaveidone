@@ -9,6 +9,15 @@ use function Pest\Laravel\actingAs;
 
 uses(RefreshDatabase::class);
 
+it('redirects the boards index url to the dashboard', function (): void {
+    /** @var User $user */
+    $user = User::factory()->create();
+
+    actingAs($user)
+        ->get('/boards')
+        ->assertRedirect(route('dashboard'));
+});
+
 it('updates the copilot done list for a board', function (): void {
     /** @var User $user */
     $user = User::factory()->create();

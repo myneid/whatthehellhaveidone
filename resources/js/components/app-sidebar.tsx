@@ -1,6 +1,7 @@
 import { Link, usePage } from '@inertiajs/react';
 import { PanelLeftClose, Search } from 'lucide-react';
 import { useState } from 'react';
+import AppLogo from '@/components/app-logo';
 import { NavFooter } from '@/components/nav-footer';
 import { NavMain } from '@/components/nav-main';
 import {
@@ -40,12 +41,7 @@ function SidebarBrandHeader() {
     return (
         <div className="sb-brand-header">
             <Link href={dashboard()} prefetch className="sb-brand-lockup">
-                <div className="sb-brand-icon">
-                    <svg viewBox="0 0 12 12" className="size-3" fill="none" aria-hidden>
-                        <path d="M6 1L11 10H1L6 1Z" fill="white" opacity="0.9" />
-                    </svg>
-                </div>
-                <span className="sb-brand-name">WTHD</span>
+                <AppLogo />
             </Link>
             <button
                 type="button"

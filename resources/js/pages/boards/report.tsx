@@ -6,6 +6,7 @@ import * as boardRoutes from '@/routes/boards';
 import * as projectRoutes from '@/routes/projects';
 import type { BreadcrumbItem } from '@/types';
 import type { Board, BoardList, Card, Label } from '@/types/app';
+import { formatCardNumber } from '@/lib/card-utils';
 
 type Props = {
     board: Board & { lists: BoardList[] };
@@ -171,7 +172,12 @@ export default function BoardReport({ board, cards }: Props) {
                             ) : filtered.map((card) => (
                                 <tr key={card.id} className="hover:bg-muted/30">
                                     <td className="px-4 py-2.5 font-medium max-w-xs">
-                                        <span className={card.completed_at ? 'text-muted-foreground line-through' : ''}>{card.title}</span>
+                                        <span className={card.completed_at ? 'text-muted-foreground line-through' : ''}>
+                                            <span className="mr-1.5 text-muted-foreground">
+                                                {formatCardNumber(card.number)}
+                                            </span>
+                                            {card.title}
+                                        </span>
                                     </td>
                                     <td className="px-4 py-2.5">
                                         <div className="flex flex-wrap gap-1">

@@ -10,7 +10,7 @@ use App\Models\GithubCardLink;
 use App\Models\GithubRepository;
 use App\Models\GithubWebhookEvent;
 use App\Models\User;
-use App\Services\ActivityLogService;
+use App\Services\CardListMoveService;
 use App\Services\GithubPullRequestIssueMatcher;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\Bus;
@@ -101,7 +101,7 @@ it('moves a linked card to the configured review list and queues copilot review 
         ],
     ]);
 
-    (new ProcessGithubWebhook($event))->handle(app(ActivityLogService::class), app(GithubPullRequestIssueMatcher::class));
+    (new ProcessGithubWebhook($event))->handle(app(CardListMoveService::class), app(GithubPullRequestIssueMatcher::class));
 
     $link = GithubCardLink::query()->where('card_id', $card->id)->first();
 
@@ -199,7 +199,7 @@ it('does not request copilot review when the linked card was assigned to a human
         ],
     ]);
 
-    (new ProcessGithubWebhook($event))->handle(app(ActivityLogService::class), app(GithubPullRequestIssueMatcher::class));
+    (new ProcessGithubWebhook($event))->handle(app(CardListMoveService::class), app(GithubPullRequestIssueMatcher::class));
 
     expect($card->fresh()->list_id)->toBe($review->id);
 
@@ -284,9 +284,181 @@ it('moves a linked card to the configured copilot done list when copilot opens a
         ],
     ]);
 
-    (new ProcessGithubWebhook($event))->handle(app(ActivityLogService::class), app(GithubPullRequestIssueMatcher::class));
+    (new ProcessGithubWebhook($event))->handle(app(CardListMoveService::class), app(GithubPullRequestIssueMatcher::class));
 
     expect($card->fresh()->list_id)->toBe($review->id)
         ->and($event->fresh()->processed_at)->not()->toBeNull()
         ->and($card->activityLogs()->where('event_type', 'card_moved')->exists())->toBeTrue();
+});
+
+it('moves a linked card to the configured done list when its github issue is closed', function (): void {
+    /** @var User $user */
+    $user = User::factory()->create();
+
+    $board = Board::create([
+        'owner_id' => $user->id,
+        'name' => 'Roadmap',
+        'slug' => 'roadmap-issue-closed',
+        'visibility' => 'team',
+    ]);
+
+    $inProgress = BoardList::create([
+        'board_id' => $board->id,
+        'name' => 'In Progress',
+        'position' => 1,
+    ]);
+
+    $done = BoardList::create([
+        'board_id' => $board->id,
+        'name' => 'Done',
+        'position' => 2,
+    ]);
+
+    $board->update(['done_list_id' => $done->id]);
+
+    $card = Card::create([
+        'board_id' => $board->id,
+        'list_id' => $inProgress->id,
+        'creator_id' => $user->id,
+        'title' => 'Fix the webhook flow',
+        'position' => 1,
+    ]);
+
+    $account = GithubAccount::create([
+        'user_id' => $user->id,
+        'github_user_id' => '12345',
+        'username' => 'octocat',
+        'encrypted_access_token' => Crypt::encryptString('github-user-token'),
+        'scopes' => ['repo'],
+    ]);
+
+    $repository = GithubRepository::create([
+        'github_account_id' => $account->id,
+        'github_repo_id' => '98765',
+        'owner' => 'octo-org',
+        'name' => 'octo-repo',
+        'full_name' => 'octo-org/octo-repo',
+        'private' => true,
+        'html_url' => 'https://github.com/octo-org/octo-repo',
+    ]);
+
+    GithubCardLink::create([
+        'card_id' => $card->id,
+        'github_repository_id' => $repository->id,
+        'github_issue_id' => '54321',
+        'issue_number' => 42,
+        'issue_url' => 'https://github.com/octo-org/octo-repo/issues/42',
+        'issue_state' => 'open',
+        'last_synced_source' => 'github',
+        'last_synced_at' => now(),
+    ]);
+
+    $event = GithubWebhookEvent::create([
+        'github_repository_id' => $repository->id,
+        'event_type' => 'issues',
+        'delivery_id' => 'delivery-issue-closed-1',
+        'payload' => [
+            'action' => 'closed',
+            'issue' => [
+                'id' => 54321,
+                'number' => 42,
+                'title' => 'Fix the webhook flow',
+                'body' => 'All done.',
+                'state' => 'closed',
+                'html_url' => 'https://github.com/octo-org/octo-repo/issues/42',
+            ],
+        ],
+    ]);
+
+    (new ProcessGithubWebhook($event))->handle(app(CardListMoveService::class), app(GithubPullRequestIssueMatcher::class));
+
+    $card->refresh();
+    $link = GithubCardLink::query()->where('card_id', $card->id)->first();
+
+    expect($card->list_id)->toBe($done->id)
+        ->and($card->completed_at)->not()->toBeNull()
+        ->and($event->fresh()->processed_at)->not()->toBeNull()
+        ->and($card->activityLogs()->where('event_type', 'card_moved')->exists())->toBeTrue()
+        ->and($link?->issue_state)->toBe('closed');
+});
+
+it('falls back to a list named Done when no done list is configured on the board', function (): void {
+    /** @var User $user */
+    $user = User::factory()->create();
+
+    $board = Board::create([
+        'owner_id' => $user->id,
+        'name' => 'Roadmap',
+        'slug' => 'roadmap-issue-closed-fallback',
+        'visibility' => 'team',
+    ]);
+
+    $backlog = BoardList::create([
+        'board_id' => $board->id,
+        'name' => 'Backlog',
+        'position' => 1,
+    ]);
+
+    $done = BoardList::create([
+        'board_id' => $board->id,
+        'name' => 'Done',
+        'position' => 2,
+    ]);
+
+    $card = Card::create([
+        'board_id' => $board->id,
+        'list_id' => $backlog->id,
+        'creator_id' => $user->id,
+        'title' => 'Ship the feature',
+        'position' => 1,
+    ]);
+
+    $account = GithubAccount::create([
+        'user_id' => $user->id,
+        'github_user_id' => '12345',
+        'username' => 'octocat',
+        'encrypted_access_token' => Crypt::encryptString('github-user-token'),
+        'scopes' => ['repo'],
+    ]);
+
+    $repository = GithubRepository::create([
+        'github_account_id' => $account->id,
+        'github_repo_id' => '98765',
+        'owner' => 'octo-org',
+        'name' => 'octo-repo',
+        'full_name' => 'octo-org/octo-repo',
+        'private' => true,
+        'html_url' => 'https://github.com/octo-org/octo-repo',
+    ]);
+
+    GithubCardLink::create([
+        'card_id' => $card->id,
+        'github_repository_id' => $repository->id,
+        'github_issue_id' => '54321',
+        'issue_number' => 42,
+        'issue_url' => 'https://github.com/octo-org/octo-repo/issues/42',
+        'issue_state' => 'open',
+        'last_synced_source' => 'github',
+        'last_synced_at' => now(),
+    ]);
+
+    $event = GithubWebhookEvent::create([
+        'github_repository_id' => $repository->id,
+        'event_type' => 'issues',
+        'delivery_id' => 'delivery-issue-closed-fallback-1',
+        'payload' => [
+            'action' => 'closed',
+            'issue' => [
+                'id' => 54321,
+                'number' => 42,
+                'title' => 'Ship the feature',
+                'state' => 'closed',
+                'html_url' => 'https://github.com/octo-org/octo-repo/issues/42',
+            ],
+        ],
+    ]);
+
+    (new ProcessGithubWebhook($event))->handle(app(CardListMoveService::class), app(GithubPullRequestIssueMatcher::class));
+
+    expect($card->fresh()->list_id)->toBe($done->id);
 });

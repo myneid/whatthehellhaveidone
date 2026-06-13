@@ -1,6 +1,7 @@
 import { Paperclip } from 'lucide-react';
 import { forwardRef, type ComponentProps } from 'react';
 import { BOARD_CARD_PRIORITY_COLORS } from '@/components/boards/board-constants';
+import { formatCardNumber } from '@/lib/card-utils';
 import { cn } from '@/lib/utils';
 import type { Card } from '@/types/app';
 
@@ -32,7 +33,12 @@ export const BoardCard = forwardRef<HTMLDivElement, BoardCardProps>(
                 {...props}
             >
             <div className="flex items-start justify-between gap-1">
-                <span className="text-sm leading-snug">{card.title}</span>
+                <span className="text-sm leading-snug">
+                    <span className="mr-1.5 font-medium text-muted-foreground">
+                        {formatCardNumber(card.number)}
+                    </span>
+                    {card.title}
+                </span>
             </div>
 
             {card.labels && card.labels.length > 0 && (

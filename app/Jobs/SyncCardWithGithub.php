@@ -6,6 +6,7 @@ use App\Models\Card;
 use App\Models\GithubCardLink;
 use App\Models\GithubRepository;
 use App\Models\User;
+use App\Services\CardListMoveService;
 use App\Services\GitHubService;
 use Illuminate\Contracts\Queue\ShouldQueue;
 use Illuminate\Foundation\Queue\Queueable;
@@ -21,7 +22,7 @@ class SyncCardWithGithub implements ShouldQueue
         public readonly User $user,
     ) {}
 
-    public function handle(GitHubService $github): void
+    public function handle(GitHubService $github, CardListMoveService $cardListMove): void
     {
         $repo = GithubRepository::findOrFail($this->repositoryId);
         $account = $github->getAccountForRepo($repo);
@@ -63,6 +64,10 @@ class SyncCardWithGithub implements ShouldQueue
 
         if ($updates) {
             $this->card->update($updates);
+        }
+
+        if ($issue['state'] === 'closed') {
+            $cardListMove->moveCardToDoneList($this->card, 'github_sync');
         }
     }
 }

@@ -29,7 +29,7 @@ class ListCardsTool extends Tool
             ->when($request->get('priority'), fn ($q, $p) => $q->where('priority', $p))
             ->with(['list:id,name', 'assignees:id,name', 'labels:id,name,color'])
             ->orderBy('position')
-            ->get(['id', 'title', 'description', 'priority', 'due_at', 'completed_at', 'list_id', 'position']);
+            ->get(['id', 'number', 'title', 'description', 'priority', 'due_at', 'completed_at', 'list_id', 'position']);
 
         return Response::text($cards->toJson(JSON_PRETTY_PRINT));
     }

@@ -1,3 +1,4 @@
+import { dashboard, login, register } from '@/routes';
 import { Head, Link, usePage } from '@inertiajs/react';
 import {
     BookOpen,
@@ -6,10 +7,8 @@ import {
     Github,
     KanbanSquare,
     MessageSquare,
-    Shield,
     Zap,
 } from 'lucide-react';
-import { dashboard, login, register } from '@/routes';
 
 type Props = {
     canRegister?: boolean;
@@ -79,7 +78,9 @@ function FeatureCard({
                 <Icon className={`h-6 w-6 ${color}`} />
             </div>
             <h3 className="mb-2 text-lg font-semibold text-white">{title}</h3>
-            <p className="text-sm leading-relaxed text-white/60">{description}</p>
+            <p className="text-sm leading-relaxed text-white/60">
+                {description}
+            </p>
         </div>
     );
 }
@@ -98,8 +99,14 @@ export default function Welcome({ canRegister = true }: Props) {
                 />
             </Head>
 
-            <div className="min-h-screen" style={{ background: 'linear-gradient(135deg, #0a0a0f 0%, #12101a 50%, #0f0a14 100%)', fontFamily: "'Instrument Sans', sans-serif" }}>
-
+            <div
+                className="min-h-screen"
+                style={{
+                    background:
+                        'linear-gradient(135deg, #0a0a0f 0%, #12101a 50%, #0f0a14 100%)',
+                    fontFamily: "'Instrument Sans', sans-serif",
+                }}
+            >
                 {/* Nav */}
                 <nav className="mx-auto flex max-w-6xl items-center justify-end px-6 py-5">
                     <div className="flex items-center gap-3">
@@ -132,24 +139,24 @@ export default function Welcome({ canRegister = true }: Props) {
                 </nav>
 
                 {/* Hero */}
-                <section className="mx-auto max-w-6xl px-6 pb-20 pt-8 text-center">
+                <section className="mx-auto max-w-6xl px-6 pt-8 pb-20 text-center">
                     {/* Big centered logo */}
                     <div className="mb-10 flex justify-center">
                         <img
                             src="/whatthehellhaveidone.png"
                             alt="What the HELL have i DONE"
-                            className="w-72 sm:w-96 lg:w-[480px] drop-shadow-[0_8px_40px_rgba(139,92,246,0.4)]"
+                            className="w-72 rounded-full drop-shadow-[0_8px_40px_rgba(139,92,246,0.4)] sm:w-96 lg:w-[480px]"
                         />
                     </div>
 
                     <div className="mb-6 inline-flex items-center gap-2 rounded-full border border-violet-500/30 bg-violet-500/10 px-4 py-1.5">
                         <Zap className="h-3.5 w-3.5 text-violet-400" />
-                        <span className="text-xs font-semibold uppercase tracking-widest text-violet-400">
+                        <span className="text-xs font-semibold tracking-widest text-violet-400 uppercase">
                             Project Management for Real Teams
                         </span>
                     </div>
 
-                    <h1 className="mb-6 text-4xl font-bold leading-tight tracking-tight text-white sm:text-5xl lg:text-6xl">
+                    <h1 className="mb-6 text-4xl leading-tight font-bold tracking-tight text-white sm:text-5xl lg:text-6xl">
                         Finally know{' '}
                         <span className="bg-gradient-to-r from-red-400 via-amber-400 to-yellow-300 bg-clip-text text-transparent">
                             what the hell
@@ -159,7 +166,10 @@ export default function Welcome({ canRegister = true }: Props) {
                     </h1>
 
                     <p className="mx-auto mb-10 max-w-2xl text-lg leading-relaxed text-white/60">
-                        Kanban boards, GitHub sync, Discord notifications, a full work log, AI-agent access via MCP, and a document repository — all in one place that doesn&apos;t make you feel bad about yourself.
+                        Kanban boards, GitHub sync, Discord notifications, a
+                        full work log, AI-agent access via MCP, and a document
+                        repository — all in one place that doesn&apos;t make you
+                        feel bad about yourself.
                     </p>
 
                     <div className="flex flex-col items-center gap-4 sm:flex-row sm:justify-center">
@@ -202,28 +212,60 @@ export default function Welcome({ canRegister = true }: Props) {
                             </div>
                             {/* Columns */}
                             <div className="flex gap-3 overflow-hidden">
-                                {['Backlog', 'In Progress', 'Review', 'Done'].map((col, ci) => (
-                                    <div key={col} className="flex w-48 shrink-0 flex-col gap-2">
+                                {[
+                                    'Backlog',
+                                    'In Progress',
+                                    'Review',
+                                    'Done',
+                                ].map((col, ci) => (
+                                    <div
+                                        key={col}
+                                        className="flex w-48 shrink-0 flex-col gap-2"
+                                    >
                                         <div className="mb-1 flex items-center justify-between">
-                                            <span className="text-xs font-semibold text-white/50">{col}</span>
-                                            <span className="text-xs text-white/30">{[4, 3, 2, 5][ci]}</span>
+                                            <span className="text-xs font-semibold text-white/50">
+                                                {col}
+                                            </span>
+                                            <span className="text-xs text-white/30">
+                                                {[4, 3, 2, 5][ci]}
+                                            </span>
                                         </div>
-                                        {Array.from({ length: [3, 2, 2, 3][ci] }).map((_, i) => (
+                                        {Array.from({
+                                            length: [3, 2, 2, 3][ci],
+                                        }).map((_, i) => (
                                             <div
                                                 key={i}
                                                 className="rounded-lg border border-white/10 bg-white/5 p-3"
                                                 style={{
                                                     borderLeftWidth: 3,
                                                     borderLeftColor: [
-                                                        ['#ef4444', '#f59e0b', '#8b5cf6'],
+                                                        [
+                                                            '#ef4444',
+                                                            '#f59e0b',
+                                                            '#8b5cf6',
+                                                        ],
                                                         ['#3b82f6', '#10b981'],
                                                         ['#f59e0b', '#ef4444'],
-                                                        ['#10b981', '#3b82f6', '#8b5cf6'],
+                                                        [
+                                                            '#10b981',
+                                                            '#3b82f6',
+                                                            '#8b5cf6',
+                                                        ],
                                                     ][ci][i % 3],
                                                 }}
                                             >
-                                                <div className="mb-2 h-2.5 rounded bg-white/20" style={{ width: `${[70, 85, 60, 75, 90, 65, 80, 55][ci * 2 + i]}%` }} />
-                                                <div className="h-2 rounded bg-white/10" style={{ width: `${[45, 60, 40, 55, 35, 50, 42, 38][ci * 2 + i]}%` }} />
+                                                <div
+                                                    className="mb-2 h-2.5 rounded bg-white/20"
+                                                    style={{
+                                                        width: `${[70, 85, 60, 75, 90, 65, 80, 55][ci * 2 + i]}%`,
+                                                    }}
+                                                />
+                                                <div
+                                                    className="h-2 rounded bg-white/10"
+                                                    style={{
+                                                        width: `${[45, 60, 40, 55, 35, 50, 42, 38][ci * 2 + i]}%`,
+                                                    }}
+                                                />
                                             </div>
                                         ))}
                                     </div>
@@ -241,7 +283,7 @@ export default function Welcome({ canRegister = true }: Props) {
                 {/* Features */}
                 <section className="mx-auto max-w-6xl px-6 py-20">
                     <div className="mb-4 text-center">
-                        <span className="text-xs font-semibold uppercase tracking-widest text-violet-400">
+                        <span className="text-xs font-semibold tracking-widest text-violet-400 uppercase">
                             Everything you need
                         </span>
                     </div>
@@ -259,7 +301,7 @@ export default function Welcome({ canRegister = true }: Props) {
                 <section className="mx-auto max-w-6xl px-6 py-20">
                     <div className="overflow-hidden rounded-3xl border border-white/10 bg-gradient-to-br from-violet-900/20 to-indigo-900/20 p-12">
                         <div className="mb-4 text-center">
-                            <span className="text-xs font-semibold uppercase tracking-widest text-violet-400">
+                            <span className="text-xs font-semibold tracking-widest text-violet-400 uppercase">
                                 Workflow
                             </span>
                         </div>
@@ -268,17 +310,37 @@ export default function Welcome({ canRegister = true }: Props) {
                         </h2>
                         <div className="grid gap-8 md:grid-cols-4">
                             {[
-                                { step: '01', title: 'Create a project', body: 'Spin up a project and invite your team. Each project gets its own boards, documents, and work log.' },
-                                { step: '02', title: 'Build your boards', body: 'Boards auto-create 5 default lists and colour-coded labels. Connect a GitHub repo to import issues as cards.' },
-                                { step: '03', title: 'Work and track', body: 'Drag cards, leave comments, tick checklists. Every action is logged automatically in your work log.' },
-                                { step: '04', title: 'Ship with context', body: 'Ask your AI agent via MCP to check the board, move cards, or surface docs — without leaving your editor.' },
+                                {
+                                    step: '01',
+                                    title: 'Create a project',
+                                    body: 'Spin up a project and invite your team. Each project gets its own boards, documents, and work log.',
+                                },
+                                {
+                                    step: '02',
+                                    title: 'Build your boards',
+                                    body: 'Boards auto-create 5 default lists and colour-coded labels. Connect a GitHub repo to import issues as cards.',
+                                },
+                                {
+                                    step: '03',
+                                    title: 'Work and track',
+                                    body: 'Drag cards, leave comments, tick checklists. Every action is logged automatically in your work log.',
+                                },
+                                {
+                                    step: '04',
+                                    title: 'Ship with context',
+                                    body: 'Ask your AI agent via MCP to check the board, move cards, or surface docs — without leaving your editor.',
+                                },
                             ].map(({ step, title, body }) => (
                                 <div key={step} className="text-center">
                                     <div className="mx-auto mb-4 flex h-12 w-12 items-center justify-center rounded-2xl bg-violet-600/30 text-xl font-bold text-violet-400">
                                         {step}
                                     </div>
-                                    <h3 className="mb-2 font-semibold text-white">{title}</h3>
-                                    <p className="text-sm leading-relaxed text-white/50">{body}</p>
+                                    <h3 className="mb-2 font-semibold text-white">
+                                        {title}
+                                    </h3>
+                                    <p className="text-sm leading-relaxed text-white/50">
+                                        {body}
+                                    </p>
                                 </div>
                             ))}
                         </div>
@@ -291,7 +353,7 @@ export default function Welcome({ canRegister = true }: Props) {
                         <div>
                             <div className="mb-4 inline-flex items-center gap-2 rounded-full border border-emerald-500/30 bg-emerald-500/10 px-4 py-1.5">
                                 <Bot className="h-3.5 w-3.5 text-emerald-400" />
-                                <span className="text-xs font-semibold uppercase tracking-widest text-emerald-400">
+                                <span className="text-xs font-semibold tracking-widest text-emerald-400 uppercase">
                                     AI-Native
                                 </span>
                             </div>
@@ -299,7 +361,11 @@ export default function Welcome({ canRegister = true }: Props) {
                                 Your AI agent can actually do stuff
                             </h2>
                             <p className="mb-6 leading-relaxed text-white/60">
-                                The built-in MCP server exposes your boards, cards, work log, and documents to Claude and other AI agents. Create scoped tokens with allowed-tool lists so agents only touch what they should.
+                                The built-in MCP server exposes your boards,
+                                cards, work log, and documents to Claude and
+                                other AI agents. Create scoped tokens with
+                                allowed-tool lists so agents only touch what
+                                they should.
                             </p>
                             <ul className="space-y-3">
                                 {[
@@ -308,11 +374,16 @@ export default function Welcome({ canRegister = true }: Props) {
                                     'Log work entries on your behalf',
                                     'Fetch project documentation',
                                 ].map((item) => (
-                                    <li key={item} className="flex items-center gap-3">
+                                    <li
+                                        key={item}
+                                        className="flex items-center gap-3"
+                                    >
                                         <div className="flex h-5 w-5 shrink-0 items-center justify-center rounded-full bg-emerald-500/20">
                                             <CheckSquare className="h-3 w-3 text-emerald-400" />
                                         </div>
-                                        <span className="text-sm text-white/70">{item}</span>
+                                        <span className="text-sm text-white/70">
+                                            {item}
+                                        </span>
                                     </li>
                                 ))}
                             </ul>
@@ -325,17 +396,77 @@ export default function Welcome({ canRegister = true }: Props) {
                                 <div className="h-3 w-3 rounded-full bg-green-500/60" />
                             </div>
                             <div className="space-y-1.5 text-xs leading-relaxed">
-                                <p><span className="text-violet-400">tool</span> <span className="text-white/40">›</span> <span className="text-white/80">list_projects</span></p>
-                                <p className="text-white/40">→ My App, Internal Tools, Design System</p>
-                                <p className="mt-3"><span className="text-violet-400">tool</span> <span className="text-white/40">›</span> <span className="text-white/80">get_board</span> <span className="text-amber-400">"My App"</span></p>
-                                <p className="text-white/40">→ 4 lists, 23 cards, 3 overdue</p>
-                                <p className="mt-3"><span className="text-violet-400">tool</span> <span className="text-white/40">›</span> <span className="text-white/80">create_card</span></p>
-                                <p className="text-white/40">  title: <span className="text-emerald-400">"Fix auth bug"</span></p>
-                                <p className="text-white/40">  list: <span className="text-emerald-400">"In Progress"</span></p>
-                                <p className="text-white/40">→ Card #47 created ✓</p>
-                                <p className="mt-3"><span className="text-violet-400">tool</span> <span className="text-white/40">›</span> <span className="text-white/80">log_work</span></p>
-                                <p className="text-white/40">  <span className="text-emerald-400">"Fixed the auth race condition #my-app"</span></p>
-                                <p className="text-white/40">→ Work log entry created ✓</p>
+                                <p>
+                                    <span className="text-violet-400">
+                                        tool
+                                    </span>{' '}
+                                    <span className="text-white/40">›</span>{' '}
+                                    <span className="text-white/80">
+                                        list_projects
+                                    </span>
+                                </p>
+                                <p className="text-white/40">
+                                    → My App, Internal Tools, Design System
+                                </p>
+                                <p className="mt-3">
+                                    <span className="text-violet-400">
+                                        tool
+                                    </span>{' '}
+                                    <span className="text-white/40">›</span>{' '}
+                                    <span className="text-white/80">
+                                        get_board
+                                    </span>{' '}
+                                    <span className="text-amber-400">
+                                        "My App"
+                                    </span>
+                                </p>
+                                <p className="text-white/40">
+                                    → 4 lists, 23 cards, 3 overdue
+                                </p>
+                                <p className="mt-3">
+                                    <span className="text-violet-400">
+                                        tool
+                                    </span>{' '}
+                                    <span className="text-white/40">›</span>{' '}
+                                    <span className="text-white/80">
+                                        create_card
+                                    </span>
+                                </p>
+                                <p className="text-white/40">
+                                    {' '}
+                                    title:{' '}
+                                    <span className="text-emerald-400">
+                                        "Fix auth bug"
+                                    </span>
+                                </p>
+                                <p className="text-white/40">
+                                    {' '}
+                                    list:{' '}
+                                    <span className="text-emerald-400">
+                                        "In Progress"
+                                    </span>
+                                </p>
+                                <p className="text-white/40">
+                                    → Card #47 created ✓
+                                </p>
+                                <p className="mt-3">
+                                    <span className="text-violet-400">
+                                        tool
+                                    </span>{' '}
+                                    <span className="text-white/40">›</span>{' '}
+                                    <span className="text-white/80">
+                                        log_work
+                                    </span>
+                                </p>
+                                <p className="text-white/40">
+                                    {' '}
+                                    <span className="text-emerald-400">
+                                        "Fixed the auth race condition #my-app"
+                                    </span>
+                                </p>
+                                <p className="text-white/40">
+                                    → Work log entry created ✓
+                                </p>
                             </div>
                         </div>
                     </div>
@@ -353,19 +484,20 @@ export default function Welcome({ canRegister = true }: Props) {
                             Ready to figure it out?
                         </h2>
                         <p className="mb-8 text-lg text-white/70">
-                            Stop losing track of what needs doing and start knowing exactly what you&apos;ve done.
+                            Stop losing track of what needs doing and start
+                            knowing exactly what you&apos;ve done.
                         </p>
                         {isLoggedIn ? (
                             <Link
                                 href={dashboard()}
-                                className="inline-block rounded-2xl bg-white px-10 py-4 text-base font-bold text-violet-700 shadow-lg transition-all hover:shadow-xl hover:scale-105"
+                                className="inline-block rounded-2xl bg-white px-10 py-4 text-base font-bold text-violet-700 shadow-lg transition-all hover:scale-105 hover:shadow-xl"
                             >
                                 Open Dashboard
                             </Link>
                         ) : canRegister ? (
                             <Link
                                 href={register()}
-                                className="inline-block rounded-2xl bg-white px-10 py-4 text-base font-bold text-violet-700 shadow-lg transition-all hover:shadow-xl hover:scale-105"
+                                className="inline-block rounded-2xl bg-white px-10 py-4 text-base font-bold text-violet-700 shadow-lg transition-all hover:scale-105 hover:shadow-xl"
                             >
                                 Get started — it&apos;s free
                             </Link>

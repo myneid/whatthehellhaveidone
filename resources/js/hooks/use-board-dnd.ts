@@ -30,6 +30,7 @@ type UseBoardDndOptions = {
     promptWorkAssignmentIfNeeded: (cardId: number, targetList: BoardList) => void;
     promptGithubIssueIfNeeded: (cardId: number, targetList: BoardList) => void;
     promptPullRequestActionIfNeeded: (cardId: number, targetList: BoardList) => void;
+    promptGithubIssueCloseIfNeeded: (cardId: number, targetList: BoardList) => void;
     reloadBoardAfterMove: () => void;
 };
 
@@ -39,6 +40,7 @@ export function useBoardDnd({
     promptWorkAssignmentIfNeeded,
     promptGithubIssueIfNeeded,
     promptPullRequestActionIfNeeded,
+    promptGithubIssueCloseIfNeeded,
     reloadBoardAfterMove,
 }: UseBoardDndOptions) {
     const [activeCard, setActiveCard] = useState<Card | null>(null);
@@ -283,6 +285,10 @@ export function useBoardDnd({
                         newList,
                     );
                     promptPullRequestActionIfNeeded(
+                        activeFound.card.id,
+                        newList,
+                    );
+                    promptGithubIssueCloseIfNeeded(
                         activeFound.card.id,
                         newList,
                     );

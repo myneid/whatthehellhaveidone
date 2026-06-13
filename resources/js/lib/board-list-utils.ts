@@ -167,6 +167,30 @@ export function listPromptsPullRequestAction(
     return card.github_link?.pull_request_number != null;
 }
 
+export function listPromptsGithubIssueClose(
+    targetList: BoardList,
+    doneListId: number | null,
+    card: Card | null,
+): boolean {
+    if (doneListId === null || targetList.id !== doneListId || !card?.github_link) {
+        return false;
+    }
+
+    if (card.github_link.state !== 'open') {
+        return false;
+    }
+
+    if (card.github_link.pull_request_number != null) {
+        return false;
+    }
+
+    if (targetList.github_action === 'close_issue') {
+        return false;
+    }
+
+    return true;
+}
+
 export function buildBoardListSignature(boardLists: BoardList[]): string {
     return boardLists
         .map(
@@ -190,7 +214,7 @@ export function buildBoardListSignature(boardLists: BoardList[]): string {
                             ? `${card.github_link.id}:${card.github_link.issue_number}:${card.github_link.state}:${card.github_link.pull_request_number ?? 'none'}:${card.github_link.pull_request_state ?? 'none'}:${card.github_link.synced_at ?? ''}`
                             : 'none';
 
-                        return `${card.id}:${card.updated_at}:${attachmentSignature}:${commentSignature}:${githubLinkSignature}`;
+                        return `${card.id}:${card.number}:${card.updated_at}:${attachmentSignature}:${commentSignature}:${githubLinkSignature}`;
                     })
                     .join(',')}`,
         )

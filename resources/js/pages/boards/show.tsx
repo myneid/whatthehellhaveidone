@@ -1,11 +1,11 @@
 import { Head } from '@inertiajs/react';
-import { useEcho } from '@laravel/echo-react';
-import { useEffect, useState } from 'react';
+import { useCallback, useEffect, useState } from 'react';
 import { toast } from 'sonner';
 import { BoardHeader } from '@/components/boards/board-header';
 import { BoardKanban } from '@/components/boards/board-kanban';
 import { BoardSettingsSheet } from '@/components/boards/board-settings-sheet';
 import { CardModal } from '@/components/boards/card-modal';
+import { GithubIssueCloseDialog } from '@/components/boards/github-issue-close-dialog';
 import { GithubIssueDialog } from '@/components/boards/github-issue-dialog';
 import { PullRequestActionDialog } from '@/components/boards/pull-request-action-dialog';
 import { WorkAssigneeDialog } from '@/components/boards/work-assignee-dialog';
@@ -13,6 +13,7 @@ import type { AssignableMember } from '@/components/boards/work-assignee-dialog'
 import { useBoardCollaborators } from '@/hooks/use-board-collaborators';
 import { useBoardDnd } from '@/hooks/use-board-dnd';
 import { useBoardLists } from '@/hooks/use-board-lists';
+import { useIsClient } from '@/hooks/use-is-client';
 import type { MentionableUser } from '@/hooks/use-mention-autocomplete';
 import { moveCardBetweenLists } from '@/lib/board-list-utils';
 import { dashboard } from '@/routes';
@@ -41,6 +42,7 @@ export default function BoardShow({
     assignableMembers: assignableMembersProp,
     mentionableMembers: mentionableMembersProp,
 }: Props) {
+    const isClient = useIsClient();
     const [showSettings, setShowSettings] = useState(false);
     const { mentionableMembers, assignableMembers } = useBoardCollaborators(
         board,
@@ -75,9 +77,21 @@ export default function BoardShow({
         pendingPullRequestActionCardId,
         setPendingPullRequestActionCardId,
         promptPullRequestActionIfNeeded,
+        pendingGithubIssueCloseCard,
+        pendingGithubIssueCloseCardId,
+        setPendingGithubIssueCloseCardId,
+        promptGithubIssueCloseIfNeeded,
         reloadBoardAfterMove,
         openCard,
     } = useBoardLists(board);
+
+    const normalizedAssignableMembers: AssignableMember[] = assignableMembers.map(
+        (member) => ({
+            id: member.id,
+            name: member.name,
+            avatar: member.avatar ?? null,
+        }),
+    );
 
     const {
         sensors,
@@ -92,25 +106,28 @@ export default function BoardShow({
         promptWorkAssignmentIfNeeded,
         promptGithubIssueIfNeeded,
         promptPullRequestActionIfNeeded,
+        promptGithubIssueCloseIfNeeded,
         reloadBoardAfterMove,
     });
 
     useEffect(() => {
         const params = new URLSearchParams(window.location.search);
         const cardId = params.get('card');
-        if (!cardId) return;
+
+        if (!cardId) {
+            return;
+        }
 
         const id = parseInt(cardId, 10);
         const card = lists.flatMap((l) => l.cards ?? []).find((c) => c.id === id);
+
         if (card) {
             setSelectedCardId(id);
         }
-    }, []);
+    }, [lists, setSelectedCardId]);
 
-    useEcho<CardMovedPayload>(
-        `board.${board.id}`,
-        'CardMoved',
-        (e) => {
+    const handleCardMoved = useCallback(
+        (e: CardMovedPayload) => {
             updateLists((currentLists) => {
                 const cardAlreadyInTargetList = currentLists
                     .find((l) => l.id === e.list_id)
@@ -130,8 +147,39 @@ export default function BoardShow({
                 return moveCardBetweenLists(currentLists, e.card_id, e.list_id, e.position);
             });
         },
-        [board.id],
+        [updateLists],
     );
+
+    useEffect(() => {
+        if (!isClient) {
+            return;
+        }
+
+        let active = true;
+        let cleanup: (() => void) | undefined;
+
+        void import('@laravel/echo-react').then(({ echo, echoIsConfigured }) => {
+            if (!active || !echoIsConfigured()) {
+                return;
+            }
+
+            try {
+                const echoInstance = echo();
+                const channel = echoInstance.private(`board.${board.id}`);
+                channel.listen('CardMoved', handleCardMoved);
+                cleanup = () => {
+                    echoInstance.leave(`board.${board.id}`);
+                };
+            } catch {
+                // Real-time updates are optional; the board should still work without Echo.
+            }
+        });
+
+        return () => {
+            active = false;
+            cleanup?.();
+        };
+    }, [isClient, board.id, handleCardMoved]);
 
     return (
         <>
@@ -187,7 +235,7 @@ export default function BoardShow({
 
             <WorkAssigneeDialog
                 card={pendingWorkAssignmentCard}
-                assignableMembers={assignableMembers}
+                assignableMembers={normalizedAssignableMembers}
                 context={pendingWorkAssignmentContext}
                 open={pendingWorkAssignmentCardId !== null}
                 onClose={() => {
@@ -200,6 +248,12 @@ export default function BoardShow({
                 card={pendingPullRequestActionCard}
                 open={pendingPullRequestActionCardId !== null}
                 onClose={() => setPendingPullRequestActionCardId(null)}
+            />
+
+            <GithubIssueCloseDialog
+                card={pendingGithubIssueCloseCard}
+                open={pendingGithubIssueCloseCardId !== null}
+                onClose={() => setPendingGithubIssueCloseCardId(null)}
             />
         </>
     );

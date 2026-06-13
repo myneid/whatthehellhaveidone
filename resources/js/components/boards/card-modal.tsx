@@ -8,6 +8,7 @@ import {
     MessageSquare,
     Paperclip,
     Pencil,
+    Reply,
     Tag,
     Trash2,
     User,
@@ -18,6 +19,7 @@ import * as githubController from '@/actions/App/Http/Controllers/GithubControll
 import { MentionTextField } from '@/components/mention-text-field';
 import { Button } from '@/components/ui/button';
 import { useMentionableMembersForBoard } from '@/hooks/use-board-collaborators';
+import { formatCardNumber } from '@/lib/card-utils';
 import {
     Dialog,
     DialogContent,
@@ -110,16 +112,28 @@ function ChecklistProgress({ items }: { items: { is_completed: boolean }[] }) {
 function CommentForm({
     cardId,
     boardMembers,
+    parentId,
+    placeholder = 'Add a comment... use @ to mention',
+    onSuccess,
 }: {
     cardId: number;
     boardMembers: MentionableUser[];
+    parentId?: number;
+    placeholder?: string;
+    onSuccess?: () => void;
 }) {
-    const form = useForm({ body: '' });
+    const form = useForm({
+        body: '',
+        parent_id: parentId ?? null,
+    });
 
     function submit(e: React.FormEvent) {
         e.preventDefault();
         form.post(cardComments.store(cardId).url, {
-            onSuccess: () => form.reset(),
+            onSuccess: () => {
+                form.reset();
+                onSuccess?.();
+            },
         });
     }
 
@@ -129,7 +143,7 @@ function CommentForm({
                 members={boardMembers}
                 value={form.data.body}
                 onValueChange={(body) => form.setData('body', body)}
-                placeholder="Add a comment... use @ to mention"
+                placeholder={placeholder}
                 className="flex-1"
             />
             <Button
@@ -143,21 +157,44 @@ function CommentForm({
     );
 }
 
+function commentAuthorInitial(comment: CardComment): string {
+    return (comment.user?.name?.charAt(0) ?? '?').toUpperCase();
+}
+
+function getCommentReplies(
+    comments: CardComment[] | undefined,
+    parentId: number,
+): CardComment[] {
+    return (comments ?? []).filter((comment) => comment.parent_id === parentId);
+}
+
+function getTopLevelComments(comments: CardComment[] | undefined): CardComment[] {
+    return (comments ?? []).filter((comment) => !comment.parent_id);
+}
+
 function CommentItem({
     comment,
+    cardId,
+    allComments,
     boardMembers,
     currentUserId,
     isSuperAdmin,
+    depth = 0,
 }: {
     comment: CardComment;
+    cardId: number;
+    allComments?: CardComment[];
     boardMembers: MentionableUser[];
     currentUserId: number | undefined;
     isSuperAdmin: boolean;
+    depth?: number;
 }) {
     const canEdit = currentUserId === comment.user_id;
     const canDelete = canEdit || isSuperAdmin;
     const [editing, setEditing] = useState(false);
+    const [replying, setReplying] = useState(false);
     const [body, setBody] = useState(comment.body);
+    const replies = getCommentReplies(allComments, comment.id);
     const isEdited =
         Boolean(comment.updated_at) &&
         Boolean(comment.created_at) &&
@@ -198,9 +235,10 @@ function CommentItem({
     }
 
     return (
-        <div className="flex gap-2">
+        <div className={depth > 0 ? 'ml-6 border-l border-border pl-3' : undefined}>
+            <div className="flex gap-2">
             <div className="flex h-7 w-7 shrink-0 items-center justify-center rounded-full bg-primary text-xs font-medium text-primary-foreground">
-                {comment.user?.name.charAt(0).toUpperCase()}
+                {commentAuthorInitial(comment)}
             </div>
             <div className="flex-1 rounded-lg bg-muted px-3 py-2">
                 <div className="mb-0.5 flex items-center justify-between">
@@ -219,6 +257,19 @@ function CommentItem({
                             <span className="text-xs text-muted-foreground">
                                 (edited)
                             </span>
+                        ) : null}
+                        {!editing ? (
+                            <button
+                                type="button"
+                                onClick={() => {
+                                    setReplying((open) => !open);
+                                    setEditing(false);
+                                }}
+                                className="text-muted-foreground hover:text-foreground"
+                                title="Reply to comment"
+                            >
+                                <Reply className="h-3 w-3" />
+                            </button>
                         ) : null}
                         {canEdit && !editing ? (
                             <button
@@ -282,7 +333,43 @@ function CommentItem({
                         {comment.body}
                     </p>
                 )}
+                {replying ? (
+                    <div className="mt-2 space-y-2">
+                        <CommentForm
+                            cardId={cardId}
+                            boardMembers={boardMembers}
+                            parentId={comment.id}
+                            placeholder={`Reply to ${comment.user?.name ?? 'comment'}...`}
+                            onSuccess={() => setReplying(false)}
+                        />
+                        <Button
+                            type="button"
+                            size="sm"
+                            variant="ghost"
+                            onClick={() => setReplying(false)}
+                        >
+                            Cancel
+                        </Button>
+                    </div>
+                ) : null}
             </div>
+            </div>
+            {replies.length > 0 ? (
+                <div className="mt-3 space-y-3">
+                    {replies.map((reply) => (
+                        <CommentItem
+                            key={reply.id}
+                            comment={reply}
+                            cardId={cardId}
+                            allComments={allComments}
+                            boardMembers={boardMembers}
+                            currentUserId={currentUserId}
+                            isSuperAdmin={isSuperAdmin}
+                            depth={depth + 1}
+                        />
+                    ))}
+                </div>
+            ) : null}
         </div>
     );
 }
@@ -809,6 +896,9 @@ export function CardModal({
                             className="cursor-pointer text-xl hover:underline"
                             onClick={() => setEditingTitle(true)}
                         >
+                            <span className="mr-2 font-normal text-muted-foreground">
+                                {formatCardNumber(card.number)}
+                            </span>
                             {card.title}
                         </DialogTitle>
                     )}
@@ -1019,10 +1109,12 @@ export function CardModal({
                             boardMembers={effectiveMentionableMembers}
                         />
                         <div className="mt-3 space-y-3">
-                            {card.comments?.map((comment) => (
+                            {getTopLevelComments(card.comments).map((comment) => (
                                 <CommentItem
                                     key={comment.id}
                                     comment={comment}
+                                    cardId={card.id}
+                                    allComments={card.comments}
                                     boardMembers={effectiveMentionableMembers}
                                     currentUserId={currentUserId}
                                     isSuperAdmin={isSuperAdmin}
