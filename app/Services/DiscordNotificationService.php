@@ -33,7 +33,7 @@ class DiscordNotificationService
             'from' => $fromList,
             'to' => $card->list->name,
             'actor' => request()->user()?->name,
-            'card_url' => url("/cards/{$card->id}"),
+            'card_url' => route('cards.show', $card),
         ];
     }
 

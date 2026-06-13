@@ -18,7 +18,6 @@ use Illuminate\Http\JsonResponse;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Inertia\Inertia;
-use Inertia\Response;
 use RuntimeException;
 
 class CardController extends Controller
@@ -72,27 +71,11 @@ class CardController extends Controller
         return back();
     }
 
-    public function show(Card $card): Response
+    public function show(Card $card): RedirectResponse
     {
         $this->authorize('view', $card);
 
-        $card->load([
-            'list',
-            'creator',
-            'assignees',
-            'labels',
-            'comments.user',
-            'attachments.user',
-            'checklists.items.completedBy',
-            'watchers',
-            'githubLink.githubRepository',
-            'activityLogs.actor',
-        ]);
-
-        return Inertia::render('cards/show', [
-            'card' => $card,
-            'board' => $card->board->load(['lists', 'labels', 'members.user']),
-        ]);
+        return redirect()->to(route('boards.show', $card->board).'?card='.$card->id);
     }
 
     public function update(UpdateCardRequest $request, Card $card): RedirectResponse|JsonResponse

@@ -1,6 +1,6 @@
 import { Head } from '@inertiajs/react';
 import { useEcho } from '@laravel/echo-react';
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { toast } from 'sonner';
 import { BoardHeader } from '@/components/boards/board-header';
 import { BoardKanban } from '@/components/boards/board-kanban';
@@ -94,6 +94,18 @@ export default function BoardShow({
         promptPullRequestActionIfNeeded,
         reloadBoardAfterMove,
     });
+
+    useEffect(() => {
+        const params = new URLSearchParams(window.location.search);
+        const cardId = params.get('card');
+        if (!cardId) return;
+
+        const id = parseInt(cardId, 10);
+        const card = lists.flatMap((l) => l.cards ?? []).find((c) => c.id === id);
+        if (card) {
+            setSelectedCardId(id);
+        }
+    }, []);
 
     useEcho<CardMovedPayload>(
         `board.${board.id}`,
