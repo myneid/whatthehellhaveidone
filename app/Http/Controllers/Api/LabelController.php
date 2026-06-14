@@ -5,8 +5,8 @@ namespace App\Http\Controllers\Api;
 use App\Http\Controllers\Controller;
 use App\Http\Resources\Api\LabelResource;
 use App\Models\Board;
-use App\Models\Label;
 use App\Models\Card;
+use App\Models\Label;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 
@@ -51,7 +51,7 @@ class LabelController extends Controller
     public function destroy(Label $label): JsonResponse
     {
         $this->authorize('update', $label->board);
-        $label->delete();
+        Label::query()->whereKey($label->getKey())->delete();
 
         return response()->json(['message' => 'Label removed successfully.']);
     }
@@ -65,5 +65,14 @@ class LabelController extends Controller
         $card->labels()->syncWithoutDetaching([$request->label_id]);
 
         return response()->json(['message' => 'Label attached to card successfully.']);
+    }
+
+    public function detach(Request $request, Card $card, Label $label): JsonResponse
+    {
+        $this->authorize('update', $card);
+
+        $card->labels()->detach($label->id);
+
+        return response()->json(['message' => 'Label detached from card successfully.']);
     }
 }

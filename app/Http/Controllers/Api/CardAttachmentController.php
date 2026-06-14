@@ -2,8 +2,8 @@
 
 namespace App\Http\Controllers\Api;
 
-use App\Http\Controllers\Controller;
 use App\Events\CardAttachmentAdded;
+use App\Http\Controllers\Controller;
 use App\Models\Card;
 use App\Models\CardAttachment;
 use Illuminate\Http\JsonResponse;
@@ -20,7 +20,7 @@ class CardAttachmentController extends Controller
     {
         $user = $request->user();
 
-        if (!$user->can('update', $card)) {
+        if (! $user || ! $user->can('update', $card)) {
             return response()->json(['message' => 'Unauthorized'], 403);
         }
 
@@ -42,7 +42,7 @@ class CardAttachmentController extends Controller
             'mime_type' => $file->getMimeType(),
             'size' => $file->getSize(),
             'disk' => 'public',
-        ];
+        ]);
 
         event(new CardAttachmentAdded($card, $attachment));
 
@@ -57,12 +57,10 @@ class CardAttachmentController extends Controller
      */
     public function destroy(CardAttachment $attachment): JsonResponse
     {
-        if ($attachment->card->user_id !== auth()->id()) {
-             return response()->json(['message' => 'Unauthorized'], 403);
-        }
+        $this->authorize('update', $attachment->card);
 
         Storage::disk($attachment->disk)->delete([$attachment->path]);
-        $attachment->delete();
+        CardAttachment::query()->whereKey($attachment->getKey())->delete();
 
         return response()->json(['message' => 'Attachment removed.'], 200);
     }

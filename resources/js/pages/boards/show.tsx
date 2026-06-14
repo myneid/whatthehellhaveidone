@@ -14,8 +14,10 @@ import { useBoardCollaborators } from '@/hooks/use-board-collaborators';
 import { useBoardDnd } from '@/hooks/use-board-dnd';
 import { useBoardLists } from '@/hooks/use-board-lists';
 import { useIsClient } from '@/hooks/use-is-client';
+import { useIsMobile } from '@/hooks/use-mobile';
 import type { MentionableUser } from '@/hooks/use-mention-autocomplete';
 import { moveCardBetweenLists } from '@/lib/board-list-utils';
+import MobileBoard from '@/pages/mobile/boards/show';
 import { dashboard } from '@/routes';
 import * as boardRoutes from '@/routes/boards';
 import * as projectRoutes from '@/routes/projects';
@@ -43,7 +45,12 @@ export default function BoardShow({
     mentionableMembers: mentionableMembersProp,
 }: Props) {
     const isClient = useIsClient();
+    const isMobile = useIsMobile();
     const [showSettings, setShowSettings] = useState(false);
+
+    if (isMobile) {
+        return <MobileBoard board={board} />;
+    }
     const { mentionableMembers, assignableMembers } = useBoardCollaborators(
         board,
         mentionableMembersProp.length > 0

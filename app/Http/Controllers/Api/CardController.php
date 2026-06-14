@@ -3,6 +3,9 @@
 namespace App\Http\Controllers\Api;
 
 use App\Http\Controllers\Controller;
+use App\Http\Requests\MoveCardRequest;
+use App\Http\Requests\StoreCardRequest;
+use App\Http\Requests\UpdateCardRequest;
 use App\Http\Resources\Api\CardResource;
 use App\Models\BoardList;
 use App\Models\Card;
@@ -24,13 +27,17 @@ class CardController extends Controller
     ) {}
 
     public function store(
-        Request $request,
+        StoreCardRequest $request,
         GithubCardIssueService $githubCardIssues,
     ): JsonResponse {
         $list = BoardList::findOrFail($request->list_id);
         $this->authorize('create', [Card::class, $list->board]);
 
-        $position = Card::where('list_id', $list->id)->whereNull('archived_at')->max('position') ?? 0;
+        $position = Card::query()
+            ->where('list_id', $list->id)
+            ->where('archived_at', '=', null)
+            ->orderByDesc('position')
+            ->value('position') ?? 0;
 
         $card = Card::create([
             ...$request->validated(),
@@ -58,7 +65,7 @@ class CardController extends Controller
 
         return response()->json([
             'message' => 'Card created successfully.',
-            'card' => new CardResource($card),
+            'card' => new CardResource($card->load(['assignees', 'labels', 'attachments', 'creator'])),
         ], 201);
     }
 
@@ -77,17 +84,19 @@ class CardController extends Controller
         ])));
     }
 
-    public function update(Request $request, Card $card): JsonResponse
+    public function update(UpdateCardRequest $request, Card $card): JsonResponse
     {
         $this->authorize('update', $card);
 
         $oldValues = $card->only(['title', 'description', 'priority', 'due_at']);
-        $card->update($request->validated());
+        $validated = $request->validated();
+
+        $card->update($validated);
 
         $this->activityLog->log($card, 'card_updated', old: $oldValues, new: $card->fresh()->only(array_keys($oldValues)), actor: $request->user());
 
-        if (isset($request->validated()['description'])) {
-            $this->mentionService->notifyMentions($card, $request->user(), $request->validated()['description'], 'description');
+        if (isset($validated['description'])) {
+            $this->mentionService->notifyMentions($card, $request->user(), $validated['description'], 'description');
         }
 
         return response()->json([
@@ -96,7 +105,7 @@ class CardController extends Controller
         ]);
     }
 
-    public function move(Request $request, Card $card): JsonResponse
+    public function move(MoveCardRequest $request, Card $card): JsonResponse
     {
         $this->authorize('update', $card);
 
@@ -129,7 +138,7 @@ class CardController extends Controller
         $this->authorize('update', $card);
 
         $card->update(['archived_at' => null]);
-        $this->activitylog->log($card, 'card_restored', actor: $request->user());
+        $this->activityLog->log($card, 'card_restored', actor: $request->user());
 
         return response()->json(['message' => 'Card restored successfully.']);
     }
@@ -187,7 +196,7 @@ class CardController extends Controller
     public function destroy(Card $card): JsonResponse
     {
         $this->authorize('delete', $card);
-        $card->delete();
+        Card::query()->whereKey($card->getKey())->delete();
 
         return response()->json(['message' => 'Card deleted successfully.']);
     }

@@ -5,6 +5,8 @@ import { Button } from '@/components/ui/button';
 import { Dialog, DialogContent, DialogFooter, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
+import { useIsMobile } from '@/hooks/use-mobile';
+import MobileDashboard from '@/pages/mobile/dashboard';
 import { dashboard } from '@/routes';
 import * as boards from '@/routes/boards';
 import * as projects from '@/routes/projects';
@@ -118,8 +120,13 @@ function CreateBoardDialog({ open, onClose }: { open: boolean; onClose: () => vo
 }
 
 export default function Dashboard({ projects: projectList, standaloneBoards }: Props) {
+    const isMobile = useIsMobile();
     const [showCreateProject, setShowCreateProject] = useState(false);
     const [showCreateBoard, setShowCreateBoard] = useState(false);
+
+    if (isMobile) {
+        return <MobileDashboard projects={projectList} standaloneBoards={standaloneBoards} />;
+    }
 
     return (
         <>

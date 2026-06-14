@@ -11,7 +11,7 @@ use Illuminate\Support\Facades\DB;
 
 class BoardListController extends Controller
 {
-    public function store(Request $request, Board $board): RedirectResponse
+    public function store(Request $request, Board $board): RedirectResponse|JsonResponse
     {
         $this->authorize('update', $board);
 
@@ -20,7 +20,11 @@ class BoardListController extends Controller
         ]);
 
         $position = $board->lists()->whereNull('archived_at')->max('position') ?? 0;
-        $board->lists()->create(['name' => $request->name, 'position' => $position + 1]);
+        $list = $board->lists()->create(['name' => $request->name, 'position' => $position + 1]);
+
+        if ($request->wantsJson()) {
+            return response()->json(['list' => $list->fresh()], 201);
+        }
 
         return back();
     }
@@ -77,7 +81,7 @@ class BoardListController extends Controller
         return back();
     }
 
-    public function destroy(BoardList $list): RedirectResponse
+    public function destroy(Request $request, BoardList $list): RedirectResponse|JsonResponse
     {
         $this->authorize('update', $list->board);
 
@@ -90,6 +94,10 @@ class BoardListController extends Controller
                 $list->update(['position' => $index + 1]);
             }
         });
+
+        if ($request->wantsJson()) {
+            return response()->json(['message' => 'List archived successfully.']);
+        }
 
         return back();
     }

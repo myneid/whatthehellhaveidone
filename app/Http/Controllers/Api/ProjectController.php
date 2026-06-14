@@ -3,7 +3,10 @@
 namespace App\Http\Controllers\Api;
 
 use App\Http\Controllers\Controller;
-    use App\Http\Resources\Api\ProjectResource;
+use App\Http\Requests\StoreProjectRequest;
+use App\Http\Requests\UpdateProjectRequest;
+use App\Http\Resources\Api\BoardResource;
+use App\Http\Resources\Api\ProjectResource;
 use App\Models\Project;
 use App\Services\ProjectInvitationReconciliationService;
 use Illuminate\Http\JsonResponse;
@@ -36,11 +39,11 @@ class ProjectController extends Controller
 
         return response()->json([
             'projects' => ProjectResource::collection($projects),
-            'standaloneBoards' => $standaloneBoards, // Or create a BoardResource collection for these too
+            'standaloneBoards' => BoardResource::collection($standaloneBoards),
         ]);
     }
 
-    public function store(Request $request): JsonResponse
+    public function store(StoreProjectRequest $request): JsonResponse
     {
         $project = Project::create([
             ...$request->validated(),
@@ -75,10 +78,12 @@ class ProjectController extends Controller
             'boards' => fn ($q) => $q->where('archived_at', null)->withCount('cards')->with('labels'),
         ]);
 
-        return response()->json($project);
+        return response()->json([
+            'project' => new ProjectResource($project),
+        ]);
     }
 
-    public function update(Request $request, Project $project): JsonResponse
+    public function update(UpdateProjectRequest $request, Project $project): JsonResponse
     {
         $this->authorize('update', $project);
 
@@ -86,7 +91,7 @@ class ProjectController extends Controller
 
         return response()->json([
             'message' => 'Project updated successfully.',
-            'project' => new ProjectResource($project),
+            'project' => new ProjectResource($project->fresh()),
         ]);
     }
 

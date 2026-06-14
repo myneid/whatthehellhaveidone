@@ -5,6 +5,8 @@ import { Button } from '@/components/ui/button';
 import { Dialog, DialogContent, DialogFooter, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
+import { useIsMobile } from '@/hooks/use-mobile';
+import MobileWorkLogIndex from '@/pages/mobile/work-log/index';
 import { dashboard } from '@/routes';
 import * as workLog from '@/routes/work-log';
 import { exportMethod as workLogExport } from '@/routes/work-log';
@@ -197,9 +199,14 @@ function formatDuration(seconds: number): string {
 }
 
 export default function WorkLogIndex({ entries, filters }: Props) {
+    const isMobile = useIsMobile();
     const [showCreate, setShowCreate] = useState(false);
     const [editingEntry, setEditingEntry] = useState<WorkLogEntry | null>(null);
     const [search, setSearch] = useState(filters.search ?? '');
+
+    if (isMobile) {
+        return <MobileWorkLogIndex entries={entries} filters={filters} />;
+    }
 
     function applyFilters(newFilters: Partial<Filters>) {
         router.get(workLog.index().url, { ...filters, ...newFilters }, { preserveState: true, replace: true });

@@ -3,12 +3,13 @@
 namespace App\Http\Controllers\Api;
 
 use App\Http\Controllers\Controller;
+use App\Http\Requests\StoreBoardRequest;
+use App\Http\Requests\UpdateBoardRequest;
 use App\Http\Resources\Api\BoardResource;
 use App\Models\Board;
 use App\Models\Project;
 use App\Services\SyncProjectMembersToBoardService;
 use Illuminate\Http\JsonResponse;
-use Illuminate\Http\Request;
 use Illuminate\Support\Str;
 
 class BoardController extends Controller
@@ -17,7 +18,7 @@ class BoardController extends Controller
         private readonly SyncProjectMembersToBoardService $syncProjectMembersToBoard,
     ) {}
 
-    public function store(Request $request): JsonResponse
+    public function store(StoreBoardRequest $request): JsonResponse
     {
         $project = $request->project_id ? Project::findOrFail($request->project_id) : null;
 
@@ -119,6 +120,31 @@ class BoardController extends Controller
             ]),
         ]);
 
-        return response()->json($board);
+        return response()->json([
+            'board' => new BoardResource($board),
+        ]);
+    }
+
+    public function update(UpdateBoardRequest $request, Board $board): JsonResponse
+    {
+        $this->authorize('update', $board);
+
+        $board->update($request->validated());
+
+        return response()->json([
+            'message' => 'Board updated successfully.',
+            'board' => new BoardResource($board->fresh()->load(['labels', 'lists.cards'])),
+        ]);
+    }
+
+    public function destroy(Board $board): JsonResponse
+    {
+        $this->authorize('delete', $board);
+
+        $board->update(['archived_at' => now()]);
+
+        return response()->json([
+            'message' => 'Board archived successfully.',
+        ]);
     }
 }
