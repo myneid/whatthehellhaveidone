@@ -8,7 +8,9 @@ use Illuminate\Broadcasting\InteractsWithSockets;
 use Illuminate\Foundation\Events\Dispatchable;
 use Illuminate\Queue\SerializesModels;
 
-class CardCommented
+use Illuminate\Contracts\Broadcasting\ShouldBroadcast;
+
+class CardCommented implements ShouldBroadcast
 {
     use Dispatchable, InteractsWithSockets, SerializesModels;
 
@@ -16,4 +18,22 @@ class CardCommented
         public readonly Card $card,
         public readonly CardComment $comment,
     ) {}
+
+    public function broadcastOn(): array
+    {
+        return [
+            new PrivateChannel('card.'.$this->card->id),
+        ];
+    }
+
+    public function broadcastWith(): array
+    {
+        return [
+            'comment' => [
+                'id' => $this->comment->id,
+                'body' => $this->comment->body,
+                'user' => $this->comment->user,
+            ],
+        ];
+    }
 }

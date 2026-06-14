@@ -8,4 +8,7 @@ Route::prefix('api/v1')->middleware(['auth:sanctum'])->group(function () {
     Route::get('work-log', [WorkLogApiController::class, 'index'])->name('api.work-log.index');
     Route::get('work-log/export', [WorkLogApiController::class, 'export'])->name('api.work-log.export');
     Route::match(['put', 'patch'], 'work-log/{workLogEntry}', [WorkLogApiController::class, 'update'])->name('api.work-log.update');
+
+    Route::post('cards/{card}/attachments', [App\Http\Controllers\Api\CardAttachmentController::class, 'store']);
+    Route::delete('attachments/{attachment}', [App\Http\Controllers\Api\CardAttachmentController::class, 'destroy']);
 });

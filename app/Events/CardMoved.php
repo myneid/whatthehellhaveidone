@@ -30,6 +30,17 @@ class CardMoved implements ShouldBroadcastNow
     public function broadcastWith(): array
     {
         return [
+            'card' => [
+                'id' => $this->card->id,
+                'list_id' => $this->card->list_id,
+                'position' => $this->card->position,
+            ],
+            'actor_name' => $this->actorName ?? $this->actor?->name,
+        ];
+    }
+}
+    {
+        return [
             'card_id' => $this->card->id,
             'list_id' => $this->card->list_id,
             'position' => $this->card->position,
