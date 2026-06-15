@@ -14,9 +14,9 @@ use Inertia\Inertia;
 */
 
 Route::get('/terms', function () {
-    return Inertia::render('Legal/Terms');
+    return Inertia::render('terms');
 })->name('terms');
 
 Route::get('/privacy', function () {
-    return Inertia::render('Legal/Privacy');
+    return Inertia::render('privacy');
 })->name('privacy');
