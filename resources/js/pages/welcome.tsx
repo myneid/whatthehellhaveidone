@@ -507,15 +507,23 @@ export default function Welcome({ canRegister = true }: Props) {
 
                 {/* Footer */}
                 <footer className="border-t border-white/10 py-8">
-                    <div className="mx-auto flex max-w-6xl items-center justify-between px-6">
+                    <div className="mx-auto flex max-w-6xl flex-col items-center justify-between gap-4 px-6 sm:flex-row">
                         <img
                             src="/whatthehellhaveidone.png"
                             alt="What the HELL have i DONE"
                             className="h-8 w-auto opacity-60"
                         />
-                        <p className="text-sm text-white/30">
-                            Built with Laravel, React & too much coffee
-                        </p>
+                        <div className="flex items-center gap-6">
+                            <Link href="/terms" className="text-sm text-white/30 transition-colors hover:text-white/60">
+                                Terms
+                            </Link>
+                            <Link href="/privacy" className="text-sm text-white/30 transition-colors hover:text-white/60">
+                                Privacy
+                            </Link>
+                            <p className="text-sm text-white/30">
+                                Built with Laravel, React & too much coffee
+                            </p>
+                        </div>
                     </div>
                 </footer>
             </div>

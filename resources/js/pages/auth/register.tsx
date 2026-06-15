@@ -1,8 +1,9 @@
-import { Form, Head } from '@inertiajs/react';
+import { Form, Head, Link } from '@inertiajs/react';
 import InputError from '@/components/input-error';
 import PasswordInput from '@/components/password-input';
 import TextLink from '@/components/text-link';
 import { Button } from '@/components/ui/button';
+import { Checkbox } from '@/components/ui/checkbox';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Spinner } from '@/components/ui/spinner';
@@ -89,10 +90,44 @@ export default function Register({ email }: Props) {
                                 />
                             </div>
 
+                            <div className="grid gap-2">
+                                <div className="flex items-start gap-3">
+                                    <Checkbox
+                                        id="terms"
+                                        name="terms"
+                                        tabIndex={5}
+                                        required
+                                        className="mt-0.5"
+                                    />
+                                    <label
+                                        htmlFor="terms"
+                                        className="cursor-pointer text-sm leading-relaxed text-muted-foreground"
+                                    >
+                                        I agree to the{' '}
+                                        <Link
+                                            href="/terms"
+                                            className="text-foreground underline underline-offset-4 hover:text-primary"
+                                            tabIndex={-1}
+                                        >
+                                            Terms of Service
+                                        </Link>{' '}
+                                        and{' '}
+                                        <Link
+                                            href="/privacy"
+                                            className="text-foreground underline underline-offset-4 hover:text-primary"
+                                            tabIndex={-1}
+                                        >
+                                            Privacy Policy
+                                        </Link>
+                                    </label>
+                                </div>
+                                <InputError message={errors.terms} />
+                            </div>
+
                             <Button
                                 type="submit"
                                 className="mt-2 w-full"
-                                tabIndex={5}
+                                tabIndex={6}
                                 data-test="register-user-button"
                             >
                                 {processing && <Spinner />}
@@ -102,7 +137,7 @@ export default function Register({ email }: Props) {
 
                         <div className="text-center text-sm text-muted-foreground">
                             Already have an account?{' '}
-                            <TextLink href={login()} tabIndex={6}>
+                            <TextLink href={login()} tabIndex={7}>
                                 Log in
                             </TextLink>
                         </div>

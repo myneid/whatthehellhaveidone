@@ -24,6 +24,7 @@ test('new users can register', function () {
         'email' => 'test@example.com',
         'password' => 'password',
         'password_confirmation' => 'password',
+        'terms' => 'on',
     ]);
 
     $this->assertAuthenticated();
@@ -60,6 +61,7 @@ test('invited users are added to the project after registering from an invitatio
         'email' => 'new-invitee@example.com',
         'password' => 'password',
         'password_confirmation' => 'password',
+        'terms' => 'on',
     ]);
 
     $invitee = User::where('email', 'new-invitee@example.com')->firstOrFail();
