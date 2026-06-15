@@ -39,12 +39,3 @@ class CardMoved implements ShouldBroadcastNow
         ];
     }
 }
-    {
-        return [
-            'card_id' => $this->card->id,
-            'list_id' => $this->card->list_id,
-            'position' => $this->card->position,
-            'from_list_id' => $this->fromListId,
-        ];
-    }
-}
