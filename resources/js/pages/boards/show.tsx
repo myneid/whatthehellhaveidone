@@ -1,4 +1,4 @@
-import { Head } from '@inertiajs/react';
+import { Head, router } from '@inertiajs/react';
 import { useCallback, useEffect, useState } from 'react';
 import { toast } from 'sonner';
 import { BoardHeader } from '@/components/boards/board-header';
@@ -152,6 +152,12 @@ export default function BoardShow({
                 }
 
                 return moveCardBetweenLists(currentLists, e.card_id, e.list_id, e.position);
+            });
+
+            router.reload({
+                only: ['board'],
+                preserveScroll: true,
+                preserveState: true,
             });
         },
         [updateLists],

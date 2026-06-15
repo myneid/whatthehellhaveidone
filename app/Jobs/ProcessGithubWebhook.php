@@ -76,15 +76,15 @@ class ProcessGithubWebhook implements ShouldQueue
             $card->update($updates);
         }
 
-        if ($action === 'closed') {
-            $cardListMove->moveCardToDoneList($card, 'github_issue_closed');
-        }
-
         $link->update([
             'issue_state' => $issue['state'],
             'last_synced_source' => 'github',
             'last_synced_at' => now(),
         ]);
+
+        if ($action === 'closed') {
+            $cardListMove->moveCardToDoneList($card->fresh(), 'github_issue_closed');
+        }
     }
 
     private function importNewIssueAsCard(array $issue): void
