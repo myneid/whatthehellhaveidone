@@ -53,6 +53,16 @@ const mainNavItems: NavItem[] = [
 
 const rightNavItems: NavItem[] = [
     {
+        title: 'Terms',
+        href: '/terms.md',
+        icon: BookOpen,
+    },
+    {
+        title: 'Privacy',
+        href: '/privacy.md',
+        icon: BookOpen,
+    },
+    {
         title: 'Repository',
         href: 'https://github.com/laravel/react-starter-kit',
         icon: Folder,

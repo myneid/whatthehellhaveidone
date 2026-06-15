@@ -44,6 +44,26 @@ export function UserMenuContent({ user }: Props) {
                         Settings
                     </Link>
                 </DropdownMenuItem>
+                <DropdownMenuItem asChild>
+                    <Link
+                        className="block w-full cursor-pointer"
+                        href="/terms.md"
+                        onClick={cleanup}
+                    >
+                        <span className="mr-2">⚖️</span>
+                        Terms
+                    </Link>
+                </DropdownMenuItem>
+                <DropdownMenuItem asChild>
+                    <Link
+                        className="block w-full cursor-pointer"
+                        href="/privacy.md"
+                        onClick={cleanup}
+                    >
+                        <span className="mr-2">🛡️</span>
+                        Privacy
+                    </Link>
+                </DropdownMenuItem>
             </DropdownMenuGroup>
             <DropdownMenuSeparator />
             <DropdownMenuItem asChild>
