@@ -514,10 +514,10 @@ export default function Welcome({ canRegister = true }: Props) {
                             className="h-8 w-auto opacity-60"
                         />
                         <div className="flex items-center gap-6">
-                            <Link href="/terms" className="text-sm text-white/30 transition-colors hover:text-white/60">
+                            <Link href="/terms" target="_blank" className="text-sm text-white/30 transition-colors hover:text-white/60">
                                 Terms
                             </Link>
-                            <Link href="/privacy" className="text-sm text-white/30 transition-colors hover:text-white/60">
+                            <Link href="/privacy" target="_blank" className="text-sm text-white/30 transition-colors hover:text-white/60">
                                 Privacy
                             </Link>
                             <p className="text-sm text-white/30">

@@ -22,7 +22,6 @@ class RunDeployment implements ShouldQueue
             'migrate' => ['php', 'artisan', 'migrate', '--force'],
             'optimize' => ['php', 'artisan', 'optimize'],
             'npm build' => ['npm', 'run', 'build'],
-            'queue restart' => ['php', 'artisan', 'queue:restart'],
         ];
 
         foreach ($steps as $name => $command) {

@@ -106,6 +106,7 @@ export default function Register({ email }: Props) {
                                         I agree to the{' '}
                                         <Link
                                             href="/terms"
+                                            target="_blank"
                                             className="text-foreground underline underline-offset-4 hover:text-primary"
                                             tabIndex={-1}
                                         >
@@ -114,6 +115,7 @@ export default function Register({ email }: Props) {
                                         and{' '}
                                         <Link
                                             href="/privacy"
+                                            target="_blank"
                                             className="text-foreground underline underline-offset-4 hover:text-primary"
                                             tabIndex={-1}
                                         >
