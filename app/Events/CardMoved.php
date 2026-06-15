@@ -34,6 +34,7 @@ class CardMoved implements ShouldBroadcast
             'list_id' => $this->card->list_id,
             'position' => $this->card->position,
             'from_list_id' => $this->fromListId,
+            'actor_id' => $this->actor?->id,
             'actor_name' => $this->actorName ?? $this->actor?->name,
         ];
     }

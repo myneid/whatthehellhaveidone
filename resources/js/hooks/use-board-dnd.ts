@@ -45,6 +45,7 @@ export function useBoardDnd({
 }: UseBoardDndOptions) {
     const [activeCard, setActiveCard] = useState<Card | null>(null);
     const ignoreCardClickRef = useRef(false);
+    const dragOriginListIdRef = useRef<number | null>(null);
 
     const sensors = useSensors(
         useSensor(PointerSensor, {
@@ -71,6 +72,7 @@ export function useBoardDnd({
         const found = findCardInLists(lists, String(event.active.id));
 
         if (found) {
+            dragOriginListIdRef.current = found.listId;
             setActiveCard(found.card);
         }
     }
@@ -269,6 +271,10 @@ export function useBoardDnd({
         const newPosition =
             (newList.cards?.findIndex((c) => c.id === activeFound.card.id) ??
                 0) + 1;
+        const originListId = dragOriginListIdRef.current;
+        dragOriginListIdRef.current = null;
+        const didChangeList =
+            originListId !== null && originListId !== newList.id;
 
         router.post(
             cardRoutes.move(activeFound.card).url,
@@ -276,22 +282,25 @@ export function useBoardDnd({
             {
                 preserveScroll: true,
                 onSuccess: () => {
-                    promptGithubIssueIfNeeded(
-                        activeFound.card.id,
-                        newList,
-                    );
-                    promptWorkAssignmentIfNeeded(
-                        activeFound.card.id,
-                        newList,
-                    );
-                    promptPullRequestActionIfNeeded(
-                        activeFound.card.id,
-                        newList,
-                    );
-                    promptGithubIssueCloseIfNeeded(
-                        activeFound.card.id,
-                        newList,
-                    );
+                    if (didChangeList) {
+                        promptGithubIssueIfNeeded(
+                            activeFound.card.id,
+                            newList,
+                        );
+                        promptWorkAssignmentIfNeeded(
+                            activeFound.card.id,
+                            newList,
+                        );
+                        promptPullRequestActionIfNeeded(
+                            activeFound.card.id,
+                            newList,
+                        );
+                        promptGithubIssueCloseIfNeeded(
+                            activeFound.card.id,
+                            newList,
+                        );
+                    }
+
                     reloadBoardAfterMove();
                 },
             },

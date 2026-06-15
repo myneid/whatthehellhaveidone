@@ -4,7 +4,10 @@ namespace App\Events;
 
 use App\Models\Card;
 use Illuminate\Broadcasting\InteractsWithSockets;
+use Illuminate\Broadcasting\PrivateChannel;
 use Illuminate\Contracts\Broadcasting\ShouldBroadcast;
+use Illuminate\Foundation\Events\Dispatchable;
+use Illuminate\Queue\SerializesModels;
 
 class CardCreated implements ShouldBroadcast
 {
@@ -15,7 +18,7 @@ class CardCreated implements ShouldBroadcast
     public function broadcastOn(): array
     {
         return [
-            new \Illuminate\Broadcasting\PrivateChannel("card.{$this->card->id}"),
+            new PrivateChannel('card.'.$this->card->id),
         ];
     }
 }
