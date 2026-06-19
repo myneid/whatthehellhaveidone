@@ -1,5 +1,5 @@
 import { Head, Link } from '@inertiajs/react';
-import { BookOpen, Bot, Github, Kanban, MessageSquare, Upload, Zap } from 'lucide-react';
+import { BookOpen, Bot, Code2, Github, Kanban, MessageSquare, Upload, Zap } from 'lucide-react';
 import { DocsHero } from '@/components/docs/docs-hero';
 import { Button } from '@/components/ui/button';
 import { Card, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
@@ -47,6 +47,12 @@ const topics = [
         title: 'Work Log',
         description: 'Track time and activity across projects with hashtag-based logging.',
         href: '/docs/work-log',
+    },
+    {
+        icon: Code2,
+        title: 'Editor Plugins',
+        description: 'Manage cards and log work from VS Code and Vim / Neovim without leaving your editor.',
+        href: '/docs/editor-plugins',
     },
 ];
 

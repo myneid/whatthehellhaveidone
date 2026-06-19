@@ -4,6 +4,7 @@ import {
     BookOpen,
     Bot,
     CheckSquare,
+    Code2,
     Github,
     KanbanSquare,
     MessageSquare,
@@ -62,6 +63,14 @@ const features = [
             'Write project docs in Markdown, organise them in folders, and let AI agents fetch them on demand. Knowledge lives where work happens.',
         color: 'text-sky-400',
         bg: 'bg-sky-500/10',
+    },
+    {
+        icon: Code2,
+        title: 'Editor Plugins',
+        description:
+            'Browse boards, create cards, and log work without leaving your editor. Plugins available for VS Code and Vim / Neovim.',
+        color: 'text-orange-400',
+        bg: 'bg-orange-500/10',
     },
 ];
 
