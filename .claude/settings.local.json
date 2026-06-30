@@ -22,7 +22,15 @@
       "Bash(npx tsc *)",
       "Bash(grep -v \"^$\")",
       "Bash(xargs cat *)",
-      "Bash(vendor/bin/pest *)"
+      "Bash(vendor/bin/pest *)",
+      "Bash(identify /Users/tanguy/Dropbox/Documents/0x7a69/whatthehellhaveidone/public/whatthehellhaveidone.png)",
+      "Bash(sips -g all /Users/tanguy/Dropbox/Documents/0x7a69/whatthehellhaveidone/public/whatthehellhaveidone.png)",
+      "Bash(magick --version)",
+      "Bash(magick whatthehellhaveidone.png -gravity Center -extent 1024x1024 /tmp/wthid_square.png)",
+      "Bash(magick /tmp/wthid_square.png -resize 180x180 apple-touch-icon.png)",
+      "Bash(magick /tmp/wthid_square.png \\\\\\( +clone -resize 16x16 \\\\\\) \\\\\\( +clone -resize 32x32 \\\\\\) \\\\\\( +clone -resize 48x48 \\\\\\) -delete 0 favicon.ico)",
+      "Bash(sips -g pixelWidth -g pixelHeight apple-touch-icon.png)",
+      "Bash(magick identify *)"
     ]
   },
   "enableAllProjectMcpServers": true,

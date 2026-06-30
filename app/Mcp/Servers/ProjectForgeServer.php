@@ -8,6 +8,7 @@ use App\Mcp\Tools\GetBoardTool;
 use App\Mcp\Tools\GetCardTool;
 use App\Mcp\Tools\GetDailyWorkLogTool;
 use App\Mcp\Tools\GetDocumentTool;
+use App\Mcp\Tools\ListBoardsTool;
 use App\Mcp\Tools\ListCardsTool;
 use App\Mcp\Tools\ListDocumentsTool;
 use App\Mcp\Tools\ListProjectsTool;
@@ -25,6 +26,7 @@ class ProjectForgeServer extends Server
 {
     protected array $tools = [
         ListProjectsTool::class,
+        ListBoardsTool::class,
         GetBoardTool::class,
         ListCardsTool::class,
         GetCardTool::class,

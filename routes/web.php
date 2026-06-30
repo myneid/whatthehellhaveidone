@@ -1,7 +1,6 @@
 <?php
 
 use App\Http\Controllers\BoardController;
-use App\Http\Controllers\DeployController;
 use App\Http\Controllers\BoardExportController;
 use App\Http\Controllers\BoardListController;
 use App\Http\Controllers\BoardMemberController;
@@ -10,6 +9,7 @@ use App\Http\Controllers\CardCommentController;
 use App\Http\Controllers\CardController;
 use App\Http\Controllers\ChecklistController;
 use App\Http\Controllers\ChecklistItemController;
+use App\Http\Controllers\DeployController;
 use App\Http\Controllers\DiscordWebhookController;
 use App\Http\Controllers\DocumentFolderController;
 use App\Http\Controllers\GithubController;
@@ -44,6 +44,7 @@ Route::prefix('docs')->name('docs.')->group(function () {
     Route::inertia('/work-log', 'docs/work-log')->name('work-log');
     Route::inertia('/mcp-setup', 'docs/mcp-setup')->name('mcp-setup');
     Route::inertia('/mcp-tools', 'docs/mcp-tools')->name('mcp-tools');
+    Route::inertia('/editor-plugins', 'docs/editor-plugins')->name('editor-plugins');
 });
 
 Route::middleware(['auth', 'verified'])->group(function () {

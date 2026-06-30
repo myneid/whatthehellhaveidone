@@ -812,7 +812,14 @@ function AttachmentsSection({ card }: { card: Card }) {
                             key={file.id}
                             className="flex items-center justify-between rounded-md border px-2 py-1.5 text-xs"
                         >
-                            <span className="truncate">{file.filename}</span>
+                            <a
+                                href={file.url ?? '#'}
+                                target="_blank"
+                                rel="noopener noreferrer"
+                                className="truncate text-blue-600 hover:underline"
+                            >
+                                {file.filename}
+                            </a>
                             <button
                                 type="button"
                                 onClick={() => remove(file)}

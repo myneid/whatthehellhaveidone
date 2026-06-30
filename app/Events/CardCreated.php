@@ -18,7 +18,7 @@ class CardCreated implements ShouldBroadcast
     public function broadcastOn(): array
     {
         return [
-            new PrivateChannel('card.'.$this->card->id),
+            new PrivateChannel("card.{$this->card->id}"),
         ];
     }
 }
