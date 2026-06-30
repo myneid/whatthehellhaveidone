@@ -15,7 +15,7 @@ class GetDailyWorkLogTool extends Tool
     public function handle(Request $request): Response
     {
         $user = $request->user();
-        $date = $request->input('date') ? Carbon::parse($request->input('date')) : now();
+        $date = $request->get('date') ? Carbon::parse($request->get('date')) : now();
 
         $entries = WorkLogEntry::where('user_id', $user->id)
             ->whereDate('created_at', $date)
