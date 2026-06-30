@@ -1,5 +1,6 @@
 <?php
 
+use App\Events\CardMoved;
 use App\Models\Board;
 use App\Models\BoardList;
 use App\Models\Card;
@@ -8,6 +9,48 @@ use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\Gate;
 
 uses(RefreshDatabase::class);
+
+it('includes actor_id in the CardMoved broadcast payload', function (): void {
+    $user = User::factory()->create();
+
+    $board = Board::create([
+        'owner_id' => $user->id,
+        'name' => 'Roadmap',
+        'slug' => 'roadmap-card-moved-broadcast',
+        'visibility' => 'team',
+    ]);
+
+    $fromList = BoardList::create([
+        'board_id' => $board->id,
+        'name' => 'Backlog',
+        'position' => 1,
+    ]);
+
+    $toList = BoardList::create([
+        'board_id' => $board->id,
+        'name' => 'Doing',
+        'position' => 2,
+    ]);
+
+    $card = Card::create([
+        'board_id' => $board->id,
+        'list_id' => $toList->id,
+        'creator_id' => $user->id,
+        'title' => 'Move me',
+        'position' => 1,
+    ]);
+
+    $event = new CardMoved($card, $fromList->id, $user);
+
+    expect($event->broadcastWith())->toMatchArray([
+        'card_id' => $card->id,
+        'list_id' => $toList->id,
+        'position' => 1,
+        'from_list_id' => $fromList->id,
+        'actor_id' => $user->id,
+        'actor_name' => $user->name,
+    ]);
+});
 
 it('returns an inertia-compatible redirect when moving a card from an inertia request', function (): void {
     Gate::before(fn () => true);

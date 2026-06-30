@@ -1,4 +1,4 @@
-import { Head } from '@inertiajs/react';
+import { Head, router, usePage } from '@inertiajs/react';
 import { useCallback, useEffect, useState } from 'react';
 import { toast } from 'sonner';
 import { BoardHeader } from '@/components/boards/board-header';
@@ -29,6 +29,8 @@ type CardMovedPayload = {
     list_id: number;
     position: number;
     from_list_id: number;
+    actor_id?: number | null;
+    actor_name?: string | null;
 };
 
 type Props = {
@@ -47,6 +49,8 @@ export default function BoardShow({
     const isClient = useIsClient();
     const isMobile = useIsMobile();
     const [showSettings, setShowSettings] = useState(false);
+    const { auth } = usePage<{ auth: { user?: { id: number } } }>().props;
+    const currentUserId = auth.user?.id;
 
     if (isMobile) {
         return <MobileBoard board={board} />;
@@ -135,26 +139,43 @@ export default function BoardShow({
 
     const handleCardMoved = useCallback(
         (e: CardMovedPayload) => {
+            if (e.actor_id != null && e.actor_id === currentUserId) {
+                return;
+            }
+
+            const cardAlreadyInTargetList = lists
+                .find((l) => l.id === e.list_id)
+                ?.cards?.some((c) => c.id === e.card_id);
+
+            if (cardAlreadyInTargetList) {
+                return;
+            }
+
             updateLists((currentLists) => {
-                const cardAlreadyInTargetList = currentLists
-                    .find((l) => l.id === e.list_id)
-                    ?.cards?.some((c) => c.id === e.card_id);
-
-                if (cardAlreadyInTargetList) {
-                    return currentLists;
-                }
-
                 const targetList = currentLists.find((l) => l.id === e.list_id);
-                const fromList = currentLists.find((l) => l.id === e.from_list_id);
+                const fromList = currentLists.find(
+                    (l) => l.id === e.from_list_id,
+                );
 
                 if (targetList && fromList && targetList.name !== fromList.name) {
                     toast.info(`Card moved to ${targetList.name}`);
                 }
 
-                return moveCardBetweenLists(currentLists, e.card_id, e.list_id, e.position);
+                return moveCardBetweenLists(
+                    currentLists,
+                    e.card_id,
+                    e.list_id,
+                    e.position,
+                );
+            });
+
+            router.reload({
+                only: ['board'],
+                preserveScroll: true,
+                preserveState: true,
             });
         },
-        [updateLists],
+        [currentUserId, lists, updateLists],
     );
 
     useEffect(() => {

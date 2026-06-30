@@ -30,11 +30,11 @@ class CardMoved implements ShouldBroadcast
     public function broadcastWith(): array
     {
         return [
-            'card' => [
-                'id' => $this->card->id,
-                'list_id' => $this->card->list_id,
-                'position' => $this->card->position,
-            ],
+            'card_id' => $this->card->id,
+            'list_id' => $this->card->list_id,
+            'position' => $this->card->position,
+            'from_list_id' => $this->fromListId,
+            'actor_id' => $this->actor?->id,
             'actor_name' => $this->actorName ?? $this->actor?->name,
         ];
     }
