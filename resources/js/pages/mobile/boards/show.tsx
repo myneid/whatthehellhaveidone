@@ -1,4 +1,4 @@
-import { Link } from '@inertiajs/react';
+import { Link, router } from '@inertiajs/react';
 import { ArrowLeft, Plus } from 'lucide-react';
 import { useMemo, useState } from 'react';
 import { CardModal } from '@/components/boards/card-modal';
@@ -7,8 +7,9 @@ import { MobileButton } from '@/components/mobile/edge/MobileButton';
 import { MobileCard } from '@/components/mobile/edge/MobileCard';
 import { MobileShell } from '@/components/mobile/edge/MobileShell';
 import type { MentionableUser } from '@/hooks/use-mention-autocomplete';
-import type { Board } from '@/types/app';
+import type { Board, BoardList } from '@/types/app';
 import { dashboard } from '@/routes';
+import * as cardRoutes from '@/routes/cards';
 
 interface MobileBoardProps {
     board: Board;
@@ -24,21 +25,13 @@ export default function MobileBoard({
         mentionableMembers.length > 0
             ? mentionableMembers
             : (board.mentionable_members ?? []);
-    const [createCardListId, setCreateCardListId] = useState<number | null>(null);
-    const [selectedCardId, setSelectedCardId] = useState<number | null>(() => {
-        if (typeof window === 'undefined') {
-            return null;
-        }
-
-        const cardId = new URLSearchParams(window.location.search).get('card');
-        const id = cardId ? Number.parseInt(cardId, 10) : null;
-
-        return id !== null && Number.isNaN(id) ? null : id;
-    });
+    const [creatingCardInListId, setCreatingCardInListId] = useState<number | null>(null);
+    const [selectedCardId, setSelectedCardId] = useState<number | null>(null);
+    const [movingCardId, setMovingCardId] = useState<number | null>(null);
 
     const createCardList = useMemo(
-        () => lists.find((list) => list.id === createCardListId) ?? null,
-        [lists, createCardListId],
+        () => lists.find((list) => list.id === creatingCardInListId) ?? null,
+        [lists, creatingCardInListId],
     );
     const selectedCard = useMemo(
         () =>
@@ -49,6 +42,31 @@ export default function MobileBoard({
                       .find((card) => card.id === selectedCardId) ?? null),
         [lists, selectedCardId],
     );
+    const moveSelectedCardToList = (targetList: BoardList) => {
+        if (!selectedCard) {
+            return;
+        }
+
+        if (selectedCard.list_id === targetList.id) {
+            return;
+        }
+
+        if (movingCardId === selectedCard.id) {
+            return;
+        }
+
+        const nextPosition = (targetList.cards?.length ?? 0) + 1;
+        setMovingCardId(selectedCard.id);
+
+        router.post(
+            cardRoutes.move(selectedCard).url,
+            { list_id: targetList.id, position: nextPosition },
+            {
+                preserveScroll: true,
+                onFinish: () => setMovingCardId(null),
+            },
+        );
+    };
 
     return (
         <>
@@ -96,7 +114,7 @@ export default function MobileBoard({
                                                 >
                                                     <div className="space-y-2">
                                                         <div className="flex items-start justify-between gap-2">
-                                                            <h4 className="text-sm leading-tight font-medium">
+                                                            <h4 className="text-sm font-medium leading-tight">
                                                                 {card.title}
                                                             </h4>
                                                         </div>
@@ -119,7 +137,7 @@ export default function MobileBoard({
                                         size="sm"
                                         variant="outline"
                                         className="w-full gap-2"
-                                        onClick={() => setCreateCardListId(list.id)}
+                                        onClick={() => setCreatingCardInListId(list.id)}
                                     >
                                         <Plus className="h-4 w-4" />
                                         Add card
@@ -135,8 +153,8 @@ export default function MobileBoard({
                 board={board}
                 list={createCardList}
                 mentionableMembers={effectiveMentionableMembers}
-                open={createCardList !== null}
-                onClose={() => setCreateCardListId(null)}
+                open={creatingCardInListId !== null}
+                onClose={() => setCreatingCardInListId(null)}
             />
 
             {selectedCard && (
@@ -145,8 +163,8 @@ export default function MobileBoard({
                     board={board}
                     lists={lists}
                     mentionableMembers={effectiveMentionableMembers}
-                    isMoving={false}
-                    onMoveToList={() => undefined}
+                    isMoving={movingCardId === selectedCard.id}
+                    onMoveToList={moveSelectedCardToList}
                     open
                     onClose={() => setSelectedCardId(null)}
                 />
