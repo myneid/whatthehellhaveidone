@@ -4,6 +4,7 @@ import {
     Calendar,
     CheckSquare,
     ExternalLink,
+    Github,
     Image,
     MessageSquare,
     Paperclip,
@@ -14,8 +15,11 @@ import {
     User,
     X,
 } from 'lucide-react';
-import { useRef, useState } from 'react';
-import * as githubController from '@/actions/App/Http/Controllers/GithubController';
+import { useMemo, useRef, useState } from 'react';
+import {
+    assignToCopilot,
+    openIssue,
+} from '@/actions/App/Http/Controllers/GithubController';
 import { MentionTextField } from '@/components/mention-text-field';
 import { Button } from '@/components/ui/button';
 import { useMentionableMembersForBoard } from '@/hooks/use-board-collaborators';
@@ -41,6 +45,7 @@ import type {
     CardAttachment,
     CardComment,
     Label,
+    GithubRepository,
 } from '@/types/app';
 
 type Props = {
@@ -432,18 +437,54 @@ function LabelPicker({ card, board }: { card: Card; board: Board }) {
     );
 }
 
-function GitHubIssueSection({ card }: { card: Card }) {
+function GitHubIssueSection({ card, board }: { card: Card; board: Board }) {
     const link = card.github_link;
+    const repositories = useMemo(
+        () => board.github_repositories ?? [],
+        [board.github_repositories],
+    );
+    const hasConnectedRepository = repositories.length > 0;
     const [assigning, setAssigning] = useState(false);
+    const [creating, setCreating] = useState(false);
+    const [repositoryId, setRepositoryId] = useState('');
 
-    if (!link) {
+    const selectedRepositoryId =
+        repositoryId !== ''
+            ? Number(repositoryId)
+            : (repositories[0]?.id ?? null);
+
+    if (!link && !hasConnectedRepository) {
         return null;
+    }
+
+    function createIssue() {
+        if (selectedRepositoryId === null) {
+            return;
+        }
+
+        setCreating(true);
+
+        router.post(
+            openIssue(card).url,
+            { github_repository_id: selectedRepositoryId },
+            {
+                preserveScroll: true,
+                onFinish: () => {
+                    setCreating(false);
+                    router.reload({
+                        only: ['board'],
+                        preserveScroll: true,
+                        preserveState: true,
+                    });
+                },
+            },
+        );
     }
 
     function assignToCopilot() {
         setAssigning(true);
         router.post(
-            githubController.assignToCopilot(card).url,
+            assignToCopilot(card).url,
             {},
             {
                 preserveScroll: true,
@@ -452,19 +493,60 @@ function GitHubIssueSection({ card }: { card: Card }) {
         );
     }
 
+    const sectionLabel = (
+        <p className="mb-1.5 flex items-center gap-1 text-xs font-medium text-muted-foreground uppercase">
+            <Github className="h-3 w-3" />
+            GitHub Issue
+        </p>
+    );
+
+    if (!link) {
+        return (
+            <div>
+                {sectionLabel}
+                <div className="flex flex-wrap items-center gap-2">
+                    {repositories.length > 1 && (
+                        <select
+                            value={
+                                repositoryId ||
+                                String(repositories[0]?.id ?? '')
+                            }
+                            onChange={(e) => setRepositoryId(e.target.value)}
+                            className="border-input bg-background h-8 rounded-md border px-2 text-sm"
+                        >
+                            {repositories.map(
+                                (repository: GithubRepository) => (
+                                    <option
+                                        key={repository.id}
+                                        value={repository.id}
+                                    >
+                                        {repository.full_name}
+                                    </option>
+                                ),
+                            )}
+                        </select>
+                    )}
+                    <Button
+                        size="sm"
+                        variant="outline"
+                        className="h-8"
+                        onClick={createIssue}
+                        disabled={creating || selectedRepositoryId === null}
+                    >
+                        {creating ? 'Creating…' : 'Create GitHub issue'}
+                    </Button>
+                </div>
+                <p className="mt-1.5 text-xs text-muted-foreground">
+                    Opens an issue on GitHub using this card&apos;s title and
+                    description.
+                </p>
+            </div>
+        );
+    }
+
     return (
         <div>
-            <p className="mb-1.5 flex items-center gap-1 text-xs font-medium text-muted-foreground uppercase">
-                <svg
-                    className="h-3 w-3"
-                    viewBox="0 0 16 16"
-                    fill="currentColor"
-                    aria-hidden="true"
-                >
-                    <path d="M8 0C3.58 0 0 3.58 0 8c0 3.54 2.29 6.53 5.47 7.59.4.07.55-.17.55-.38 0-.19-.01-.82-.01-1.49-2.01.37-2.53-.49-2.69-.94-.09-.23-.48-.94-.82-1.13-.28-.15-.68-.52-.01-.53.63-.01 1.08.58 1.23.82.72 1.21 1.87.87 2.33.66.07-.52.28-.87.51-1.07-1.78-.2-3.64-.89-3.64-3.95 0-.87.31-1.59.82-2.15-.08-.2-.36-1.02.08-2.12 0 0 .67-.21 2.2.82.64-.18 1.32-.27 2-.27.68 0 1.36.09 2 .27 1.53-1.04 2.2-.82 2.2-.82.44 1.1.16 1.92.08 2.12.51.56.82 1.27.82 2.15 0 3.07-1.87 3.75-3.65 3.95.29.25.54.73.54 1.48 0 1.07-.01 1.93-.01 2.2 0 .21.15.46.55.38A8.013 8.013 0 0016 8c0-4.42-3.58-8-8-8z" />
-                </svg>
-                GitHub Issue
-            </p>
+            {sectionLabel}
             <div className="flex flex-wrap items-center gap-2">
                 <a
                     href={link.issue_url}
@@ -997,7 +1079,7 @@ export function CardModal({
                     )}
 
                     {/* GitHub Issue */}
-                    <GitHubIssueSection card={card} />
+                    <GitHubIssueSection card={card} board={board} />
 
                     {/* Description */}
                     <div>
