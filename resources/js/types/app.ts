@@ -135,6 +135,8 @@ export type Card = {
     mentioned_users?: User[];
     github_link?: GithubIssueLink | null;
     activity_logs?: ActivityLog[];
+    work_log_entries?: WorkLogEntry[];
+    time_spent_seconds_total?: number | null;
 };
 
 export type Label = {
@@ -257,6 +259,7 @@ export type WorkLogEntry = {
     reference_url: string | null;
     created_at: string;
     updated_at: string;
+    user?: User | null;
     project?: Project | null;
     board?: Board | null;
     card?: Card | null;

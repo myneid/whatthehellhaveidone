@@ -3,6 +3,7 @@ import {
     ArrowRight,
     Calendar,
     CheckSquare,
+    Clock3,
     ExternalLink,
     Image,
     MessageSquare,
@@ -18,15 +19,15 @@ import { useRef, useState } from 'react';
 import * as githubController from '@/actions/App/Http/Controllers/GithubController';
 import { MentionTextField } from '@/components/mention-text-field';
 import { Button } from '@/components/ui/button';
-import { useMentionableMembersForBoard } from '@/hooks/use-board-collaborators';
-import { formatCardNumber } from '@/lib/card-utils';
 import {
     Dialog,
     DialogContent,
     DialogHeader,
     DialogTitle,
 } from '@/components/ui/dialog';
+import { useMentionableMembersForBoard } from '@/hooks/use-board-collaborators';
 import type { MentionableUser } from '@/hooks/use-mention-autocomplete';
+import { formatCardNumber } from '@/lib/card-utils';
 import * as attachmentRoutes from '@/routes/attachments';
 import * as cards from '@/routes/cards';
 import * as cardAttachments from '@/routes/cards/attachments';
@@ -34,6 +35,7 @@ import * as cardComments from '@/routes/cards/comments';
 import * as cardLabels from '@/routes/cards/labels';
 import * as checklistItemRoutes from '@/routes/checklist-items';
 import * as commentRoutes from '@/routes/comments';
+import * as workLog from '@/routes/work-log';
 import type {
     Board,
     BoardList,
@@ -86,6 +88,21 @@ function formatTimestamp(dateStr: string | null): string {
         hour: 'numeric',
         minute: '2-digit',
     });
+}
+
+function formatDuration(seconds: number): string {
+    if (seconds < 60) {
+        return `${seconds}s`;
+    }
+
+    if (seconds < 3600) {
+        return `${Math.floor(seconds / 60)}m`;
+    }
+
+    const hours = Math.floor(seconds / 3600);
+    const minutes = Math.floor((seconds % 3600) / 60);
+
+    return minutes > 0 ? `${hours}h ${minutes}m` : `${hours}h`;
 }
 
 function ChecklistProgress({ items }: { items: { is_completed: boolean }[] }) {
@@ -819,6 +836,151 @@ function MoveCardSection({
     );
 }
 
+function TimeTrackingSection({ card, board }: { card: Card; board: Board }) {
+    const form = useForm({
+        hours: '',
+        note: '',
+    });
+
+    const entries = (card.work_log_entries ?? []).filter(
+        (entry) => (entry.duration_seconds ?? 0) > 0,
+    );
+    const totalTrackedSeconds =
+        card.time_spent_seconds_total ??
+        entries.reduce(
+            (total, entry) => total + (entry.duration_seconds ?? 0),
+            0,
+        );
+
+    function submit(e: React.FormEvent) {
+        e.preventDefault();
+
+        const hours = Number(form.data.hours);
+
+        if (!Number.isFinite(hours) || hours <= 0) {
+            form.setError('hours', 'Hours must be greater than 0.');
+
+            return;
+        }
+
+        const durationSeconds = Math.round(hours * 3600);
+        const note = form.data.note.trim();
+
+        form.transform(() => ({
+            body:
+                note ||
+                `Tracked ${hours}h on ${formatCardNumber(card.number)} ${card.title}`,
+            duration_seconds: durationSeconds,
+            card_id: card.id,
+            board_id: card.board_id,
+            project_id: board.project_id,
+        }));
+
+        form.post(workLog.store().url, {
+            preserveScroll: true,
+            onSuccess: () => {
+                form.reset();
+                form.clearErrors();
+            },
+        });
+    }
+
+    return (
+        <div className="rounded-xl border bg-muted/30 p-3">
+            <div className="mb-2 flex items-center justify-between gap-2">
+                <p className="flex items-center gap-1 text-xs font-medium text-muted-foreground uppercase">
+                    <Clock3 className="h-3 w-3" /> Time Spent
+                </p>
+                <span className="text-sm font-semibold">
+                    Total: {formatDuration(totalTrackedSeconds)}
+                </span>
+            </div>
+
+            <form onSubmit={submit} className="space-y-2">
+                <div className="flex flex-col gap-2 sm:flex-row">
+                    <div className="sm:w-40">
+                        <label
+                            htmlFor={`card-time-hours-${card.id}`}
+                            className="mb-1 block text-xs text-muted-foreground"
+                        >
+                            Hours
+                        </label>
+                        <input
+                            id={`card-time-hours-${card.id}`}
+                            type="number"
+                            min={0}
+                            step="0.25"
+                            value={form.data.hours}
+                            onChange={(event) =>
+                                form.setData('hours', event.target.value)
+                            }
+                            placeholder="e.g. 4"
+                            className="w-full rounded-md border border-input bg-background px-3 py-2 text-sm"
+                        />
+                        {form.errors.hours ? (
+                            <p className="mt-1 text-xs text-destructive">
+                                {form.errors.hours}
+                            </p>
+                        ) : null}
+                    </div>
+
+                    <div className="flex-1">
+                        <label
+                            htmlFor={`card-time-note-${card.id}`}
+                            className="mb-1 block text-xs text-muted-foreground"
+                        >
+                            Note (optional)
+                        </label>
+                        <input
+                            id={`card-time-note-${card.id}`}
+                            type="text"
+                            value={form.data.note}
+                            onChange={(event) =>
+                                form.setData('note', event.target.value)
+                            }
+                            placeholder="What did you work on?"
+                            className="w-full rounded-md border border-input bg-background px-3 py-2 text-sm"
+                        />
+                    </div>
+                </div>
+
+                <div className="flex items-center justify-between gap-2">
+                    <p className="text-xs text-muted-foreground">
+                        Add separate entries over time, totals are cumulative.
+                    </p>
+                    <Button
+                        type="submit"
+                        size="sm"
+                        disabled={form.processing || !form.data.hours}
+                    >
+                        {form.processing ? 'Saving…' : 'Add time'}
+                    </Button>
+                </div>
+            </form>
+
+            {entries.length > 0 ? (
+                <div className="mt-3 space-y-1.5 border-t pt-2">
+                    {entries.slice(0, 5).map((entry) => (
+                        <div
+                            key={entry.id}
+                            className="flex items-center justify-between gap-2 text-xs"
+                        >
+                            <div className="truncate text-muted-foreground">
+                                {entry.user?.name ?? 'Someone'}
+                                {' • '}
+                                {entry.body}
+                            </div>
+                            <span className="shrink-0 font-medium">
+                                {formatDuration(entry.duration_seconds ?? 0)}
+                            </span>
+                        </div>
+                    ))}
+                </div>
+            ) : null}
+        </div>
+    );
+}
+
 export function CardModal({
     card,
     board,
@@ -1050,6 +1212,8 @@ export function CardModal({
                             </div>
                         )}
                     </div>
+
+                    <TimeTrackingSection card={card} board={board} />
 
                     {/* Checklists */}
                     {card.checklists && card.checklists.length > 0 && (

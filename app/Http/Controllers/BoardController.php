@@ -105,16 +105,25 @@ class BoardController extends Controller
             'discordWebhook',
             'githubRepositories',
             'lists' => fn ($q) => $q->whereNull('archived_at')->orderBy('position')->with([
-                'cards' => fn ($q) => $q->whereNull('archived_at')->orderBy('position')->with([
-                    'assignees',
-                    'labels',
-                    'attachments',
-                    'githubLink',
-                    'checklists.items',
-                    'comments.user',
-                    'creator',
-                    'mentionedUsers',
-                ]),
+                'cards' => fn ($q) => $q->whereNull('archived_at')
+                    ->orderBy('position')
+                    ->withSum([
+                        'workLogEntries as time_spent_seconds_total' => fn ($workLogs) => $workLogs->whereNotNull('duration_seconds'),
+                    ], 'duration_seconds')
+                    ->with([
+                        'assignees',
+                        'labels',
+                        'attachments',
+                        'githubLink',
+                        'checklists.items',
+                        'comments.user',
+                        'creator',
+                        'mentionedUsers',
+                        'workLogEntries' => fn ($workLogs) => $workLogs
+                            ->whereNotNull('duration_seconds')
+                            ->latest()
+                            ->with('user:id,name,avatar'),
+                    ]),
             ]),
         ]);
 
