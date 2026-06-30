@@ -20,7 +20,13 @@ class WorkLogController extends Controller
     {
         $query = WorkLogEntry::where('user_id', $request->user()->id)
             ->with(['project', 'board', 'card'])
-            ->when($request->search, fn ($q) => $q->where('body', 'like', "%{$request->search}%"))
+            ->when($request->search, fn ($q) => $q->where(function ($sub) use ($request) {
+                $term = "%{$request->search}%";
+                $sub->where('body', 'like', $term)
+                    ->orWhere('hashtags', 'like', $term)
+                    ->orWhereHas('project', fn ($p) => $p->where('name', 'like', $term))
+                    ->orWhereHas('board', fn ($b) => $b->where('name', 'like', $term));
+            }))
             ->when($request->project_id, fn ($q) => $q->where('project_id', $request->project_id))
             ->when($request->board_id, fn ($q) => $q->where('board_id', $request->board_id))
             ->when($request->source, fn ($q) => $q->where('source', $request->source))

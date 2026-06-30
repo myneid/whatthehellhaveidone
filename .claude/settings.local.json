@@ -30,7 +30,10 @@
       "Bash(magick /tmp/wthid_square.png -resize 180x180 apple-touch-icon.png)",
       "Bash(magick /tmp/wthid_square.png \\\\\\( +clone -resize 16x16 \\\\\\) \\\\\\( +clone -resize 32x32 \\\\\\) \\\\\\( +clone -resize 48x48 \\\\\\) -delete 0 favicon.ico)",
       "Bash(sips -g pixelWidth -g pixelHeight apple-touch-icon.png)",
-      "Bash(magick identify *)"
+      "Bash(magick identify *)",
+      "Bash(grep -n 'protected $fillable\\\\|protected function casts' -A5 app/Models/Project.php app/Models/Board.php)",
+      "Bash(php -r ' *)",
+      "Bash(git stash *)"
     ]
   },
   "enableAllProjectMcpServers": true,
