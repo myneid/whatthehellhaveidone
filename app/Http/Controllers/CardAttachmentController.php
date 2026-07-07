@@ -19,17 +19,7 @@ class CardAttachmentController extends Controller
             'file' => ['required', 'file', 'max:1024000', 'mimes:jpeg,png,gif,webp,svg,pdf,doc,docx,xls,xlsx,txt,csv,zip,rar,7z,mov,mp4,avi,wmv,flv,mkv'],
         ]);
 
-        $file = $request->file('file');
-        $path = $file->store("attachments/cards/{$card->id}", 'public');
-
-        $attachment = $card->attachments()->create([
-            'user_id' => $request->user()->id,
-            'filename' => $file->getClientOriginalName(),
-            'path' => $path,
-            'mime_type' => $file->getMimeType(),
-            'size' => $file->getSize(),
-            'disk' => 'public',
-        ]);
+        $attachment = CardAttachment::createFromUploadedFile($card, $request->file('file'), $request->user());
 
         event(new CardAttachmentAdded($card, $attachment));
 

@@ -7,6 +7,7 @@ use Illuminate\Database\Eloquent\Attributes\Fillable;
 use Illuminate\Database\Eloquent\Casts\Attribute;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Illuminate\Http\UploadedFile;
 use Illuminate\Support\Facades\Storage;
 
 #[Appends(['url'])]
@@ -14,6 +15,20 @@ use Illuminate\Support\Facades\Storage;
 class CardAttachment extends Model
 {
     const UPDATED_AT = null;
+
+    public static function createFromUploadedFile(Card $card, UploadedFile $file, User $user): self
+    {
+        $path = $file->store("attachments/cards/{$card->id}", 'public');
+
+        return $card->attachments()->create([
+            'user_id' => $user->id,
+            'filename' => $file->getClientOriginalName(),
+            'path' => $path,
+            'mime_type' => $file->getMimeType(),
+            'size' => $file->getSize(),
+            'disk' => 'public',
+        ]);
+    }
 
     public function card(): BelongsTo
     {

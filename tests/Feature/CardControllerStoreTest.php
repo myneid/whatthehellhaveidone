@@ -9,8 +9,10 @@ use App\Models\GithubAccount;
 use App\Models\GithubRepository;
 use App\Models\User;
 use Illuminate\Foundation\Testing\RefreshDatabase;
+use Illuminate\Http\UploadedFile;
 use Illuminate\Support\Facades\Crypt;
 use Illuminate\Support\Facades\Http;
+use Illuminate\Support\Facades\Storage;
 
 uses(RefreshDatabase::class);
 
@@ -151,4 +153,43 @@ it('can create a card with a linked github issue when requested', function (): v
 
     Http::assertSent(fn ($request): bool => $request->url() === 'https://api.github.com/repos/octo-org/octo-repo/issues'
         && $request['title'] === 'New pricing card');
+});
+
+it('can create a card with attachments', function (): void {
+    Storage::fake('public');
+
+    $owner = User::factory()->create();
+
+    $board = Board::create([
+        'owner_id' => $owner->id,
+        'name' => 'Roadmap',
+        'slug' => 'roadmap-store-attachments',
+        'visibility' => 'private',
+    ]);
+
+    $list = BoardList::create([
+        'board_id' => $board->id,
+        'name' => 'Backlog',
+        'position' => 1,
+    ]);
+
+    $this->actingAs($owner)
+        ->from('/boards/'.$board->slug)
+        ->post(route('cards.store'), [
+            'list_id' => $list->id,
+            'title' => 'Card with attachments',
+            'attachments' => [
+                UploadedFile::fake()->image('screenshot.png'),
+                UploadedFile::fake()->create('notes.pdf', 100, 'application/pdf'),
+            ],
+        ])
+        ->assertRedirect('/boards/'.$board->slug);
+
+    $card = Card::query()->firstOrFail();
+
+    expect($card->attachments)->toHaveCount(2)
+        ->and($card->attachments->pluck('filename')->all())
+        ->toEqualCanonicalizing(['screenshot.png', 'notes.pdf']);
+
+    Storage::disk('public')->assertExists($card->attachments->first()->path);
 });

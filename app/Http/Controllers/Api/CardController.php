@@ -9,6 +9,7 @@ use App\Http\Requests\UpdateCardRequest;
 use App\Http\Resources\Api\CardResource;
 use App\Models\BoardList;
 use App\Models\Card;
+use App\Models\CardAttachment;
 use App\Models\User;
 use App\Services\ActivityLogService;
 use App\Services\GithubCardIssueService;
@@ -16,6 +17,7 @@ use App\Services\MentionService;
 use App\Services\WorkLogService;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
+use Illuminate\Support\Arr;
 use RuntimeException;
 
 class CardController extends Controller
@@ -40,11 +42,15 @@ class CardController extends Controller
             ->value('position') ?? 0;
 
         $card = Card::create([
-            ...$request->validated(),
+            ...Arr::except($request->validated(), ['attachments']),
             'board_id' => $list->board_id,
             'creator_id' => $request->user()->id,
             'position' => $position + 1,
         ]);
+
+        foreach ($request->file('attachments', []) as $file) {
+            CardAttachment::createFromUploadedFile($card, $file, $request->user());
+        }
 
         $this->activityLog->log($card, 'card_created', actor: $request->user());
         $this->workLog->logCardCreated($card, $request->user());

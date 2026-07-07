@@ -32,17 +32,7 @@ class CardAttachmentController extends Controller
             return response()->json(['errors' => $validator->errors()], 422);
         }
 
-        $file = $request->file('file');
-        $path = $file->store("attachments/cards/{$card->id}", 'public');
-
-        $attachment = $card->attachments()->create([
-            'user_id' => $user->id,
-            'filename' => $file->getClientOriginalName(),
-            'path' => $path,
-            'mime_type' => $file->getMimeType(),
-            'size' => $file->getSize(),
-            'disk' => 'public',
-        ]);
+        $attachment = CardAttachment::createFromUploadedFile($card, $request->file('file'), $user);
 
         event(new CardAttachmentAdded($card, $attachment));
 

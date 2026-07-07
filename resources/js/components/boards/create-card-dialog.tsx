@@ -1,6 +1,6 @@
 import { useForm } from '@inertiajs/react';
-import { Github } from 'lucide-react';
-import { useEffect, useMemo } from 'react';
+import { Github, Paperclip, X } from 'lucide-react';
+import { useEffect, useMemo, useRef } from 'react';
 import { MentionTextField } from '@/components/mention-text-field';
 import { Button } from '@/components/ui/button';
 import { useMentionableMembersForBoard } from '@/hooks/use-board-collaborators';
@@ -16,6 +16,9 @@ import { Input } from '@/components/ui/input';
 import type { MentionableUser } from '@/hooks/use-mention-autocomplete';
 import * as cardRoutes from '@/routes/cards';
 import type { Board, BoardList, GithubRepository } from '@/types/app';
+
+const ATTACHMENT_ACCEPT =
+    'image/*,.pdf,.doc,.docx,.xls,.xlsx,.txt,video/*,application/zip,application/x-rar-compressed,.csv,.7z,.zip';
 
 type Props = {
     board: Board;
@@ -44,6 +47,7 @@ export function CreateCardDialog({
         [board.github_repositories],
     );
     const hasConnectedRepository = repositories.length > 0;
+    const fileRef = useRef<HTMLInputElement>(null);
 
     const form = useForm({
         title: '',
@@ -51,6 +55,7 @@ export function CreateCardDialog({
         list_id: list?.id ?? 0,
         create_github_issue: false,
         github_repository_id: repositories[0]?.id ?? null,
+        attachments: [] as File[],
     });
 
     useEffect(() => {
@@ -64,6 +69,7 @@ export function CreateCardDialog({
             list_id: list?.id ?? 0,
             create_github_issue: false,
             github_repository_id: repositories[0]?.id ?? null,
+            attachments: [],
         });
         form.clearErrors();
     }, [open, list?.id, repositories]);
@@ -76,6 +82,23 @@ export function CreateCardDialog({
         form.reset();
         form.clearErrors();
         onClose();
+    }
+
+    function addFiles(e: React.ChangeEvent<HTMLInputElement>) {
+        const selected = Array.from(e.target.files ?? []);
+
+        if (selected.length > 0) {
+            form.setData('attachments', [...form.data.attachments, ...selected]);
+        }
+
+        e.target.value = '';
+    }
+
+    function removeFile(index: number) {
+        form.setData(
+            'attachments',
+            form.data.attachments.filter((_, i) => i !== index),
+        );
     }
 
     function submit(e: React.FormEvent) {
@@ -216,6 +239,59 @@ export function CreateCardDialog({
                                         )}
                                     </select>
                                 )}
+                        </div>
+
+                        <div className="space-y-1.5">
+                            <div className="flex items-center justify-between">
+                                <label className="text-xs font-medium uppercase text-muted-foreground">
+                                    Attachments
+                                </label>
+                                <Button
+                                    type="button"
+                                    size="sm"
+                                    variant="outline"
+                                    className="h-6 px-2 text-xs"
+                                    onClick={() => fileRef.current?.click()}
+                                >
+                                    <Paperclip className="mr-1 h-3 w-3" />
+                                    Add
+                                </Button>
+                                <input
+                                    ref={fileRef}
+                                    type="file"
+                                    multiple
+                                    className="hidden"
+                                    accept={ATTACHMENT_ACCEPT}
+                                    onChange={addFiles}
+                                />
+                            </div>
+
+                            {form.data.attachments.length > 0 && (
+                                <ul className="space-y-1">
+                                    {form.data.attachments.map((file, index) => (
+                                        <li
+                                            key={`${file.name}-${index}`}
+                                            className="flex items-center justify-between gap-2 rounded-md border bg-muted/30 px-2 py-1.5 text-xs"
+                                        >
+                                            <span className="truncate">
+                                                {file.name}
+                                            </span>
+                                            <button
+                                                type="button"
+                                                onClick={() => removeFile(index)}
+                                                className="shrink-0 text-muted-foreground hover:text-foreground"
+                                            >
+                                                <X className="h-3 w-3" />
+                                            </button>
+                                        </li>
+                                    ))}
+                                </ul>
+                            )}
+                            {form.errors.attachments && (
+                                <p className="text-xs text-destructive">
+                                    {form.errors.attachments}
+                                </p>
+                            )}
                         </div>
                     </div>
 

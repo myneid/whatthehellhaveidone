@@ -9,6 +9,7 @@ use App\Http\Requests\StoreCardRequest;
 use App\Http\Requests\UpdateCardRequest;
 use App\Models\BoardList;
 use App\Models\Card;
+use App\Models\CardAttachment;
 use App\Models\User;
 use App\Services\ActivityLogService;
 use App\Services\GithubCardIssueService;
@@ -43,6 +44,10 @@ class CardController extends Controller
             'creator_id' => $request->user()->id,
             'position' => $position + 1,
         ]);
+
+        foreach ($request->file('attachments', []) as $file) {
+            CardAttachment::createFromUploadedFile($card, $file, $request->user());
+        }
 
         $this->activityLog->log($card, 'card_created', actor: $request->user());
         $this->workLog->logCardCreated($card, $request->user());
