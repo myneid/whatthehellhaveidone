@@ -38,6 +38,9 @@ class UsersTable
                     ->searchable(),
                 TextColumn::make('timezone')
                     ->searchable(),
+                IconColumn::make('is_full_user')
+                    ->label('Full user')
+                    ->boolean(),
                 IconColumn::make('is_super_admin')
                     ->boolean(),
             ])

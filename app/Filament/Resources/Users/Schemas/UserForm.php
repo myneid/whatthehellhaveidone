@@ -34,6 +34,10 @@ class UserForm
                 TextInput::make('timezone')
                     ->required()
                     ->default('UTC'),
+                Toggle::make('is_full_user')
+                    ->label('Full user access')
+                    ->helperText('Allows this user to bypass the free plan boundary.')
+                    ->default(false),
                 Toggle::make('is_super_admin')
                     ->required(),
             ]);

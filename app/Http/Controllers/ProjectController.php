@@ -45,9 +45,15 @@ class ProjectController extends Controller
 
     public function store(StoreProjectRequest $request): RedirectResponse
     {
+        $user = $request->user();
+
+        if (! $user->canCreateProject()) {
+            return back()->with('error', 'Your free plan is limited to 1 project and 2 boards. Upgrade to keep growing.');
+        }
+
         $project = Project::create([
             ...$request->validated(),
-            'owner_id' => $request->user()->id,
+            'owner_id' => $user->id,
             'slug' => Str::slug($request->name).'-'.Str::random(6),
         ]);
 

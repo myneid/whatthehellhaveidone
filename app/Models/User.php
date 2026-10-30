@@ -12,17 +12,18 @@ use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
+use Laravel\Cashier\Billable;
 use Laravel\Fortify\Contracts\PasskeyUser;
 use Laravel\Fortify\PasskeyAuthenticatable;
 use Laravel\Fortify\TwoFactorAuthenticatable;
 use Laravel\Sanctum\HasApiTokens;
 
-#[Fillable(['name', 'email', 'password', 'avatar', 'timezone'])]
+#[Fillable(['name', 'email', 'password', 'avatar', 'timezone', 'is_full_user', 'is_super_admin'])]
 #[Hidden(['password', 'two_factor_secret', 'two_factor_recovery_codes', 'remember_token'])]
 class User extends Authenticatable implements FilamentUser, PasskeyUser
 {
     /** @use HasFactory<UserFactory> */
-    use HasApiTokens, HasFactory, Notifiable, PasskeyAuthenticatable, TwoFactorAuthenticatable;
+    use HasApiTokens, Billable, HasFactory, Notifiable, PasskeyAuthenticatable, TwoFactorAuthenticatable;
 
     protected function casts(): array
     {
@@ -31,12 +32,36 @@ class User extends Authenticatable implements FilamentUser, PasskeyUser
             'password' => 'hashed',
             'two_factor_confirmed_at' => 'datetime',
             'is_super_admin' => 'boolean',
+            'is_full_user' => 'boolean',
         ];
     }
 
     public function canAccessPanel(Panel $panel): bool
     {
         return $this->is_super_admin;
+    }
+
+    public function hasPaidAccess(): bool
+    {
+        return $this->is_full_user || $this->subscribed('default');
+    }
+
+    public function canCreateProject(): bool
+    {
+        if ($this->hasPaidAccess()) {
+            return true;
+        }
+
+        return $this->projects()->whereNull('projects.archived_at')->count() < 1;
+    }
+
+    public function canCreateBoard(): bool
+    {
+        if ($this->hasPaidAccess()) {
+            return true;
+        }
+
+        return $this->boards()->whereNull('boards.archived_at')->count() < 2;
     }
 
     public function ownedProjects(): HasMany

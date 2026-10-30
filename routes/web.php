@@ -1,5 +1,6 @@
 <?php
 
+use App\Http\Controllers\BillingController;
 use App\Http\Controllers\BoardController;
 use App\Http\Controllers\BoardExportController;
 use App\Http\Controllers\BoardListController;
@@ -30,7 +31,16 @@ Route::inertia('/', 'welcome', [
     'canRegister' => Features::enabled(Features::registration()),
 ])->name('home');
 
+Route::inertia('/pricing', 'pricing')->name('pricing');
 Route::inertia('/style', 'style')->name('style');
+
+Route::middleware(['auth'])->group(function () {
+    Route::get('billing/pricing', [BillingController::class, 'pricing'])->name('billing.pricing');
+    Route::post('billing/checkout', [BillingController::class, 'checkout'])->name('billing.checkout');
+    Route::post('billing/portal', [BillingController::class, 'portal'])->name('billing.portal');
+    Route::post('billing/cancel', [BillingController::class, 'cancel'])->name('billing.cancel');
+    Route::get('billing/success', [BillingController::class, 'success'])->name('billing.success');
+});
 
 // Documentation (public)
 Route::prefix('docs')->name('docs.')->group(function () {
