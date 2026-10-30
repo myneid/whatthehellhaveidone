@@ -37,6 +37,9 @@ if (User::billingEnabled()) {
     Route::inertia('/pricing', 'pricing')->name('pricing');
 }
 
+Route::inertia('/trello-alternative', 'trello-alternative', [
+    'canRegister' => Features::enabled(Features::registration()),
+])->name('trello-alternative');
 Route::get('/sitemap.xml', SitemapController::class)->name('sitemap');
 Route::inertia('/style', 'style')->name('style');
 

@@ -14,7 +14,7 @@ class SitemapController extends Controller
      *
      * @var list<string>
      */
-    private const PUBLIC_ROUTE_NAMES = ['home', 'pricing', 'terms', 'privacy'];
+    private const PUBLIC_ROUTE_NAMES = ['home', 'pricing', 'trello-alternative', 'terms', 'privacy'];
 
     /**
      * Render an XML sitemap of the public marketing and documentation pages.

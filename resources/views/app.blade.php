@@ -95,6 +95,10 @@
                     'title' => 'Pricing – What the HELL have I done',
                     'description' => 'Start free with 1 project and 2 boards: Kanban, work log, GitHub sync, and MCP access for AI agents. Upgrade when you need more.',
                 ],
+                'trello-alternative' => [
+                    'title' => 'Trello Alternative for Developers – What the HELL have I done',
+                    'description' => 'A Trello alternative with GitHub issue sync, an automatic work log, project docs and an MCP server for AI agents. Import your Trello boards free.',
+                ],
                 'terms' => [
                     'title' => 'Terms of Service – What the HELL have I done',
                 ],
@@ -108,25 +112,28 @@
 
         @viteReactRefresh
         @vite(['resources/css/app.css', 'resources/js/app.tsx', "resources/js/pages/{$page['component']}.tsx"])
+        {{-- Search and social meta are emitted on every response. Under SSR, x-inertia::head
+             is replaced by the React <Head> output, so only the title belongs inside it. --}}
+        <meta name="description" content="{{ $meta['description'] }}">
+        <link rel="canonical" href="{{ $meta['url'] }}">
+
+        <meta property="og:type" content="website">
+        <meta property="og:site_name" content="{{ config('app.name', 'What the HELL have I done') }}">
+        <meta property="og:url" content="{{ $meta['url'] }}">
+        <meta property="og:title" content="{{ $meta['title'] }}">
+        <meta property="og:description" content="{{ $meta['description'] }}">
+        <meta property="og:image" content="{{ $meta['image'] }}">
+        <meta property="og:image:alt" content="{{ $meta['title'] }}">
+
+        <meta name="twitter:card" content="summary_large_image">
+        <meta name="twitter:url" content="{{ $meta['url'] }}">
+        <meta name="twitter:title" content="{{ $meta['title'] }}">
+        <meta name="twitter:description" content="{{ $meta['description'] }}">
+        <meta name="twitter:image" content="{{ $meta['image'] }}">
+        <meta name="twitter:image:alt" content="{{ $meta['title'] }}">
+
         <x-inertia::head>
             <title>{{ $meta['title'] }}</title>
-            <meta name="description" content="{{ $meta['description'] }}">
-            <link rel="canonical" href="{{ $meta['url'] }}">
-
-            <meta property="og:type" content="website">
-            <meta property="og:site_name" content="{{ config('app.name', 'What the HELL have I done') }}">
-            <meta property="og:url" content="{{ $meta['url'] }}">
-            <meta property="og:title" content="{{ $meta['title'] }}">
-            <meta property="og:description" content="{{ $meta['description'] }}">
-            <meta property="og:image" content="{{ $meta['image'] }}">
-            <meta property="og:image:alt" content="{{ $meta['title'] }}">
-
-            <meta name="twitter:card" content="summary_large_image">
-            <meta name="twitter:url" content="{{ $meta['url'] }}">
-            <meta name="twitter:title" content="{{ $meta['title'] }}">
-            <meta name="twitter:description" content="{{ $meta['description'] }}">
-            <meta name="twitter:image" content="{{ $meta['image'] }}">
-            <meta name="twitter:image:alt" content="{{ $meta['title'] }}">
         </x-inertia::head>
     </head>
     <body class="font-sans antialiased">
