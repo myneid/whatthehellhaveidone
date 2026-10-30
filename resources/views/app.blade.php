@@ -83,6 +83,24 @@
                     'title' => 'MCP Tools – What the HELL have I done',
                     'description' => 'Reference for all eleven WHHID MCP tools — boards, cards, work log, and documents — plus example prompts and security notes.',
                 ],
+                'docs/github-workflow' => [
+                    'title' => 'GitHub Board Workflow – Documentation – What the HELL have I done',
+                    'description' => 'Create GitHub issues when cards move, assign work to Copilot or teammates, and auto-move cards to Review when PRs open.',
+                ],
+                'docs/editor-plugins' => [
+                    'title' => 'VS Code & Neovim Plugins – What the HELL have I done',
+                    'description' => 'Manage cards, log work, and browse your Kanban boards without leaving VS Code, Vim, or Neovim.',
+                ],
+                'pricing' => [
+                    'title' => 'Pricing – What the HELL have I done',
+                    'description' => 'Start free with 1 project and 2 boards: Kanban, work log, GitHub sync, and MCP access for AI agents. Upgrade when you need more.',
+                ],
+                'terms' => [
+                    'title' => 'Terms of Service – What the HELL have I done',
+                ],
+                'privacy' => [
+                    'title' => 'Privacy Policy – What the HELL have I done',
+                ],
             ];
 
             $meta = array_merge($defaultMeta, $pageMeta[$page['component']] ?? []);

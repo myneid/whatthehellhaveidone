@@ -22,6 +22,7 @@ use App\Http\Controllers\ProjectController;
 use App\Http\Controllers\ProjectDocumentController;
 use App\Http\Controllers\ProjectGithubDocsController;
 use App\Http\Controllers\ProjectMemberController;
+use App\Http\Controllers\SitemapController;
 use App\Http\Controllers\TrelloImportController;
 use App\Http\Controllers\WorkLogController;
 use Illuminate\Support\Facades\Route;
@@ -32,6 +33,7 @@ Route::inertia('/', 'welcome', [
 ])->name('home');
 
 Route::inertia('/pricing', 'pricing')->name('pricing');
+Route::get('/sitemap.xml', SitemapController::class)->name('sitemap');
 Route::inertia('/style', 'style')->name('style');
 
 Route::middleware(['auth'])->group(function () {

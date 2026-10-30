@@ -21,7 +21,7 @@ class RunDeployment implements ShouldQueue
             'git pull' => ['git', 'pull'],
             'migrate' => ['php', 'artisan', 'migrate', '--force'],
             'optimize' => ['php', 'artisan', 'optimize'],
-            'npm build' => ['npm', 'run', 'build'],
+            'npm build' => ['npm', 'run', 'build:ssr'],
         ];
 
         foreach ($steps as $name => $command) {
@@ -42,6 +42,23 @@ class RunDeployment implements ShouldQueue
             }
         }
 
+        $this->restartSsrServer($root);
+
         Log::info('Deploy completed successfully.');
+    }
+
+    /**
+     * Stop the running Inertia SSR server so its process manager restarts it with the new bundle.
+     *
+     * A failure here is logged but not fatal: the server may simply not be running yet.
+     */
+    private function restartSsrServer(string $root): void
+    {
+        $result = Process::path($root)->run(['php', 'artisan', 'inertia:stop-ssr']);
+
+        Log::info('Deploy [restart ssr]', [
+            'output' => $result->output(),
+            'error' => $result->errorOutput(),
+        ]);
     }
 }
