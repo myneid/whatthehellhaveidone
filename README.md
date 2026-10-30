@@ -109,6 +109,14 @@ REVERB_PORT=8080
 
 # Queue driver — use 'database' for simple setups, 'redis' for production
 QUEUE_CONNECTION=database
+
+# Stripe billing (optional)
+# When all 3 values below are set, billing is enabled and free-tier limits apply.
+# If any are missing, billing is disabled, no pricing page is shown,
+# and project/board limits are not enforced for self-hosted instances.
+STRIPE_KEY=
+STRIPE_SECRET=
+STRIPE_PRICE_ID=
 ```
 
 ### 4. Run migrations
@@ -157,6 +165,22 @@ php artisan reverb:start
 1. Go to [GitHub Developer Settings → OAuth Apps](https://github.com/settings/developers) and create a new OAuth App.
 2. Set the **Authorization callback URL** to `{YOUR_APP_URL}/github/callback`.
 3. Copy the Client ID and Secret into your `.env`.
+
+---
+
+## Optional Stripe Billing
+
+Stripe billing is optional for self-hosting.
+
+- Billing is enabled only when `STRIPE_KEY`, `STRIPE_SECRET`, and `STRIPE_PRICE_ID` are all configured.
+- When billing is enabled:
+  - the pricing page is available,
+  - free-tier limits are enforced (1 project and 2 boards),
+  - users can upgrade through Stripe Checkout.
+- When billing is disabled (default local setup):
+  - pricing and upgrade UI are hidden,
+  - free-tier limits are not enforced,
+  - all users can use the app without Stripe.
 
 ---
 

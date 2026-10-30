@@ -23,7 +23,7 @@ use Laravel\Sanctum\HasApiTokens;
 class User extends Authenticatable implements FilamentUser, PasskeyUser
 {
     /** @use HasFactory<UserFactory> */
-    use HasApiTokens, Billable, HasFactory, Notifiable, PasskeyAuthenticatable, TwoFactorAuthenticatable;
+    use Billable, HasApiTokens, HasFactory, Notifiable, PasskeyAuthenticatable, TwoFactorAuthenticatable;
 
     protected function casts(): array
     {
@@ -41,13 +41,28 @@ class User extends Authenticatable implements FilamentUser, PasskeyUser
         return $this->is_super_admin;
     }
 
+    public static function billingEnabled(): bool
+    {
+        return filled(config('services.stripe.key'))
+            && filled(config('services.stripe.secret'))
+            && filled(config('services.stripe.price_id'));
+    }
+
     public function hasPaidAccess(): bool
     {
+        if (! self::billingEnabled()) {
+            return true;
+        }
+
         return $this->is_full_user || $this->subscribed('default');
     }
 
     public function canCreateProject(): bool
     {
+        if (! self::billingEnabled()) {
+            return true;
+        }
+
         if ($this->hasPaidAccess()) {
             return true;
         }
@@ -57,6 +72,10 @@ class User extends Authenticatable implements FilamentUser, PasskeyUser
 
     public function canCreateBoard(): bool
     {
+        if (! self::billingEnabled()) {
+            return true;
+        }
+
         if ($this->hasPaidAccess()) {
             return true;
         }

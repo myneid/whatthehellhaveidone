@@ -25,6 +25,7 @@ use App\Http\Controllers\ProjectMemberController;
 use App\Http\Controllers\SitemapController;
 use App\Http\Controllers\TrelloImportController;
 use App\Http\Controllers\WorkLogController;
+use App\Models\User;
 use Illuminate\Support\Facades\Route;
 use Laravel\Fortify\Features;
 
@@ -32,17 +33,20 @@ Route::inertia('/', 'welcome', [
     'canRegister' => Features::enabled(Features::registration()),
 ])->name('home');
 
-Route::inertia('/pricing', 'pricing')->name('pricing');
+if (User::billingEnabled()) {
+    Route::inertia('/pricing', 'pricing')->name('pricing');
+}
+
 Route::get('/sitemap.xml', SitemapController::class)->name('sitemap');
 Route::inertia('/style', 'style')->name('style');
 
-Route::middleware(['auth'])->group(function () {
-    Route::get('billing/pricing', [BillingController::class, 'pricing'])->name('billing.pricing');
-    Route::post('billing/checkout', [BillingController::class, 'checkout'])->name('billing.checkout');
-    Route::post('billing/portal', [BillingController::class, 'portal'])->name('billing.portal');
-    Route::post('billing/cancel', [BillingController::class, 'cancel'])->name('billing.cancel');
-    Route::get('billing/success', [BillingController::class, 'success'])->name('billing.success');
-});
+if (User::billingEnabled()) {
+    Route::middleware(['auth'])->group(function () {
+        Route::get('billing/pricing', [BillingController::class, 'pricing'])->name('billing.pricing');
+        Route::post('billing/checkout', [BillingController::class, 'checkout'])->name('billing.checkout');
+        Route::get('billing/success', [BillingController::class, 'success'])->name('billing.success');
+    });
+}
 
 // Documentation (public)
 Route::prefix('docs')->name('docs.')->group(function () {

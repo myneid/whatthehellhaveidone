@@ -10,6 +10,12 @@ use function Pest\Laravel\post;
 
 uses(RefreshDatabase::class);
 
+beforeEach(function () {
+    config()->set('services.stripe.key', 'pk_test_local');
+    config()->set('services.stripe.secret', 'sk_test_local');
+    config()->set('services.stripe.price_id', 'price_test_local');
+});
+
 it('blocks a free user from creating more than one project', function () {
     /** @var User $user */
     $user = User::factory()->create([
@@ -74,6 +80,28 @@ it('allows full users to bypass the free-tier limits', function () {
     $user = User::factory()->create([
         'email_verified_at' => now(),
         'is_full_user' => true,
+    ]);
+
+    actingAs($user);
+
+    post(route('projects.store'), ['name' => 'First project', 'description' => 'First'])
+        ->assertRedirect();
+
+    post(route('projects.store'), ['name' => 'Second project', 'description' => 'Second'])
+        ->assertRedirect();
+
+    expect(Project::where('owner_id', $user->id)->count())->toBe(2);
+});
+
+it('does not apply limits when stripe billing is not configured', function () {
+    config()->set('services.stripe.key', null);
+    config()->set('services.stripe.secret', null);
+    config()->set('services.stripe.price_id', null);
+
+    /** @var User $user */
+    $user = User::factory()->create([
+        'email_verified_at' => now(),
+        'is_full_user' => false,
     ]);
 
     actingAs($user);

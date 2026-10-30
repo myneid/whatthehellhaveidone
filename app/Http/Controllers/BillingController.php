@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Models\User;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Inertia\Inertia;
@@ -12,6 +13,8 @@ class BillingController extends Controller
 {
     public function pricing(Request $request): Response
     {
+        abort_unless(User::billingEnabled(), 404);
+
         $user = $request->user();
 
         return Inertia::render('pricing', [
@@ -27,6 +30,8 @@ class BillingController extends Controller
 
     public function checkout(Request $request): RedirectResponse
     {
+        abort_unless(User::billingEnabled(), 404);
+
         $user = $request->user();
 
         abort_unless($user, 401);
@@ -35,7 +40,7 @@ class BillingController extends Controller
             return redirect()->route('dashboard')->with('success', 'You already have full access.');
         }
 
-        $priceId = env('STRIPE_PRICE_ID');
+        $priceId = config('services.stripe.price_id');
 
         if (blank($priceId)) {
             return redirect()->route('billing.pricing')->with('error', 'Stripe is not configured yet.');
@@ -56,6 +61,8 @@ class BillingController extends Controller
 
     public function success(Request $request): RedirectResponse
     {
+        abort_unless(User::billingEnabled(), 404);
+
         $user = $request->user();
 
         if ($user) {

@@ -95,7 +95,10 @@ function FeatureCard({
 }
 
 export default function Welcome({ canRegister = true }: Props) {
-    const { auth } = usePage().props;
+    const { auth, billingEnabled } = usePage().props as {
+        auth?: { user?: unknown };
+        billingEnabled?: boolean;
+    };
     const isLoggedIn = !!auth?.user;
 
     return (
@@ -199,12 +202,14 @@ export default function Welcome({ canRegister = true }: Props) {
                                         Start for free
                                     </Link>
                                 )}
-                                <Link
-                                    href="/pricing"
-                                    className="rounded-2xl border border-white/20 px-8 py-3.5 text-base font-semibold text-white/80 transition-colors hover:border-white/40 hover:text-white"
-                                >
-                                    Pricing
-                                </Link>
+                                {billingEnabled && (
+                                    <Link
+                                        href="/pricing"
+                                        className="rounded-2xl border border-white/20 px-8 py-3.5 text-base font-semibold text-white/80 transition-colors hover:border-white/40 hover:text-white"
+                                    >
+                                        Pricing
+                                    </Link>
+                                )}
                                 <Link
                                     href={login()}
                                     className="rounded-2xl border border-white/20 px-8 py-3.5 text-base font-semibold text-white/80 transition-colors hover:border-white/40 hover:text-white"
