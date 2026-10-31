@@ -99,6 +99,10 @@
                     'title' => 'Trello Alternative for Developers – What the HELL have I done',
                     'description' => 'A Trello alternative with GitHub issue sync, an automatic work log, project docs and an MCP server for AI agents. Import your Trello boards free.',
                 ],
+                'github-kanban-board' => [
+                    'title' => 'Kanban Board for GitHub Issues – What the HELL have I done',
+                    'description' => 'A kanban board with two-way GitHub issue sync: create issues when cards move, assign Copilot or teammates, and move cards to Review when a PR opens.',
+                ],
                 'terms' => [
                     'title' => 'Terms of Service – What the HELL have I done',
                 ],

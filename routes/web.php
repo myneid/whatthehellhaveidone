@@ -40,6 +40,9 @@ if (User::billingEnabled()) {
 Route::inertia('/trello-alternative', 'trello-alternative', [
     'canRegister' => Features::enabled(Features::registration()),
 ])->name('trello-alternative');
+Route::inertia('/github-kanban-board', 'github-kanban-board', [
+    'canRegister' => Features::enabled(Features::registration()),
+])->name('github-kanban-board');
 Route::get('/sitemap.xml', SitemapController::class)->name('sitemap');
 Route::inertia('/style', 'style')->name('style');
 

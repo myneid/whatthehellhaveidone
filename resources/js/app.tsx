@@ -37,6 +37,7 @@ createInertiaApp({
         switch (true) {
             case name === 'welcome':
             case name === 'trello-alternative':
+            case name === 'github-kanban-board':
             case name === 'terms':
             case name === 'privacy':
                 return null;
