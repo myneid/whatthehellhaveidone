@@ -20,23 +20,25 @@ import { Button } from '@/components/ui/button';
 import DocsLayout from '@/layouts/docs-layout';
 
 const stats = [
-    { label: 'Tools', value: '11' },
+    { label: 'Tools', value: '13' },
     { label: 'Transport', value: 'HTTP' },
     { label: 'Auth', value: 'Bearer' },
 ];
 
 const mcpTools = [
-    { name: 'list_projects', description: 'List all your projects' },
-    { name: 'get_board', description: 'Get a board with its lists and cards' },
-    { name: 'list_cards', description: 'List cards in a board (filterable by list, priority)' },
-    { name: 'get_card', description: 'Get full card details including comments and checklists' },
-    { name: 'create_card', description: 'Create a new card in a list' },
-    { name: 'move_card', description: 'Move a card to a different list' },
-    { name: 'create_work_log_entry', description: 'Log work with hashtag-based project tagging' },
-    { name: 'update_work_log_entry', description: 'Edit an existing work log entry' },
-    { name: 'get_daily_work_log', description: "Retrieve today's (or any date's) work log" },
-    { name: 'list_documents', description: 'List documents in a project' },
-    { name: 'get_document', description: "Read a project document's full content" },
+    { name: 'list-projects-tool', description: 'List all your projects' },
+    { name: 'list-boards-tool', description: 'List boards available to the current user' },
+    { name: 'get-board-tool', description: 'Get a board with its lists and cards' },
+    { name: 'list-cards-tool', description: 'List cards in a board (filterable by list, priority)' },
+    { name: 'get-card-tool', description: 'Get full card details including comments and checklists' },
+    { name: 'create-card-tool', description: 'Create a new card in a list' },
+    { name: 'update-card-tool', description: 'Update an existing card, including title, description, priority, or due date' },
+    { name: 'move-card-tool', description: 'Move a card to a different list' },
+    { name: 'create-work-log-entry-tool', description: 'Log work with hashtag-based project tagging' },
+    { name: 'update-work-log-entry-tool', description: 'Edit an existing work log entry' },
+    { name: 'get-daily-work-log-tool', description: "Retrieve today's (or any date's) work log" },
+    { name: 'list-documents-tool', description: 'List documents in a project' },
+    { name: 'get-document-tool', description: "Read a project document's full content" },
 ];
 
 const examplePrompts = [
@@ -75,7 +77,7 @@ export default function DocsMcpTools() {
                     eyebrow="AI Integration"
                     eyebrowIcon={Bot}
                     title="Available Tools"
-                    description="Eleven tools registered on the WHHID MCP server — manage boards, log work, and read project documents from any connected assistant."
+                    description="Thirteen tools registered on the WHHID MCP server — manage boards, cards, logs, and project documents from any connected assistant."
                     stats={stats}
                     actions={
                         <>
@@ -92,7 +94,7 @@ export default function DocsMcpTools() {
                 <DocsPageSection
                     icon={Wrench}
                     title="Available tools"
-                    description="Eleven tools registered on the WHHID MCP server."
+                    description="Thirteen tools registered on the WHHID MCP server."
                 >
                     <DocsToolsTable tools={mcpTools} />
                 </DocsPageSection>

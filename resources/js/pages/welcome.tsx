@@ -422,7 +422,7 @@ export default function Welcome({ canRegister = true }: Props) {
                                     </span>{' '}
                                     <span className="text-white/40">›</span>{' '}
                                     <span className="text-white/80">
-                                        list_projects
+                                        list-projects-tool
                                     </span>
                                 </p>
                                 <p className="text-white/40">
@@ -434,7 +434,7 @@ export default function Welcome({ canRegister = true }: Props) {
                                     </span>{' '}
                                     <span className="text-white/40">›</span>{' '}
                                     <span className="text-white/80">
-                                        get_board
+                                        get-board-tool
                                     </span>{' '}
                                     <span className="text-amber-400">
                                         "My App"
@@ -449,7 +449,7 @@ export default function Welcome({ canRegister = true }: Props) {
                                     </span>{' '}
                                     <span className="text-white/40">›</span>{' '}
                                     <span className="text-white/80">
-                                        create_card
+                                        create-card-tool
                                     </span>
                                 </p>
                                 <p className="text-white/40">
