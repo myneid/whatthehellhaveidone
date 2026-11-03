@@ -182,3 +182,58 @@ it('rejects a null title', function (): void {
 
     expect($card->refresh()->title)->toBe('Original title');
 });
+
+it('clears a nullable field when an empty string is supplied', function (): void {
+    $user = User::factory()->create();
+    $this->actingAs($user);
+
+    $card = makeCardForUpdateTool($user, ['due_at' => '2026-12-01 17:00:00']);
+
+    $text = updateCardToolText([
+        'card_id' => $card->id,
+        'due_at' => '',
+        'description' => '',
+    ]);
+
+    expect($text)->toContain('changed: description, due_at');
+
+    $card->refresh();
+    expect($card->due_at)->toBeNull();
+    expect($card->description)->toBeNull();
+});
+
+it('does not treat an empty title as a clear request', function (): void {
+    $user = User::factory()->create();
+    $this->actingAs($user);
+
+    $card = makeCardForUpdateTool($user);
+
+    expect(fn () => runUpdateCardTool([
+        'card_id' => $card->id,
+        'title' => '',
+    ]))->toThrow(ValidationException::class);
+
+    expect($card->refresh()->title)->toBe('Original title');
+});
+
+it('returns a clean error for a card that does not exist', function (): void {
+    $user = User::factory()->create();
+    $this->actingAs($user);
+
+    $response = runUpdateCardTool([
+        'card_id' => 999999,
+        'priority' => 'low',
+    ]);
+
+    expect($response->isError())->toBeTrue();
+    expect($response->content()->toArray()['text'])->toContain('Card not found: 999999.');
+});
+
+it('advertises description and due_at as nullable in its schema', function (): void {
+    $schema = app(UpdateCardTool::class)->toArray()['inputSchema'];
+
+    expect($schema['properties']['description']['type'])->toBe(['string', 'null']);
+    expect($schema['properties']['due_at']['type'])->toBe(['string', 'null']);
+    expect($schema['properties']['title']['type'])->toBe('string');
+    expect($schema['properties']['priority']['enum'])->toBe(['low', 'medium', 'high', 'urgent', 'none']);
+});

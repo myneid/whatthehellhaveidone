@@ -5,6 +5,7 @@ namespace App\Mcp\Tools;
 use App\Models\Card;
 use App\Services\ActivityLogService;
 use Illuminate\Contracts\JsonSchema\JsonSchema;
+use Illuminate\Database\Eloquent\ModelNotFoundException;
 use Laravel\Mcp\Request;
 use Laravel\Mcp\Response;
 use Laravel\Mcp\Server\Attributes\Description;
@@ -20,6 +21,13 @@ class UpdateCardTool extends Tool
      */
     private const UPDATABLE = ['title', 'description', 'priority', 'due_at'];
 
+    /**
+     * Fields a client may clear by supplying null.
+     *
+     * @var list<string>
+     */
+    private const CLEARABLE = ['description', 'due_at'];
+
     public function __construct(private readonly ActivityLogService $activityLog) {}
 
     public function handle(Request $request): Response
@@ -32,7 +40,12 @@ class UpdateCardTool extends Tool
             'due_at' => ['sometimes', 'nullable', 'date'],
         ]);
 
-        $card = Card::findOrFail($request->get('card_id'));
+        try {
+            $card = Card::findOrFail($request->get('card_id'));
+        } catch (ModelNotFoundException) {
+            return Response::error('Card not found: '.$request->get('card_id').'.');
+        }
+
         $user = $request->user();
 
         if (! $user->can('update', $card)) {
@@ -43,9 +56,19 @@ class UpdateCardTool extends Tool
         $changes = [];
 
         foreach (self::UPDATABLE as $field) {
-            if ($request->has($field)) {
-                $changes[$field] = $request->get($field);
+            if (! $request->has($field)) {
+                continue;
             }
+
+            $value = $request->get($field);
+
+            // An empty string reaches here from clients that cannot send a JSON null.
+            // Treat it as a clear request so it does not hit the datetime cast and 500.
+            if ($value === '' && in_array($field, self::CLEARABLE, true)) {
+                $value = null;
+            }
+
+            $changes[$field] = $value;
         }
 
         if ($changes === []) {
@@ -78,12 +101,13 @@ class UpdateCardTool extends Tool
                 ->description('ID of the card to update.'),
             'title' => $schema->string()
                 ->description('New title. Cannot be null or empty.'),
-            'description' => $schema->string()
-                ->description('New description. Pass null to clear it.'),
+            'description' => $schema->string()->nullable()
+                ->description('New description. Pass null or an empty string to clear it.'),
             'priority' => $schema->string()
+                ->enum(['low', 'medium', 'high', 'urgent', 'none'])
                 ->description('One of low, medium, high, urgent, none.'),
-            'due_at' => $schema->string()
-                ->description('Due date/time. Pass null to clear it.'),
+            'due_at' => $schema->string()->nullable()
+                ->description('Due date/time. Pass null or an empty string to clear it.'),
         ];
     }
 }
